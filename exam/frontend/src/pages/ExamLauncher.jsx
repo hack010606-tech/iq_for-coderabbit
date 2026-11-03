@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiClient, captureTokenFromUrl, getToken } from '../api/client';
+import { apiClient, captureTokenFromUrl, getRefreshToken, getToken } from '../api/client';
 import { normalisePaper, subjectsInPaper } from '../lib/questionFormat';
 import '../index.css';
 
@@ -127,11 +127,18 @@ const ExamLauncher = () => {
 
   const handleStartExam = () => {
     const token = getToken();
-    const url = `/exam/session/${testId}${token ? `#token=${token}` : ''}`;
-    const examWin = window.open(url, '_blank', 'noopener,noreferrer');
+    const refresh = getRefreshToken();
+    const fragment = new URLSearchParams();
+    if (token) fragment.set('token', token);
+    if (refresh) fragment.set('refresh', refresh);
+    const query = fragment.toString();
+    const url = `/exam/session/${testId}${query ? `#${query}` : ''}`;
+    const examWin = window.open('', '_blank');
     if (!examWin) {
       window.location.href = url;
+      return;
     }
+    examWin.location.replace(url);
   };
 
   if (loading) {

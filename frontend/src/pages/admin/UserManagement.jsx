@@ -168,7 +168,7 @@ const UserManagement = () => {
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Create New User</h2>
-              <button className="admin-modal-close" onClick={() => setShowCreateModal(false)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowCreateModal(false)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
             <div className="admin-form-group">
               <label className="admin-form-label">Full Name</label>
@@ -203,7 +203,7 @@ const UserManagement = () => {
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Reset Password</h2>
-              <button className="admin-modal-close" onClick={() => setShowResetModal(null)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowResetModal(null)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16 }}>
               Setting a new password for <strong style={{ color: 'var(--color-admin-purple)' }}>{showResetModal.full_name}</strong>.
@@ -226,7 +226,7 @@ const UserManagement = () => {
           <div className="admin-modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Delete User</h2>
-              <button className="admin-modal-close" onClick={() => setShowDeleteConfirm(null)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowDeleteConfirm(null)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16 }}>
               Are you sure you want to permanently delete <strong style={{ color: 'var(--color-danger)' }}>{showDeleteConfirm.full_name}</strong>? This cannot be undone.

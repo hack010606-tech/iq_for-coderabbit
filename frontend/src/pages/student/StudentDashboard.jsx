@@ -15,13 +15,21 @@ const EXAM_APP_URL = (import.meta.env.VITE_EXAM_APP_URL || 'http://localhost:517
 
 /** Is the secure exam app actually serving on its origin? */
 const examAppReachable = async () => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
   try {
     // `no-cors` gives an opaque response we cannot read, which is fine: we only
     // need to distinguish "something answered" from "connection refused".
-    await fetch(`${EXAM_APP_URL}/`, { mode: 'no-cors', cache: 'no-store' });
+    await fetch(`${EXAM_APP_URL}/`, {
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
     return true;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 };
 

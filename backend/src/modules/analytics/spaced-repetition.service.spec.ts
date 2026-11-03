@@ -107,7 +107,7 @@ describe('SpacedRepetitionService', () => {
     await service.processAttempt(ATTEMPT, STUDENT);
 
     const rows = upsertPayload('predictions');
-    const subjectRow = rows.find((r: any) => r.subject === 'Physics' && r.topic === null);
+    const subjectRow = rows.find((r: any) => r.subject === 'Physics' && r.topic === '');
 
     expect(subjectRow).toBeDefined();
     expect(subjectRow.sample_size).toBe(2);

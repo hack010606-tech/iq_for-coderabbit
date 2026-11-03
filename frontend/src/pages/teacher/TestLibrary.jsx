@@ -36,7 +36,7 @@ const TestLibrary = () => {
         <div className="library-filters">
           <div className="search-box">
             <Search size={18} className="search-icon" />
-            <input type="text" placeholder="Search tests..." />
+            <input type="text" placeholder="Search tests by title or subject..." />
           </div>
         </div>
 

@@ -172,6 +172,7 @@ describe('QuestionsService', () => {
           {
             valid: false,
             subject: 'Physics',
+            topic: 'Optics',
             question_text: 'real one',
             correct_answer: { index: 1 },
           } as any,
@@ -188,7 +189,14 @@ describe('QuestionsService', () => {
     it("refuses an import outside the teacher's subject", async () => {
       await expect(
         service.bulkInsert(
-          [{ subject: 'Biology', question_text: 'x', correct_answer: { index: 0 } } as any],
+          [
+            {
+              subject: 'Biology',
+              topic: 'Cells',
+              question_text: 'x',
+              correct_answer: { index: 0 },
+            } as any,
+          ],
           PHYSICS_TEACHER,
         ),
       ).rejects.toBeInstanceOf(ForbiddenException);

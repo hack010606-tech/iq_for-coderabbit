@@ -133,6 +133,19 @@ export class QuestionsController {
     return this.pdfProcessorService.processPdf(file.buffer, user.id, body.examType || 'jee');
   }
 
+  @ApiOperation({
+    summary: 'Soft-delete ALL image-based questions (admin only)',
+    description:
+      'Removes every active question that has an image_url set. ' +
+      'These are questions whose content was extracted from a PDF as an image. ' +
+      'The deletion is a soft-delete (is_active = false) so the records are retained for auditing.',
+  })
+  @Roles('admin')
+  @Delete('image-questions')
+  deleteImageQuestions(@CurrentUser() user: any) {
+    return this.questionsService.deleteImageQuestions(user);
+  }
+
   // ── Parameterised routes last, so they cannot shadow the literals above ─────
 
   @ApiOperation({ summary: 'Get one question by ID' })

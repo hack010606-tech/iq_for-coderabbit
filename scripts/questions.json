@@ -1,0 +1,1102 @@
+[
+  {
+    "question": "If x^2 + xy = 12 and 2xy + 3y^2 + 5 = 0 then x + 4y is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "3"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "If 'a' and 'b' are distinct zeroes of the polynomial x^3 - 2x + c and a^2(2a^2 + 4ab + 3b^2) = 3 then b^2(3a^2 + 4ab + 2b^2) is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "3",
+      "B": "4",
+      "C": "5",
+      "D": "6"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Let α and β be the real roots of the equation x^2 - x(k - 2) + (k^2 + 3k + 5) = 0. The maximum value of α^2 + β^2 is:",
+    "type": "single correct",
+    "options": {
+      "A": "18",
+      "B": "19",
+      "C": "50/9",
+      "D": "50/19"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Suppose A = {x; 5x - a <= 0}, B = {x; 6x - b > 0}, a, b in N and A ∩ B ∩ N = {2, 3, 4}. The number of such pairs (a, b) is:",
+    "type": "single correct",
+    "options": {
+      "A": "20",
+      "B": "25",
+      "C": "30",
+      "D": "3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "a, b, c, d are distinct integers such that (x - a)(x - b)(x - c)(x - d) = 4 has an integral root r. Then a + b + c + d is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "r",
+      "B": "2r",
+      "C": "3r",
+      "D": "4r"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The number of monic quadratic polynomials of the form x^2 + ax + b with integer roots, where 1, a, b are in AP is(are):",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "4"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Let A = [-2, 4), B = {x; x^2 - ax - 4 <= 0}. If B is a subset of A, then the range of real a is:",
+    "type": "single correct",
+    "options": {
+      "A": "(-1, 2)",
+      "B": "[-1, 2]",
+      "C": "[0, 3]",
+      "D": "[0, 3)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The sum of all real x such that (4x^2 + 15x + 17)/(x^2 + 4x + 12) = (5x^2 + 16x + 18)/(2x^2 + 5x + 13) is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "-11/3",
+      "C": "-20/3",
+      "D": "23/3"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Given that a > 0, |ax^2 + bx + c| <= 1 if -1 <= x <= 1, a, b, c in R and ax + b has its maximum value 2, when -1 <= x <= 1. Then a =",
+    "type": "single correct",
+    "options": {
+      "A": "3",
+      "B": "1",
+      "C": "2",
+      "D": "4"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Given that a > 0, |ax^2 + bx + c| <= 1 if -1 <= x <= 1, a, b, c in R and ax + b has its maximum value 2, when -1 <= x <= 1. Then b =",
+    "type": "single correct",
+    "options": {
+      "A": "-1",
+      "B": "2",
+      "C": "1",
+      "D": "0"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Given that a > 0, |ax^2 + bx + c| <= 1 if -1 <= x <= 1, a, b, c in R and ax + b has its maximum value 2, when -1 <= x <= 1. Then c =",
+    "type": "single correct",
+    "options": {
+      "A": "-1",
+      "B": "0",
+      "C": "1",
+      "D": "2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Consider the equation x^4 - (k - 1)x^2 + (2 - k) = 0. The complete set of possible values of real k for which the equation has four distinct real roots is:",
+    "type": "single correct",
+    "options": {
+      "A": "(-∞, 2)",
+      "B": "(2√2 - 1, 2)",
+      "C": "(√2 - 1, 2√2 - 1)",
+      "D": "(2, ∞)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Consider the equation x^4 - (k - 1)x^2 + (2 - k) = 0. The complete set of possible values of real k for which the equation has 3 distinct real roots is:",
+    "type": "single correct",
+    "options": {
+      "A": "{2}",
+      "B": "{√2 - 1, 2}",
+      "C": "{√5 - 1}",
+      "D": "{2√2, √3 - √2}"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Consider the equation x^4 - (k - 1)x^2 + (2 - k) = 0. The complete set of possible values of real k for which the equation has 2 distinct real roots is:",
+    "type": "single correct",
+    "options": {
+      "A": "(0, 2)",
+      "B": "(-∞, 2√2 - 1)",
+      "C": "(2, ∞)",
+      "D": "{2√2 - 1} U (2, ∞)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Two rays are drawn through a point A at an angle of 30°. A point B is taken on one of them at a distance a from the point A. A perpendicular is drawn from the point B to the other ray and another perpendicular is drawn from its foot to AB to meet AB at another point from where the similar process is repeated indefinitely. The length of the resulting infinite polygon line is:",
+    "type": "single correct",
+    "options": {
+      "A": "a(2 - √3)",
+      "B": "a(2 + √3)",
+      "C": "a",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The least value of sin^2(A/2) + sin^2(B/2) + sin^2(C/2) is: (Where A, B, C are interior angles of a triangle)",
+    "type": "single correct",
+    "options": {
+      "A": "3/2",
+      "B": "3/4",
+      "C": "1",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "If x sin θ = y sin(θ + 2π/3) = z sin(θ + 4π/3), then xy + yz + zx =",
+    "type": "single correct",
+    "options": {
+      "A": "1/2",
+      "B": "-1/2",
+      "C": "0",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The number of pairs (x, y) satisfying the equations sin x + sin y = sin(x + y) and |x| + |y| = 1 is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "None of these"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "In a ΔABC, ∠C = π/4 and ∠B = π/3, also D divides BC internally in the ratio 1 : 3, then sin(∠BAD) / sin(∠CAD) is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "1/√6",
+      "B": "1/3",
+      "C": "1/√3",
+      "D": "None of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The two adjacent sides of a cyclic quadrilateral are 2, 5 and the angle between them is 60°. If the area of the quadrilateral is 4√3, then the remaining two sides are:",
+    "type": "single correct",
+    "options": {
+      "A": "1, 2",
+      "B": "2, 2",
+      "C": "2, 3",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In a ΔABC, ∠A > ∠B. Let ∠A and ∠B satisfy the equation 3 sin x - 4 sin^3 x - k = 0 where 0 < k < 1, then ∠C is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "π/3",
+      "B": "π/2",
+      "C": "2π/3",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Points D, E are taken on the side BC of ΔABC, such that BD = DE = EC and let ∠BAD = x, ∠DAE = y, ∠EAC = z; then sin(x + y)sin(y + z) / (sin x sin z) =",
+    "type": "single correct",
+    "options": {
+      "A": "4",
+      "B": "6",
+      "C": "3",
+      "D": "None of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "If P be any interior point of the equilateral ΔABC of side length 2 units and also x_a, x_b, x_c be the distances of P from the sides BC, CA, AB respectively, then x_a + x_b + x_c =",
+    "type": "single correct",
+    "options": {
+      "A": "√3",
+      "B": "3√2",
+      "C": "4",
+      "D": "None of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The number of solutions of the equation x^2 + (x + 1)sin(πx/6) = (3 + x)/2 in -2 <= x <= 0 is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "3"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The radius of the circle passing through the incentre of ΔABC and through the end points of BC is given by:",
+    "type": "single correct",
+    "options": {
+      "A": "(a/2) cos(A/2)",
+      "B": "(a/2) sec(A/2)",
+      "C": "(a/2) sin A",
+      "D": "a sec(A/2)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The median AD of a triangle ABC is bisected at E and BE meets AC in F; then AF : AC =",
+    "type": "single correct",
+    "options": {
+      "A": "3/4",
+      "B": "1/3",
+      "C": "1/2",
+      "D": "1/4"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "If in a ΔABC, sin 3A + sin 3B + sin 3C = 0, then at least one angle of ΔABC is:",
+    "type": "single correct",
+    "options": {
+      "A": "60°",
+      "B": "30°",
+      "C": "90°",
+      "D": "45°"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "If sin x + cosec x + tan y + cot y = 4, where x, y in [0, π/2], then tan(y/2) is a root of the equation:",
+    "type": "single correct",
+    "options": {
+      "A": "α^2 + 2α + 1 = 0",
+      "B": "α^2 + 2α - 1 = 0",
+      "C": "2α^2 - 2α - 1 = 0",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Let θ in (0, π/4) and t1 = (tan θ)^(tan θ), t2 = (tan θ)^(cot θ), t3 = (cot θ)^(tan θ) and t4 = (cot θ)^(cot θ), then:",
+    "type": "single correct",
+    "options": {
+      "A": "t3 > t4 > t1 > t2",
+      "B": "t4 > t3 > t1 > t2",
+      "C": "t4 > t3 > t2 > t1",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "A quadrilateral ABCD in which AB = a, BC = b, CD = c and DA = d is such that one circle can be inscribed in it and another circle can be circumscribed about it. Then cos A =",
+    "type": "single correct",
+    "options": {
+      "A": "(ad + bc)/(ad - bc)",
+      "B": "(ad - bc)/(ad + bc)",
+      "C": "(ac + bd)/(ac - bd)",
+      "D": "(ac - bd)/(ac + bd)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "If the equation a1 + a2 cos 2x + a3 sin^2 x = 1 is satisfied by every real value of x, then the number of possible values of the triplet (a1, a2, a3) is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "3",
+      "D": "Infinite"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If p-th, q-th and r-th terms of an H.P. be respectively x, y, z, then (p - q)xy + (q - r)yz + (r - p)xz =",
+    "type": "single correct",
+    "options": {
+      "A": "xyz + pqr",
+      "B": "pqr",
+      "C": "xyz",
+      "D": "0"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If the (m + 1)-th, (n + 1)-th and (r + 1)-th terms of an A.P. are in G.P. and m, n, r are in H.P., then the ratio of the common difference to the first term in the A.P. is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "2/n",
+      "B": "1/n",
+      "C": "-1/n",
+      "D": "-2/n"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The sum of r!(r^2 + r + 1) from r = 1 to 99 is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "102! - 100!",
+      "B": "100(100!) - 1",
+      "C": "99(100!) - 1",
+      "D": "100(99!) - 1"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Let Sn, S2n, S3n be respectively the sums of first n, 2n, 3n terms of an arithmetic progression, then S3n =",
+    "type": "single correct",
+    "options": {
+      "A": "2(S2n - Sn)",
+      "B": "(3/2)(S2n - Sn)",
+      "C": "3(S2n - Sn)",
+      "D": "6(S2n - Sn)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The sum of the infinite series 1^2 - 2^2/5 + 3^2/5^2 - 4^2/5^3 + 5^2/5^4 - 6^2/5^5 + ... ∞ is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "25/27",
+      "B": "5/27",
+      "C": "25/108",
+      "D": "25/54"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If z1, z2, z3 be three complex numbers such that |z1 + 1| <= 1, |z2 + 2| <= 2 and |z3 + 4| <= 4, then the maximum value of |z1| + |z2| + |z3| is:",
+    "type": "single correct",
+    "options": {
+      "A": "7",
+      "B": "10",
+      "C": "12",
+      "D": "14"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The value of i log(x - i) + i^2 π + i^3 log(x + i) + i^4(2 tan^-1 x), (where x > 0 and i = √-1), is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "3"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The complex number satisfying arg(z + i) = π/4 and arg(2z + 3 - 2i) = 3π/4 simultaneously, is:",
+    "type": "single correct",
+    "options": {
+      "A": "1/4 + (3/4)i",
+      "B": "-1/4 - (3/4)i",
+      "C": "1/4 - (3/4)i",
+      "D": "None of these"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Equation of tangent drawn to the circle |z| = r at the point A(z0), is:",
+    "type": "single correct",
+    "options": {
+      "A": "Re(z/z0) = 1",
+      "B": "Re(z0/z) = 1",
+      "C": "Im(z/z0) = 1",
+      "D": "Im(z0/z) = 1"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Consider a square OABC in the Argand plane, where 'O' is origin and A = A(z0). Then the equation of the circle that can be inscribed in this square is: (vertices of square are given in anti-clockwise order)",
+    "type": "single correct",
+    "options": {
+      "A": "|z - z0(1 + i)| = |z0|",
+      "B": "2|z - z0(1 + i)/2| = |z0|",
+      "C": "|z - z0(1 + i)/2| = |z0|",
+      "D": "None of the above"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "If |(z - z1)/(z - z2)| = 3, where z1 and z2 are fixed complex numbers and z is a variable complex number, then z lies on a:",
+    "type": "single correct",
+    "options": {
+      "A": "Circle with z1 as its interior point",
+      "B": "Circle with z2 as its interior point",
+      "C": "Circle with z1 and z2 as its interior points",
+      "D": "Circle with z1 and z2 as its exterior points"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Let z1 and z2 be the non-real roots of the equation 3z^2 + 3z + b = 0. If the origin together with the points represented by z1 and z2 form an equilateral triangle, then the value of b is:",
+    "type": "single correct",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "None of the above"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The equation (1 + a)x^2 + 2a^2 x + a^2 + b^2 - 1 = 0 has roots of opposite sign, if a + ib lies, (a > -1):",
+    "type": "single correct",
+    "options": {
+      "A": "On straight line x + y = 1",
+      "B": "Inside a circle of centre (0, 0) and radius '1'",
+      "C": "On a parabola of vertex (0, 0) and focal length '1'",
+      "D": "None of the above"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The roots of z^n = (z + 1)^n:",
+    "type": "single correct",
+    "options": {
+      "A": "Lie on the vertices of a regular n-polygon",
+      "B": "Lie on a circle",
+      "C": "Are collinear",
+      "D": "None of the above"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The complex numbers sin x + i cos 2x and cos x - i sin 2x are conjugate to each other for:",
+    "type": "single correct",
+    "options": {
+      "A": "x = nπ",
+      "B": "x = (n + 1/2)π",
+      "C": "x = 0",
+      "D": "No value of x"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Let 'z' be a complex number and 'a' be a real parameter such that z^2 + az + a^2 = 0, then:",
+    "type": "single correct",
+    "options": {
+      "A": "locus of z is a pair of straight lines",
+      "B": "locus of z is a circle",
+      "C": "arg(z) = ± 5π/3",
+      "D": "|z| = 2|a|"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The locus represented by the equation |z - 1| + |z + 1| = 2 is:",
+    "type": "single correct",
+    "options": {
+      "A": "an ellipse with foci (1, 0) and (-1, 0)",
+      "B": "one of the family of circles passing through the points of intersection of the circles |z - 1| = 1 and |z + 1| = 1",
+      "C": "the radical axis of the circles |z - 1| = 1 and |z + 1| = 1",
+      "D": "the portion of the real axis between the points (1, 0) and (-1, 0) including both"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If |z - 2| = min{|z - 1|, |z - 5|}, where z is a complex number, then:",
+    "type": "single correct",
+    "options": {
+      "A": "Re(z) = 3/2",
+      "B": "Re(z) = 7/2",
+      "C": "Re(z) in {3/2, 7/2}",
+      "D": "None of the above"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "If A(z1), B(z2), C(z3) are the vertices of a triangle ABC inscribed in the circle |z| = 2. Internal angle bisector of the angle A meets the circumcircle again at D(z4), then:",
+    "type": "single correct",
+    "options": {
+      "A": "z4^2 = z2 z3",
+      "B": "z4 = z2 z3 / z1",
+      "C": "z4 = z1 z2 / z3",
+      "D": "z4 = z1 z3 / z2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "If |z - 2 - i| = |z| |sin(π/4 - arg z)|, then locus of z is/an:",
+    "type": "single correct",
+    "options": {
+      "A": "ellipse",
+      "B": "circle",
+      "C": "parabola",
+      "D": "pair of straight lines"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "If |z| = 2 and (z1 - z3)/(z2 - z3) = (z - 2)/(z + 2), then z1, z2, z3 will be vertices of a/an:",
+    "type": "single correct",
+    "options": {
+      "A": "equilateral triangle",
+      "B": "acute angled triangle",
+      "C": "right angled triangle",
+      "D": "None of the above"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "For the complex number z, the minimum value of |z| + |z - cos α - i sin α| is:",
+    "type": "single correct",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "None of the above"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Let f(x) = x^4 - 6x^3 + 26x^2 - 46x + 65. All the roots of f(x) = 0 are of the form ak + i bk for k = 1, 2, 3, 4, where i = √-1. Further ak and bk are all integers. Also λ = |b1| + |b2| + |b3| + |b4| and μ = a1 + a2 + a3 + a4. The value of λ + μ is equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "16",
+      "B": "4",
+      "C": "10",
+      "D": "6"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Let f(x) = x^4 - 6x^3 + 26x^2 - 46x + 65. Roots of the equation f(x) = 0 are:",
+    "type": "single correct",
+    "options": {
+      "A": "-1 ± 2i, -2 ± 3i",
+      "B": "2 ± 2i, 1 ± 3i",
+      "C": "-2 ± 2i, -1 ± 3i",
+      "D": "1 ± 2i, 2 ± 3i"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Number of ways in which four different toys and five indistinguishable marbles can be distributed between Amar, Akbar and Anthony, if each child receives atleast one toy and one marble, is:",
+    "type": "single correct",
+    "options": {
+      "A": "42",
+      "B": "100",
+      "C": "150",
+      "D": "216"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "You are given an unlimited supply of each of the digits 1, 2, 3 or 4. Using only these four digits, you construct n digit numbers. Such n digit numbers will be called LEGITIMATE if it contains the digit 1 either an even number times or not at all. Number of n digit legitimate numbers are:",
+    "type": "single correct",
+    "options": {
+      "A": "2^n + 1",
+      "B": "2^(n+1) + 2",
+      "C": "2^(n+2) + 4",
+      "D": "2^(n-1)(2^n + 1)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If 5 letters are put in the 5 envelopes. Find the no. of ways so that atleast 2 letters are in wrong envelope:",
+    "type": "single correct",
+    "options": {
+      "A": "120",
+      "B": "119",
+      "C": "118",
+      "D": "117"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Number of positive integral solutions satisfying the equation (x1 + x2 + x3)(y1 + y2) = 77 is:",
+    "type": "single correct",
+    "options": {
+      "A": "150",
+      "B": "270",
+      "C": "420",
+      "D": "1024"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "There are counters available in 3 different colours (atleast four of each colour). Counters are all alike except for the colour. If 'm' denotes the number of arrangements of four counters if no arrangement consists of counters of same colour and 'n' denotes the corresponding figure when every arrangement consists of counters of each colour, then:",
+    "type": "single correct",
+    "options": {
+      "A": "m = 2n",
+      "B": "6m = 13n",
+      "C": "3m = 5n",
+      "D": "5m = 3n"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "An ice cream parlour has ice creams in eight different varieties. Number of ways of choosing 3 ice creams taking atleast two ice creams of the same variety, is: (Assume that ice creams of the same variety to be identical & available in unlimited supply)",
+    "type": "single correct",
+    "options": {
+      "A": "56",
+      "B": "64",
+      "C": "100",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Three digit numbers in which the middle one is a perfect square are formed using the digits 1 to 9. Their sum is:",
+    "type": "single correct",
+    "options": {
+      "A": "134055",
+      "B": "270540",
+      "C": "170055",
+      "D": "None of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "A guardian with 6 wards wishes everyone of them to study either Law or Medicine or Engineering. Number of ways in which he can make up his mind with regard to the education of his wards if every one of them be fit for any of the branches to study, and atleast one child is to be sent in each discipline is:",
+    "type": "single correct",
+    "options": {
+      "A": "120",
+      "B": "216",
+      "C": "729",
+      "D": "540"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "There are (p + q) different books on different topics in Mathematics (p != q). If L = The number of ways in which these books are distributed between two students X and Y such that X gets p books and Y gets q books. M = The number of ways in which these books are distributed between two students X and Y such that one of them gets p books and another gets q books. N = The number of ways in which these books are divided into groups of p books and q books, then:",
+    "type": "single correct",
+    "options": {
+      "A": "L = M = N",
+      "B": "L = 2M = 2N",
+      "C": "2L = M = 2N",
+      "D": "L = M = 2N"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The number 916238457 is an example of nine digit number which contains each of the digit 1 to 9 exactly once. It also has the property that the digits 1 to 5 occur in their natural order, while the digits 1 to 6 do not. Number of such numbers are:",
+    "type": "single correct",
+    "options": {
+      "A": "2268",
+      "B": "2520",
+      "C": "2975",
+      "D": "1560"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Number of functions defined from f: {1, 2, 3, 4, 5, 6} -> {7, 8, 9, 10} such that the sum f(1) + f(2) + f(3) + f(4) + f(5) + f(6) is odd, is:",
+    "type": "single correct",
+    "options": {
+      "A": "2^10",
+      "B": "2^11",
+      "C": "2^12",
+      "D": "2^12 - 1"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The number of non-negative integral solutions of x + y + z <= n, where n in N is:",
+    "type": "single correct",
+    "options": {
+      "A": "(n+4)C4",
+      "B": "(n+5)C5",
+      "C": "(n+3)C3",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "From 4 men and 6 ladies a committee of 5 is to be selected. The number of ways in which the committee can be formed so that men are in majority, is:",
+    "type": "single correct",
+    "options": {
+      "A": "66",
+      "B": "156",
+      "C": "60",
+      "D": "None of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Six persons A, B, C, D, E and F are to be seated at a circular table. The number of ways this can be done if A must have either B or C on his right and B must have either C or D on his right is:",
+    "type": "single correct",
+    "options": {
+      "A": "36",
+      "B": "12",
+      "C": "24",
+      "D": "18"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The total number of integral solutions for x, y, z such that xyz = 24 is:",
+    "type": "single correct",
+    "options": {
+      "A": "30",
+      "B": "60",
+      "C": "90",
+      "D": "120"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "How many five digit numbers can be formed from 1, 2, 3, 4, 5 (without repetition), when the digit at the unit place must be greater than that in the tenth place?",
+    "type": "single correct",
+    "options": {
+      "A": "54",
+      "B": "60",
+      "C": "5!/3",
+      "D": "2 * 4!"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Number of ways in which 7 green bottles and 8 blue bottles can be arranged in a row if exactly 1 pair of green bottles is side by side, is (Assume all bottles to be alike except for the colour):",
+    "type": "single correct",
+    "options": {
+      "A": "84",
+      "B": "360",
+      "C": "504",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Seven different coins are to be divided amongst three persons. If no two of the persons receive the same number of coins but each receives atleast one coin & none is left over, then the number of ways in which the division may be made is:",
+    "type": "single correct",
+    "options": {
+      "A": "420",
+      "B": "630",
+      "C": "710",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The number of ways in which 8 distinguishable apples can be distributed among 3 boys such that every boy should get atleast 1 apple and atmost 4 apples is K * 7P3 where K has the value equal to:",
+    "type": "single correct",
+    "options": {
+      "A": "14",
+      "B": "66",
+      "C": "44",
+      "D": "22"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "A rack has 5 different pairs of shoes. The number of ways in which 4 shoes can be chosen from it, so that there will be no complete pair is:",
+    "type": "single correct",
+    "options": {
+      "A": "1920",
+      "B": "200",
+      "C": "110",
+      "D": "80"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "There are 10 seats in a double decker bus, 6 in the lower deck and 4 on the upper deck. Ten passengers board the bus, of them 3 refuse to go to the upper deck and 2 insist on going up. The number of ways in which the passengers can be accommodated is: (Assume all seats to be duly numbered)",
+    "type": "single correct",
+    "options": {
+      "A": "172800",
+      "B": "162800",
+      "C": "152800",
+      "D": "182800"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "An old man while dialing a 7 digit telephone number remembers that the first four digits consists of one 1's, one 2's and two 3's. He also remembers that the fifth digit is either a 4 or 5 while has no memory of the sixth digit, he remembers that the seventh digit is 9 minus the sixth digit. Maximum number of distinct trials he has to try to make sure that he dials the correct telephone number, is:",
+    "type": "single correct",
+    "options": {
+      "A": "360",
+      "B": "240",
+      "C": "216",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The total number of different ways a grandfather along with two of his grandsons and four grand daughters can be seated in a line for a photograph so that he is always in the middle and the two grandsons are never adjacent to each other:",
+    "type": "single correct",
+    "options": {
+      "A": "728",
+      "B": "600",
+      "C": "528",
+      "D": "328"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Number of ways in which 9 different toys be distributed among 4 children belonging to different age groups in such a way that distribution among the 3 elder children is even and the youngest one is to receive one toy more, is:",
+    "type": "single correct",
+    "options": {
+      "A": "(5!)^2 / 8",
+      "B": "9! / 2",
+      "C": "9! / (3!(2!)^3)",
+      "D": "None of these"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In an election three districts are to be canvassed by 2, 3 and 5 men respectively. If 10 men volunteer, the number of ways they can be allotted to the different districts is:",
+    "type": "single correct",
+    "options": {
+      "A": "10! / (2! 3! 5!)",
+      "B": "10! / (2! 5!)",
+      "C": "10! / ((2!)^2 5!)",
+      "D": "10! / ((2!)^2 3! 5!)"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The number of ordered pairs (m, n), m, n in {1, 2, ..., 50} such that 6^m + 9^n is a multiple of 5:",
+    "type": "single correct",
+    "options": {
+      "A": "2500",
+      "B": "1250",
+      "C": "625",
+      "D": "500"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "If A(3, 0) and B(6, 0) are two fixed points and U(α, β) is a variable point in the plane. AU and BU meet the y-axis at C and D respectively and AD meets OU at V. Then the coordinates of the point through which CV always passes is:",
+    "type": "single correct",
+    "options": {
+      "A": "(3, 4)",
+      "B": "(4, 0)",
+      "C": "(0, 2)",
+      "D": "(2, 0)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "If a/√(bc) - 2 = √(b/c) + √(c/b), where a, b, c > 0, then family of lines √a x + √b y + √c = 0 passes through the point:",
+    "type": "single correct",
+    "options": {
+      "A": "(1, 1)",
+      "B": "(1, -2)",
+      "C": "(-1, 2)",
+      "D": "(-1, 1)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "I(1, 0) is the centre of incircle of triangle ABC, the equation of BI is x - 1 = 0 and equation of CI is x - y - 1 = 0, then angle BAC is:",
+    "type": "single correct",
+    "options": {
+      "A": "π/4",
+      "B": "π/3",
+      "C": "π/2",
+      "D": "2π/3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "If the points where the lines 3x - 2y - 12 = 0 and x + ky + 3 = 0 intersect both the coordinate axes are concyclic, then the number of possible real values of k is:",
+    "type": "single correct",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Consider the triangle OAB where O = (0, 0), B = (3, 4). If orthocenter of triangle is H(1, 4), then coordinates of 'A' is:",
+    "type": "single correct",
+    "options": {
+      "A": "(0, 15/4)",
+      "B": "(0, 17/4)",
+      "C": "(0, 21/4)",
+      "D": "(0, 19/4)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Two vertices of a triangle are (5, -1) and (-2, 3). If orthocenter of the triangle is origin, then the co-ordinates of third vertex is:",
+    "type": "single correct",
+    "options": {
+      "A": "(4, 7)",
+      "B": "(3, 7)",
+      "C": "(-4, -7)",
+      "D": "(4, -7)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "m, n are integers with 0 < n < m. A is the point (m, n) on the Cartesian plane. B is the reflection of A in the line y = x. C is the reflection of B in the y-axis, D is the reflection of C in the x-axis and E is the reflection of D in the y-axis. The area of the pentagon ABCDE is:",
+    "type": "single correct",
+    "options": {
+      "A": "2m(m + n)",
+      "B": "m(m + 3n)",
+      "C": "m(2m + 3n)",
+      "D": "2m(m + 3n)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The ends of the base of an isosceles triangle are at (2, 0) and (0, 1) and the equation of one side is x = 2, then the orthocenter of the triangle is:",
+    "type": "single correct",
+    "options": {
+      "A": "(3/4, 3/2)",
+      "B": "(5/4, 1)",
+      "C": "(3/4, 1)",
+      "D": "(4/3, 7/12)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Given A = (1, 1) and AB is any line through it cutting the x-axis in B. If AC is perpendicular to AB and meets the y-axis in C, then the equation of locus of mid-point P of BC is:",
+    "type": "single correct",
+    "options": {
+      "A": "x + y = 1",
+      "B": "x + y = 2",
+      "C": "x + y = 2xy",
+      "D": "2x + 2y = 1"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "A piece of cheese is located at (12, 10) in a coordinate plane. A mouse is at (4, 2) and is running up the line y = -5x + 18. At the point (a, b), the mouse starts getting farther from the cheese rather than closer to it. The value of (a + b) is:",
+    "type": "single correct",
+    "options": {
+      "A": "6",
+      "B": "10",
+      "C": "18",
+      "D": "14"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "In a triangle ABC, if A = (2, 1) and 7x - 10y + 1 = 0 and 3x - 2y + 5 = 0 are equations of an altitude and an angle bisector respectively drawn from B, then equation of BC is:",
+    "type": "single correct",
+    "options": {
+      "A": "x + y + 1 = 0",
+      "B": "5x + y + 17 = 0",
+      "C": "4x + 9y + 30 = 0",
+      "D": "x - 5y - 7 = 0"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The distance between two parallel lines is 1 unit. A point 'A' is chosen to lie between the lines at a distance 'd' from one of them. Triangle ABC is equilateral with B on one line and C on the other parallel line. The length of the side of the equilateral triangle is:",
+    "type": "single correct",
+    "options": {
+      "A": "(2/3)√(d^2 + d + 1)",
+      "B": "2√((d^2 - d + 1)/3)",
+      "C": "2√(d^2 - d + 1)",
+      "D": "√(d^2 - d + 1)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Consider 3 non-collinear points A(9, 3), B(7, -1) and C(1, -1). If D, E and F are the middle points of BC, CA and AB respectively then the area of the triangle DEF is:",
+    "type": "single correct",
+    "options": {
+      "A": "12",
+      "B": "6",
+      "C": "4",
+      "D": "3"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Consider 3 non-collinear points A(9, 3), B(7, -1) and C(1, -1). Let P(a, b) be the centre and R be the radius of circle 'S' passing through points A, B, C. The value of a + b + R equals:",
+    "type": "single correct",
+    "options": {
+      "A": "3",
+      "B": "12",
+      "C": "13",
+      "D": "None of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Consider 3 non-collinear points A(9, 3), B(7, -1) and C(1, -1). Let H(x, y) be the coordinates of the orthocenter of triangle ABC. The ordered pair (x, y) is:",
+    "type": "single correct",
+    "options": {
+      "A": "(9, 6)",
+      "B": "(-9, 6)",
+      "C": "(9, -5)",
+      "D": "(9, 5)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Two circles of radii 36 units and 9 units touch each other externally, a third circle of radius r touches the two given circles externally and also their common tangent, then the value of r is:",
+    "type": "single correct",
+    "options": {
+      "A": "4",
+      "B": "5",
+      "C": "√17",
+      "D": "√18"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "If A(0, α) and B(0, β), α, β > 0 are two vertices of a variable triangle ABC, where the vertex C(x, 0) is variable. The value of x for which ∠ACB is maximum is:",
+    "type": "single correct",
+    "options": {
+      "A": "(α + β)/2",
+      "B": "√(αβ)",
+      "C": "2αβ/(α + β)",
+      "D": "αβ/(α + β)"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Two tangents are drawn from a point P to the circle x^2 + y^2 = 1. If the tangents make an intercept of 2 units on the line x = 1, then locus of P is:",
+    "type": "single correct",
+    "options": {
+      "A": "parabola",
+      "B": "pair of lines",
+      "C": "circle",
+      "D": "straight line"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Let ABCD be a quadrilateral in which AB || CD, AB ⊥ AD and AB = 3CD. If the area of the quadrilateral ABCD is 4, then the radius of the circle touching all the four sides of the quadrilateral is:",
+    "type": "single correct",
+    "options": {
+      "A": "sin(π/12)",
+      "B": "sin(π/3)",
+      "C": "sin(π/4)",
+      "D": "sin(π/6)"
+    },
+    "answer": "B"
+  }
+]

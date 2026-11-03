@@ -212,7 +212,8 @@ export class SpacedRepetitionService {
       return {
         student_id: studentId,
         subject: b.subject,
-        topic: b.topic,
+        // NULL never matches an ON CONFLICT key; subject roll-ups need a stable sentinel.
+        topic: b.topic ?? '',
         // Expected marks if the student sat this bucket again at current accuracy.
         predicted_score: Number(((accuracy / 100) * b.marks).toFixed(2)),
         accuracy: Number(accuracy.toFixed(2)),

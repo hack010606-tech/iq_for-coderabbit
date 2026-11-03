@@ -34,9 +34,12 @@ export function normaliseQuestionType(raw, question = {}) {
   return Array.isArray(question.options) && question.options.length > 0 ? 'mcq' : 'nat';
 }
 
-/** Section A = objective, Section B = numerical. Matches the JEE Main pattern. */
+/** Exam sections based on question type. */
 export function sectionForType(type) {
-  return type === 'nat' ? 'B' : 'A';
+  if (type === 'mcq') return 'MCQ';
+  if (type === 'msq') return 'MSQ';
+  if (type === 'nat') return 'Numerical';
+  return 'Objective';
 }
 
 /**
@@ -56,9 +59,25 @@ export function normaliseQuestion(row) {
   };
 }
 
-/** The whole paper, in the order the teacher arranged it. */
+/** The whole paper, grouped naturally by subject and section (MCQ -> MSQ -> Numerical). */
 export function normalisePaper(rows) {
-  return (rows || []).map(normaliseQuestion);
+  const list = (rows || []).map(normaliseQuestion);
+  const sectionPriority = { MCQ: 1, MSQ: 2, Numerical: 3, Objective: 4 };
+
+  const subjectOrder = new Map();
+  let nextSubj = 0;
+  for (const q of list) {
+    if (!subjectOrder.has(q.subject)) {
+      subjectOrder.set(q.subject, nextSubj++);
+    }
+  }
+
+  return list.sort((a, b) => {
+    const sDiff = (subjectOrder.get(a.subject) ?? 0) - (subjectOrder.get(b.subject) ?? 0);
+    if (sDiff !== 0) return sDiff;
+    const secDiff = (sectionPriority[a.section] ?? 99) - (sectionPriority[b.section] ?? 99);
+    return secDiff;
+  });
 }
 
 /** Distinct subjects in paper order — the exam's subject tabs are built from this. */
@@ -66,10 +85,13 @@ export function subjectsInPaper(questions) {
   return [...new Set((questions || []).map((q) => q.subject).filter(Boolean))];
 }
 
-/** Distinct sections within one subject, in A→B order. */
+/** Distinct sections within one subject, in MCQ -> MSQ -> Numerical order. */
 export function sectionsInSubject(questions, subject) {
-  const sections = new Set(
-    (questions || []).filter((q) => q.subject === subject).map((q) => q.section).filter(Boolean),
-  );
-  return [...sections].sort();
+  const sectionPriority = { MCQ: 1, MSQ: 2, Numerical: 3, Objective: 4 };
+  const sections = [
+    ...new Set(
+      (questions || []).filter((q) => q.subject === subject).map((q) => q.section).filter(Boolean),
+    ),
+  ];
+  return sections.sort((a, b) => (sectionPriority[a] ?? 99) - (sectionPriority[b] ?? 99));
 }

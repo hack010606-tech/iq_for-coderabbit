@@ -36,6 +36,10 @@ export function getToken() {
   return sessionStorage.getItem(TOKEN_KEY);
 }
 
+export function getRefreshToken() {
+  return sessionStorage.getItem(REFRESH_KEY);
+}
+
 export function clearToken() {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(REFRESH_KEY);

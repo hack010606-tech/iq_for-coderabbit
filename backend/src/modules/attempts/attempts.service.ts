@@ -28,8 +28,11 @@ const ANSWER_STATUSES = [
 /** Cohort averages for a finished test barely move; recomputing per result view does not scale. */
 const COHORT_STATS_TTL_SECONDS = 60;
 
-/** One sweep pass never grades more than this, so a backlog cannot stall the loop. */
+/** Page size for each expiry-sweep read. */
 const SWEEP_BATCH_LIMIT = 200;
+
+/** Bounds a pass if a changing result set never yields a short page. */
+const MAX_SWEEP_PAGES = 50;
 
 interface AttemptWindow {
   attemptId: string;
@@ -61,7 +64,7 @@ export class AttemptsService {
   constructor(
     private readonly srsService: SpacedRepetitionService,
     private readonly cache: CacheService,
-  ) {}
+  ) { }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -84,7 +87,7 @@ export class AttemptsService {
   private warnMigrationMissing(what: string) {
     this.logger.warn(
       `${what} is missing — run backend/migrations/005_exam_session_sync.sql. ` +
-        'Running degraded until then.',
+      'Running degraded until then.',
     );
   }
 
@@ -349,14 +352,15 @@ export class AttemptsService {
         this.hasAnswerStatus = true;
         return data || [];
       }
-      if (!this.isMissingSchema(error)) return [];
+      if (!this.isMissingSchema(error)) throw new Error(error.message);
 
       this.hasAnswerStatus = false;
       this.warnMigrationMissing('answers.status');
     }
 
     // Migration 005 not applied: resume the answers, just not the palette state.
-    const { data } = await supabase.from('answers').select(columns).eq('attempt_id', attemptId);
+    const { data, error } = await supabase.from('answers').select(columns).eq('attempt_id', attemptId);
+    if (error) throw new Error(error.message);
     return data || [];
   }
 
@@ -703,21 +707,29 @@ export class AttemptsService {
    * Called by the sweeper so a student who closes the tab still gets graded.
    * Returns the number of attempts submitted.
    *
-   * Oldest first and capped per pass: during a cohort-wide exam there can be a
-   * thousand open attempts, and reading them all into memory on every tick
-   * (which is what an unbounded select did) is both slow and, past PostgREST's
-   * row cap, incomplete.
+   * Fetch every page before grading so status updates cannot shift the offsets
+   * of later pages. The page cap protects against a perpetually full mock/feed.
    */
   async autoSubmitExpiredAttempts(): Promise<number> {
-    const { data: open, error } = await supabase
-      .from('attempts')
-      .select('id, test_id, started_at, student_id, tests(duration_minutes)')
-      .eq('status', 'in_progress')
-      .order('started_at', { ascending: true })
-      .limit(SWEEP_BATCH_LIMIT);
+    const open: any[] = [];
 
-    if (error) throw new Error(error.message);
-    if (!open?.length) return 0;
+    for (let page = 0; page < MAX_SWEEP_PAGES; page++) {
+      const from = page * SWEEP_BATCH_LIMIT;
+      const { data: rows, error } = await supabase
+        .from('attempts')
+        .select('id, test_id, started_at, student_id, tests(duration_minutes)')
+        .eq('status', 'in_progress')
+        .order('started_at', { ascending: true })
+        .range(from, from + SWEEP_BATCH_LIMIT - 1);
+
+      if (error) throw new Error(error.message);
+      open.push(...(rows || []));
+
+      if (!rows || rows.length < SWEEP_BATCH_LIMIT) break;
+      if (page === MAX_SWEEP_PAGES - 1) {
+        this.logger.warn(`Expiry sweep stopped after ${MAX_SWEEP_PAGES} full pages.`);
+      }
+    }
 
     let submitted = 0;
     for (const attempt of open) {

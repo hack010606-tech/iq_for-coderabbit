@@ -504,7 +504,7 @@ const TestInitiation = () => {
           <div className="admin-modal" style={{ maxWidth: 660, maxHeight: '92vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Initiate New Test</h2>
-              <button className="admin-modal-close" onClick={() => setShowModal(false)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowModal(false)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
 
             <div className="admin-form-group">
@@ -582,7 +582,7 @@ const TestInitiation = () => {
           <div className="admin-modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Assign Teachers</h2>
-              <button className="admin-modal-close" onClick={() => setAssignTarget(null)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setAssignTarget(null)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
 
             {/* test strip */}
@@ -639,7 +639,7 @@ const TestInitiation = () => {
           <div className="admin-modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Assign to Batches</h2>
-              <button className="admin-modal-close" onClick={() => setBatchTarget(null)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setBatchTarget(null)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
 
             <div style={{ padding: '12px 14px', background: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border-color)', marginBottom: 20 }}>

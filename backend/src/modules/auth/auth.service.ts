@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { supabase, supabaseAuth } from '../../config/supabase.config';
+import { createUserAuthClient, supabase, supabaseAuth } from '../../config/supabase.config';
 import { verifySupabaseToken } from '../../common/auth/supabase-jwt';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class AuthService {
    * Refresh: Use refresh token to get a new access token.
    */
   async refresh(refreshToken: string) {
-    const { data, error } = await supabaseAuth.auth.refreshSession({
+    const { data, error } = await createUserAuthClient().auth.refreshSession({
       refresh_token: refreshToken,
     });
 

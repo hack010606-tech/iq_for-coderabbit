@@ -6,7 +6,8 @@ import { useAppData } from '../../context/AppDataContext';
 import { parseChatMessage, openImageSafely } from '../../utils/chatMedia';
 import './LiveDoubtClient.css';
 
-const SOCKET_URL = 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'http://localhost:3000');
 
 const LiveDoubtClient = () => {
   const { doubts, setDoubts, refreshDoubts, teachers: ctxTeachers } = useAppData();
@@ -149,7 +150,7 @@ const LiveDoubtClient = () => {
       const formData = new FormData();
       formData.append('image', file);
       const token = localStorage.getItem('access_token');
-      const res = await fetch(`http://localhost:3000/api/doubts/${activeDoubt}/upload-image`, {
+      const res = await fetch(`${API_BASE}/doubts/${activeDoubt}/upload-image`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -384,7 +385,7 @@ const LiveDoubtClient = () => {
                 onChange={handleTyping}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
               />
-              <button className="btn-send" onClick={handleSend}><Send size={18} /></button>
+              <button className="btn-send" onClick={handleSend} aria-label="Send message" title="Send message"><Send size={18} /></button>
             </div>
           </>
         ) : (
@@ -399,7 +400,7 @@ const LiveDoubtClient = () => {
           <div className="teacher-modal">
             <div className="modal-header">
               <h3>Select a Teacher</h3>
-              <button className="btn-icon" onClick={() => setShowTeacherModal(false)}><X size={20}/></button>
+              <button className="btn-icon" onClick={() => setShowTeacherModal(false)} aria-label="Close dialog" title="Close"><X size={20}/></button>
             </div>
             <div className="teacher-list">
               {loadingTeachers ? (

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { supabase } from '../../config/supabase.config';
-import { chunk, ID_CHUNK_SIZE } from '../../common/db/query.util';
+import { chunk, fetchAll, ID_CHUNK_SIZE } from '../../common/db/query.util';
 import {
   CreateQuestionDto,
   CsvRowDto,
@@ -98,8 +98,9 @@ export class QuestionsService {
     user?: Requester,
   ) {
     const page = Math.max(Number(filters.page) || 1, 1);
-    // Cap the page size so a hand-crafted ?limit=100000 cannot pull the whole bank.
-    const limit = Math.min(Math.max(Number(filters.limit) || 20, 1), 200);
+    // Cap the page size — 5000 covers the largest realistic question bank
+    // while still bounding what a single request can allocate.
+    const limit = Math.min(Math.max(Number(filters.limit) || 20, 1), 5000);
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -260,7 +261,14 @@ export class QuestionsService {
 
     const { data, error } = await supabase
       .from('questions')
-      .insert({ ...rest, created_by: user.id })
+      .insert({
+        ...rest,
+        is_active: true,
+        review_status: 'pending',
+        reviewed_by: null,
+        reviewed_at: null,
+        created_by: user.id,
+      })
       .select()
       .single();
 
@@ -354,7 +362,87 @@ export class QuestionsService {
     return { deleted };
   }
 
+  /**
+   * Soft-delete every question whose content is stored as an image
+   * (i.e. `image_url IS NOT NULL`). These are typically PDF-extracted
+   * questions where the question body is the image itself rather than text.
+   *
+   * The operation is paged via `fetchAll` so it is not capped at Supabase's
+   * 1000-row `db-max-rows` default, and the resulting id list is chunked so
+   * no single UPDATE URL grows past PostgREST's URL-length limit.
+   */
+  async deleteImageQuestions(user?: Requester): Promise<{ deleted: number }> {
+    // 1. Collect the ids of every active image question.
+    const rows = await fetchAll<{ id: string; subject: string }>(() =>
+      supabase
+        .from('questions')
+        .select('id, subject')
+        .eq('is_active', true)
+        .not('image_url', 'is', null)
+        .neq('image_url', ''),
+    );
+
+    if (!rows.length) return { deleted: 0 };
+
+    const ids = rows.map((r) => r.id);
+
+    // 2. Honour subject-scoped access for teachers without redundant DB reads.
+    const scoped = this.scopedSubject(user);
+    if (scoped && rows.some((q) => String(q.subject).toLowerCase() !== scoped.toLowerCase())) {
+      throw new ForbiddenException(`You can only modify ${scoped} questions.`);
+    }
+
+    // 3. Soft-delete in chunks to avoid URL-length errors.
+    let deleted = 0;
+    for (const idChunk of chunk(ids, ID_CHUNK_SIZE)) {
+      const { data, error } = await supabase
+        .from('questions')
+        .update({ is_active: false })
+        .in('id', idChunk)
+        .select('id');
+
+      if (error) throw new Error(error.message);
+      deleted += data?.length || 0;
+    }
+
+    return { deleted };
+  }
+
   // ── CSV import ──────────────────────────────────────────────────────────────
+
+  /** Validation shared by preview and confirm so a valid preview is never dropped on save. */
+  private validateCsvRow(row: any): string[] {
+    const problems: string[] = [];
+    if (!String(row?.question_text || '').trim()) problems.push('question is required');
+
+    const answer = row?.correct_answer;
+    const validIndex = (value: any) =>
+      value !== null && value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0;
+    let answerValid = false;
+    if (answer && typeof answer === 'object' && !Array.isArray(answer)) {
+      if ('index' in answer) {
+        answerValid = validIndex(answer.index);
+      } else if ('indices' in answer) {
+        answerValid =
+          Array.isArray(answer.indices) &&
+          answer.indices.length > 0 &&
+          answer.indices.every((index: any) => validIndex(index));
+      } else if ('value' in answer) {
+        answerValid =
+          (typeof answer.value === 'number' && Number.isFinite(answer.value)) ||
+          (typeof answer.value === 'string' && answer.value.trim().length > 0);
+      }
+    }
+    if (!answerValid) problems.push('correct must be A, B, C or D');
+
+    const difficulty = String(row?.difficulty || 'medium').trim().toLowerCase();
+    if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+      problems.push('difficulty must be easy, medium or hard');
+    }
+    if (!String(row?.subject || '').trim()) problems.push('subject is required');
+    if (!String(row?.topic || '').trim()) problems.push('topic is required');
+    return problems;
+  }
 
   /** Parse CSV file and return preview rows (does not save to DB yet) */
   async parseCSV(fileBuffer: Buffer, maxRows = 2000): Promise<any[]> {
@@ -374,25 +462,20 @@ export class QuestionsService {
             String(row.correct || '').trim().toUpperCase(),
           );
           const difficulty = String(row.difficulty || 'medium').trim().toLowerCase();
-
-          const problems: string[] = [];
-          if (!row.question?.trim()) problems.push('question is required');
-          if (correctIndex === -1) problems.push('correct must be A, B, C or D');
-          if (!['easy', 'medium', 'hard'].includes(difficulty)) {
-            problems.push('difficulty must be easy, medium or hard');
-          }
-          if (!row.subject?.trim()) problems.push('subject is required');
-          if (!row.topic?.trim()) problems.push('topic is required');
-
-          results.push({
+          const parsed = {
             question_text: String(row.question || '').slice(0, 8000),
             options: [row.optA || '', row.optB || '', row.optC || '', row.optD || ''],
             correct_answer: { index: correctIndex },
-            difficulty: problems.length ? 'medium' : difficulty,
+            difficulty,
             subject: String(row.subject || '').slice(0, 100),
             topic: String(row.topic || '').slice(0, 200),
             q_type: 'single_correct',
             marks: Number.isFinite(parseFloat(row.marks)) ? parseFloat(row.marks) : 4,
+          };
+          const problems = this.validateCsvRow(parsed);
+
+          results.push({
+            ...parsed,
             valid: problems.length === 0,
             errorMsg: problems.length ? problems.join('; ') : null,
           });
@@ -412,8 +495,7 @@ export class QuestionsService {
     // The preview round-trips through the browser, so re-derive `valid` here
     // rather than trusting the flag that came back with the payload.
     const validRows = (rows || [])
-      .filter((r) => r?.question_text && r?.subject && r?.correct_answer)
-      .filter((r) => Number((r.correct_answer as any)?.index) >= 0)
+      .filter((r) => this.validateCsvRow(r).length === 0)
       .map((r) => {
         if (scoped && String(r.subject).toLowerCase() !== scoped.toLowerCase()) {
           throw new ForbiddenException(`You can only import ${scoped} questions.`);

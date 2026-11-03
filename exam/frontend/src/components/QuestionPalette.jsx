@@ -40,19 +40,26 @@ const QuestionPalette = ({ questions, responses, currentQ, activeSubject, active
         </div>
       </div>
       <div className="palette-grid">
-        {filteredIndices.map(({ idx }) => {
-          // Bug #8 fix: use replaceAll instead of replace for safety
-          const status = responses[idx]?.status || 'not_visited';
-          return (
-            <button
-              key={idx}
-              className={`grid-btn ${status.replaceAll('_', '-')} ${currentQ === idx ? 'current' : ''}`}
-              onClick={() => onNavigate(idx)}
-            >
-              {idx + 1}
-            </button>
-          );
-        })}
+        {filteredIndices.length === 0 ? (
+          <div className="palette-empty" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '24px 12px', color: 'var(--text-muted, #94a3b8)', fontSize: '13px' }}>
+            No questions in this section
+          </div>
+        ) : (
+          filteredIndices.map(({ idx }, localIdx) => {
+            const status = responses[idx]?.status || 'not_visited';
+            return (
+              <button
+                key={idx}
+                className={`grid-btn ${status.replaceAll('_', '-')} ${currentQ === idx ? 'current' : ''}`}
+                onClick={() => onNavigate(idx)}
+                aria-label={`Question ${localIdx + 1}, status: ${status.replaceAll('_', ' ')}`}
+                title={`Question ${localIdx + 1}`}
+              >
+                {localIdx + 1}
+              </button>
+            );
+          })
+        )}
       </div>
     </aside>
   );

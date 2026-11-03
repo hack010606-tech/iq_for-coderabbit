@@ -212,7 +212,7 @@ const Lectures = () => {
           <div className="lectures-modal" onClick={(e) => e.stopPropagation()}>
             <div className="lectures-modal-header">
               <h2>Add Lecture</h2>
-              <button onClick={() => setShowModal(false)}><X size={18} /></button>
+              <button onClick={() => setShowModal(false)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
 
             <label>Title *</label>

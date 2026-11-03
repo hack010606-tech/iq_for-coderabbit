@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Trash2, Upload, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import MathText from '../../components/MathText';
 
 /* ── Chapter lists per subject ──────────────────────────────────────────────── */
 const CHAPTERS = {
@@ -50,6 +51,7 @@ const CHAPTERS = {
     'SHM',
     'Thermodynamics',
     'Wave Motion',
+    'Work, Power and Energy',
   ],
   Mathematics: [
     '84. MATCH THE FOLLOWING',
@@ -257,13 +259,13 @@ const AdminQuestionBank = () => {
         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', background: 'var(--card-bg)', flex: '0 0 260px' }}>
           <Search size={15} style={{ color: 'var(--text-secondary)', margin: '0 10px' }} />
           <input
-            placeholder="Search…"
+            placeholder="Search by question text or topic…"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && commitSearch()}
             style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: 'var(--text-primary)', padding: '9px 0' }}
           />
-          <button onClick={commitSearch} style={{ padding: '9px 12px', background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', display: 'flex', alignItems: 'center' }}>
+          <button onClick={commitSearch} aria-label="Submit search" title="Search" style={{ padding: '9px 12px', background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', display: 'flex', alignItems: 'center' }}>
             <ChevronRight size={15} />
           </button>
         </div>
@@ -323,7 +325,7 @@ const AdminQuestionBank = () => {
                           {(q.subject || 'Q')[0]}
                         </div>
                         <p style={{ margin: 0, lineHeight: 1.45, color: 'var(--text-primary)', fontSize: 13, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {q.question_text || '—'}
+                          <MathText text={q.question_text || '—'} />
                         </p>
                       </div>
                     )}

@@ -1,0 +1,122 @@
+[
+  {
+    "question": "The value of 'a' so that the equation x^3 - 6x^2 + 11x + a - 6 = 0 has exactly three integer solutions is",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "Remainder when P(x^5) is divided by P(x) = x^4 + x^3 + x^2 + x + 1 is",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "If a, b, c in I, a > 10 and (x - a)(x - 12) + 2 = (x + b)(x + c) for all x in R, then |b - c| =",
+    "type": "integer",
+    "options": {},
+    "answer": "11"
+  },
+  {
+    "question": "For real a, b, c, a + b + c = 2, a^2 + b^2 + c^2 = 6 and a^3 + b^3 + c^3 = 8, then (1 - a)(1 - b)(1 - c) =",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "Let f(x) = x^2 + bx + c, b, c in R. If f(x) is a factor of both x^4 + 6x^2 + 25 and 3x^4 + 4x^2 + 28x + 5, then the minimum value of f(x) is",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Let incircle of radius 4 units of a triangle ABC touches the side BC at D. If BD = 6, DC = 8 and \\Delta be the area of triangle, then \\sqrt{\\sqrt{\\Delta - 3}} =",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "The total number of solutions of \\tan\\{x\\} = \\cot\\{x\\}; where \\{x\\} denotes the fractional part of x in [0, 2\\pi] is",
+    "type": "integer",
+    "options": {},
+    "answer": "12"
+  },
+  {
+    "question": "If \\sin x + \\sin^2 x + \\sin^3 x = 1, then \\cos^6 x - 4 \\cos^4 x + 8 \\cos^2 x =",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "The number of solutions of \\sin^{-1}\\left(\\frac{1+x^2}{2x}\\right) = \\frac{\\pi}{2} \\sec(x - 1) is",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "If the square of the diameter of a circle circumscribing a \\Delta ABC is equal to half the sum of the squares of its sides then \\sum \\sin^2 A",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "If \\tan(142\\frac{1}{2}^{\\circ}) = 2 + \\sqrt{2} - \\sqrt{\\mu} - \\sqrt{\\lambda} then \\mu + \\lambda =",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "The value of expression [\\sqrt{1}] + [\\sqrt{2}] + [\\sqrt{3}] + ... [\\sqrt{100^2}], (where[.] denotes greatest integer function) is equal to",
+    "type": "integer",
+    "options": {},
+    "answer": "66650"
+  },
+  {
+    "question": "Let a_i + b_i = 1 \\forall i = 1, 2, ....., 6 and a = \\frac{1}{6}(a_1 + a_2 + ...... + a_6) b = \\frac{1}{6}(b_1 + b_2 + ... + b_6). Then a_1b_1 + a_2b_2 + ... + a_6b_6 = nab - (a_1 - a)^2 - (a_2 - a)^2 - ... - (a_6 - a)^2 where n is equal to",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "The number of solution(s) of the equation z^2 - z - |z|^2 - \\frac{64}{|z|^5} = 0 is",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "If \\arg(z) < 0, then -\\frac{10}{\\pi} \\arg\\left(\\frac{z - \\bar{z}}{2}\\right) is equal to",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Let w, \\bar{w} is complex cube root of unity and P(z) is point on a circle |z| = 4 such that |z - 1| is maximum and centroid of triangle formed by z, -w, -\\bar{w} is \\alpha then -7 \\text{Re}(\\alpha) is",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "A staircase has 10 steps. A person can go up the steps one at a time, two at a time, or any combination of 1's and 2's. If the number of ways in which the person can go up the stairs is p, then find \\frac{p}{89}",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "The value of {}^{50}C_6 - {}^{5}C_1 {}^{40}C_6 + {}^{5}C_2 {}^{30}C_6 - {}^{5}C_3 {}^{20}C_6 + {}^{5}C_4 {}^{10}C_6 is equal to",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "The remainder obtained when 6^{2007} + 8^{2007} is divided by 49 is equal to",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "Let ABC be a triangle. Let A be the point (1, 2), y = x is the perpendicular bisector of AB and x - 2y + 1 = 0 is the angle bisector of angle C. If the equation of BC is given by ax + by - 5 = 0 then the value of a + b is",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  }
+]

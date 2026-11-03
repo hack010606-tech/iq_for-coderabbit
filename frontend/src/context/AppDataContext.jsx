@@ -36,11 +36,9 @@ export const AppDataProvider = ({ children }) => {
         // that or a bare array, so a shape change cannot silently blank a page.
         const rows = (result) => (result.status === 'fulfilled' ? toList(result.value) : []);
 
-        // Fetch based on user role
+        // Fetch based on user role (Question views manage their own server-side pagination)
         if (user.role === 'teacher' || user.role === 'admin') {
-          // Use Promise.allSettled to prevent one failing endpoint from crashing the entire app data fetch
           const results = await Promise.allSettled([
-            apiClient.get('/questions?limit=100'),
             apiClient.get('/tests'),
             apiClient.get('/batches'),
             apiClient.get('/users/students'),
@@ -48,12 +46,11 @@ export const AppDataProvider = ({ children }) => {
             apiClient.get('/users/teachers')
           ]);
 
-          setQuestions(rows(results[0]));
-          setTests(rows(results[1]));
-          setBatches(rows(results[2]));
-          setStudents(rows(results[3]));
-          setDoubts(rows(results[4]));
-          setTeachers(rows(results[5]));
+          setTests(rows(results[0]));
+          setBatches(rows(results[1]));
+          setStudents(rows(results[2]));
+          setDoubts(rows(results[3]));
+          setTeachers(rows(results[4]));
         } else if (user.role === 'student') {
           const results = await Promise.allSettled([
             apiClient.get('/tests/available'),

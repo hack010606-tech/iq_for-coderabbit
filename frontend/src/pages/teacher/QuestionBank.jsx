@@ -30,7 +30,7 @@ const CHAPTERS = {
     'Gaseous State and Thermodynamics', 'Kinematics of a particle', 'Liquids',
     'Magnetic Effects of Current', 'Modern Physics', 'Paragraph for Q',
     'Properties of Matter', 'Ray Optics and Wave Optics', 'Rotation and Gravitation',
-    'SHM', 'Thermodynamics', 'Wave Motion',
+    'SHM', 'Thermodynamics', 'Wave Motion', 'Work, Power and Energy',
   ],
   Mathematics: [
     '84. MATCH THE FOLLOWING', 'Binomial Theorem', 'Circle', 'Complex Numbers',
@@ -263,10 +263,25 @@ const QuestionBank = () => {
   const allSelected = rows.length > 0 && selected.length === rows.length;
 
   const answerLabel = (q) => {
-    if (q.correct_answer?.value !== undefined) return String(q.correct_answer.value);
+    if (q.correct_answer?.value !== undefined && q.correct_answer?.value !== null && q.correct_answer?.value !== '') {
+      return String(q.correct_answer.value);
+    }
+    if (Array.isArray(q.correct_answer?.indices) && q.correct_answer.indices.length > 0) {
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      return q.correct_answer.indices.map((i) => letters[i] ?? i).join(', ');
+    }
+    if (q.correct_answer?.letters && Array.isArray(q.correct_answer.letters)) {
+      return q.correct_answer.letters.join(', ');
+    }
+    if (q.correct_answer?.letter) {
+      return String(q.correct_answer.letter);
+    }
     const idx = q.correct_answer?.index;
-    if (idx === undefined || !Array.isArray(q.options)) return 'N/A';
-    return q.options[idx] ?? `Option ${['A', 'B', 'C', 'D'][idx] ?? idx}`;
+    if (idx !== undefined && idx !== null) {
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      return letters[idx] ?? `Option ${idx}`;
+    }
+    return 'N/A';
   };
 
   return (
@@ -469,7 +484,7 @@ const QuestionBank = () => {
           <div className="modal-content large">
             <div className="modal-header">
               <h2>{editingId ? 'Edit Question' : 'Add New Question'}</h2>
-              <button className="close-btn" onClick={() => setModalOpen(false)}><X size={20} /></button>
+              <button className="close-btn" onClick={() => setModalOpen(false)} aria-label="Close dialog" title="Close"><X size={20} /></button>
             </div>
 
             <div className="modal-body">

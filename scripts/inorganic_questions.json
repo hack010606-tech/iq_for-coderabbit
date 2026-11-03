@@ -1,0 +1,1102 @@
+[
+  {
+    "question": "Compound having ionic bond as well as covalent bond:",
+    "type": "single correct",
+    "options": {
+      "A": "KI3",
+      "B": "NaN3",
+      "C": "LiAlH4",
+      "D": "All"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the molecule is non polar as well as nonplanar?",
+    "type": "single correct",
+    "options": {
+      "A": "CS2",
+      "B": "BF3",
+      "C": "CCl4",
+      "D": "B3N3H6"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following molecule has highest dipole moment among methyl halide?",
+    "type": "single correct",
+    "options": {
+      "A": "CH3F",
+      "B": "CH3Cl",
+      "C": "CH3Br",
+      "D": "CH3I"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "In which of the following compound, central atom has highest oxidation state:",
+    "type": "single correct",
+    "options": {
+      "A": "N2O5",
+      "B": "IF7",
+      "C": "OsO4",
+      "D": "HMnO4"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Number of planes containing maximum number of atoms in SeF6 is x and number of planes containing at least three chlorine atoms in PCl5 is y. Then the value of x - y is:",
+    "type": "single correct",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "In trigonal bipyramidal geometry:",
+    "type": "single correct",
+    "options": {
+      "A": "There are 3 arrangements where 3 atoms are at an angle 120° with respect to each other",
+      "B": "There are 6 arrangements where 2 atoms are at an angle 90° with respect to each other",
+      "C": "There is 1 arrangement where 2 atoms are at an angle 180° with respect to each other",
+      "D": "All"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The shape of cationic part and anionic part when molten I2Cl6 (liquid) undergo ionisation:",
+    "type": "single correct",
+    "options": {
+      "A": "trigonal planar and trigonal bipyramidal respectively",
+      "B": "linear and octahedral respectively",
+      "C": "angular and square planar respectively",
+      "D": "trigonal planar and tetrahedral respectively"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the molecule does not exist?",
+    "type": "single correct",
+    "options": {
+      "A": "ClF3",
+      "B": "ICl3",
+      "C": "BrF3",
+      "D": "ClI3"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which compound has N-O-N linkage?",
+    "type": "single correct",
+    "options": {
+      "A": "N2O3",
+      "B": "N2O4",
+      "C": "N2O5",
+      "D": "All"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The maximum number of 90° angles between bond pair - bond pair electrons is observed in which hybridisation:",
+    "type": "single correct",
+    "options": {
+      "A": "dsp2",
+      "B": "sp3d",
+      "C": "sp3d2",
+      "D": "sp3d3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The hybridisation state of central atom of anionic part of product when XeF2 and PF5 combined is:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3",
+      "B": "sp3d",
+      "C": "sp3d2",
+      "D": "sp3d3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following pair has same shape and total number of lone pair and sigma bond pair on central atom:",
+    "type": "single correct",
+    "options": {
+      "A": "XeF6, XeF5-",
+      "B": "XeOF4, XeF5+",
+      "C": "XeO2F2, XeOF4",
+      "D": "XeF4, XeO3"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Silicate in which discrete tetrahedral unit is present are also called nesosilicate. Identify example of nesosilicate:",
+    "type": "single correct",
+    "options": {
+      "A": "BaTi(Si3O9)",
+      "B": "Sc2Si2O7",
+      "C": "Ca2Mg5(Si4O11)2(OH)2",
+      "D": "Be2SiO4"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Bond order of SO2 and O3 are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "2 & 1.5",
+      "B": "1.5 & 1.5",
+      "C": "1.5 & 1.33",
+      "D": "2.4 & 1.5"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Sorosilicates contain units made of two tetrahedra that share an oxygen. The example of sorosilicate:",
+    "type": "single correct",
+    "options": {
+      "A": "BaTi(Si3O9)",
+      "B": "Sc2Si2O7",
+      "C": "Ca2Mg5(Si4O11)2(OH)2",
+      "D": "Be2SiO4"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Two compounds X1 & X2 have general molecular formula AB4. X1 is nonplanar and all A-B bond lengths are identical. X2 is nonplanar but all A-B bond lengths are not identical. X1 and X2 can be:",
+    "type": "single correct",
+    "options": {
+      "A": "Square planar structure and tetrahedral structure",
+      "B": "Square planar structure and see-saw structure",
+      "C": "See-saw structure and tetrahedral structure",
+      "D": "Tetrahedral structure and see-saw structure"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The minimum number of 90° angles between bond pair - bond pair of electrons is observed in:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3 hybridisation",
+      "B": "sp3d hybridisation",
+      "C": "sp3d2 hybridisation",
+      "D": "sp3d3 hybridisation"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Incorrect option regarding bond angle:",
+    "type": "single correct",
+    "options": {
+      "A": "PH3 > PF3",
+      "B": "H2O < F2O < Cl2O",
+      "C": "NH3 > NF3",
+      "D": "HOH in H2O < HOC in CH3OH"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Number of sp3 hybridised carbon and sp hybridised carbon present in C(CN)4 molecule is:",
+    "type": "single correct",
+    "options": {
+      "A": "0, 5",
+      "B": "5, 0",
+      "C": "1, 4",
+      "D": "4, 1"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "OXeO bond angle in XeO4 and XeO3F2 are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "120° & 109°28'",
+      "B": "109°28' & 120°",
+      "C": "> 109°28' & < 120°",
+      "D": "110° & 110°"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "ONX bond angle (X = halogen atom) in NOF (A); NOCl (B); NOBr (C):",
+    "type": "single correct",
+    "options": {
+      "A": "A = B = C",
+      "B": "A > B > C",
+      "C": "C > B > A",
+      "D": "A > C > B"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following statements is correct?",
+    "type": "single correct",
+    "options": {
+      "A": "In trigonal bipyramidal electron geometry, if two lone pairs are present then shape of the molecule is linear",
+      "B": "In pentagonal bipyramidal electron geometry, if two lone pairs are present then shape of the molecule is distorted octahedron",
+      "C": "In octahedral electron geometry, if two lone pairs are present then shape of the molecule is square planar",
+      "D": "In tetrahedral electron geometry, if two lone pairs are present then shape of the molecule is trigonal planar"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "F-P-F bond angle in PF3Cl2 can be approximately:",
+    "type": "single correct",
+    "options": {
+      "A": "only 120°",
+      "B": "only 180°",
+      "C": "90° & 180°",
+      "D": "90° & 120°"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "What is the difference between bond angles in cationic species of PCl5 and PBr5 in solid state?",
+    "type": "single correct",
+    "options": {
+      "A": "60°",
+      "B": "109°28'",
+      "C": "0°",
+      "D": "90°"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Number of exactly 90° angles in SF4 is:",
+    "type": "single correct",
+    "options": {
+      "A": "4",
+      "B": "3",
+      "C": "1",
+      "D": "zero"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The maximum % of s character on central atom is present in:",
+    "type": "single correct",
+    "options": {
+      "A": "N2H2",
+      "B": "NH3",
+      "C": "NH4+",
+      "D": "NH2OH"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "XeF4 when combines with SbF5 the product formed is ionic. The hybridisation of cationic part and anionic part is respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3d2, sp3d2",
+      "B": "sp3d, sp3d",
+      "C": "sp3d2, sp3d",
+      "D": "sp3d, sp3d2"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the following geometry is not formed from sp3d hybridisation of the central atom?",
+    "type": "single correct",
+    "options": {
+      "A": "Linear",
+      "B": "Tetrahedral",
+      "C": "T-shaped",
+      "D": "See-saw"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The orbital not participated in sp3d2 hybridisation:",
+    "type": "single correct",
+    "options": {
+      "A": "px",
+      "B": "dz2",
+      "C": "pz",
+      "D": "dxz"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "All possible bond angles in octahedral geometry like PCl6- is:",
+    "type": "single correct",
+    "options": {
+      "A": "109°28'",
+      "B": "90°, 180°",
+      "C": "90°, 120°",
+      "D": "109°28', 180°"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Percentage s character in hybrid orbital:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3d < sp3 < sp2 < sp",
+      "B": "sp < sp2 < sp3 < sp3d",
+      "C": "sp3d < sp < sp2 < sp3",
+      "D": "sp2 < sp3 < sp < sp3d"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following pair of species have identical shape?",
+    "type": "single correct",
+    "options": {
+      "A": "I3+; I3-",
+      "B": "NO2+; NO2-",
+      "C": "TeF5-; XeF5+",
+      "D": "SF4; XeO4"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In which case maximum number of atoms are present in same plane:",
+    "type": "single correct",
+    "options": {
+      "A": "B3N3H6",
+      "B": "C(CN)4",
+      "C": "I2Cl6",
+      "D": "IF7"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Cl-O bond order follows the order:",
+    "type": "single correct",
+    "options": {
+      "A": "ClO4- > ClO3- > ClO2- > ClO-",
+      "B": "ClO- > ClO2- > ClO3- > ClO4-",
+      "C": "ClO3- > ClO2- > ClO- > ClO4-",
+      "D": "ClO2- > ClO- > ClO3- > ClO4-"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Find the overlapping which do not result in sigma bond formation, if z axis is considered to be intermolecular axis:",
+    "type": "single correct",
+    "options": {
+      "A": "s + px",
+      "B": "pz + dz2",
+      "C": "s + pz",
+      "D": "dx2-y2 + dz2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Choose the correct order of bond angles for given compounds:",
+    "type": "single correct",
+    "options": {
+      "A": "NO2- > O3",
+      "B": "O3 > NO2-",
+      "C": "NO2- = O3",
+      "D": "Can't be predicted"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Which of the following species is non polar?",
+    "type": "single correct",
+    "options": {
+      "A": "ClF3",
+      "B": "ICl4-",
+      "C": "I3+",
+      "D": "OCN-"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "The molecule which does not consist of any F-X-F bond angle which is less than 90° (X = central atom):",
+    "type": "single correct",
+    "options": {
+      "A": "ClF3",
+      "B": "IF7",
+      "C": "PF5",
+      "D": "SF4"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Highest boiling point is observed in:",
+    "type": "single correct",
+    "options": {
+      "A": "CH4",
+      "B": "BF3",
+      "C": "Silica",
+      "D": "CO2"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In a compound AB3, A is a central atom and B is surrounding atom. Then which of the following combination of A and B gives minimum BAB bond angle:",
+    "type": "single correct",
+    "options": {
+      "A": "A = N; B = Cl",
+      "B": "A = P; B = Cl",
+      "C": "A = N; B = H",
+      "D": "A = P; B = H"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Percentage of s character in the orbital occupied by lone pair in H2O (Given: cos 104.5° = -0.25, HOH = 104.5°):",
+    "type": "single correct",
+    "options": {
+      "A": "25%",
+      "B": "20%",
+      "C": "80%",
+      "D": "30%"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Percentage of s character in the orbital occupied by lone pair in NH3 molecule (Given: cos 107° = -0.292):",
+    "type": "single correct",
+    "options": {
+      "A": "68%",
+      "B": "32%",
+      "C": "38%",
+      "D": "25%"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Which of the following orbital is commonly involved in hybridisation of only two of the following species: PCl5, PCl4+, PCl6-, PCl3?",
+    "type": "single correct",
+    "options": {
+      "A": "dz2",
+      "B": "dx2-y2",
+      "C": "s",
+      "D": "px, py, pz"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following order is correct for increasing p-character in orbitals used for bonding by central atom?",
+    "type": "single correct",
+    "options": {
+      "A": "SiH4 > CH4",
+      "B": "PH4+ > PH3",
+      "C": "H2S > H2O",
+      "D": "NH3 > PH3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following molecule does exist as oxy acid of fluorine?",
+    "type": "single correct",
+    "options": {
+      "A": "HFO4",
+      "B": "HFO3",
+      "C": "HFO2",
+      "D": "HOF"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the following fluoride does exist?",
+    "type": "single correct",
+    "options": {
+      "A": "OF6",
+      "B": "OF4",
+      "C": "IF7",
+      "D": "ClF7"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following is thermally most stable?",
+    "type": "single correct",
+    "options": {
+      "A": "H2O",
+      "B": "H2S",
+      "C": "H2Se",
+      "D": "H2Te"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Shape of the molecule is decided by:",
+    "type": "single correct",
+    "options": {
+      "A": "sigma bond",
+      "B": "pi bond",
+      "C": "both",
+      "D": "None"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following bond has highest bond dissociation energy?",
+    "type": "single correct",
+    "options": {
+      "A": "sigma bond",
+      "B": "pi bond",
+      "C": "H-bond",
+      "D": "None"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following is example of strongest pi bond if the molecular axis is x axis?",
+    "type": "single correct",
+    "options": {
+      "A": "2px + 4px",
+      "B": "2py + 2py",
+      "C": "2py + 3dxy",
+      "D": "2pz + 4pz"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Which of the following set of overlap can not provide pi bond formation?",
+    "type": "single correct",
+    "options": {
+      "A": "3d - 2p",
+      "B": "2p - 3p",
+      "C": "2p - 2p",
+      "D": "3p - 1s"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The number of sigma bond and pi bond ratio in N2 and P2 molecule are:",
+    "type": "single correct",
+    "options": {
+      "A": "1/2, 1/2",
+      "B": "1, 1",
+      "C": "1/2, 1",
+      "D": "1, 1/2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "pπ - dπ bonding is most effective in:",
+    "type": "single correct",
+    "options": {
+      "A": "PF3",
+      "B": "PCl3",
+      "C": "PBr3",
+      "D": "PI3"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The correct order of viscosity of ethanol, ethylene glycol and glycerol is:",
+    "type": "single correct",
+    "options": {
+      "A": "ethanol > ethylene glycol > glycerol",
+      "B": "ethanol > glycerol > ethylene glycol",
+      "C": "ethylene glycol > ethanol > glycerol",
+      "D": "glycerol > ethylene glycol > ethanol"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The O - O bond length in O2, O2[AsF6], KO2 is:",
+    "type": "single correct",
+    "options": {
+      "A": "O2[AsF6] < O2 < KO2",
+      "B": "O2 < O2[AsF6] < KO2",
+      "C": "KO2 < O2[AsF6] < O2",
+      "D": "O2[AsF6] < KO2 < O2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "In B(OCH3)3 (methyl borate), due to back bonding, the C-O-B angle:",
+    "type": "single correct",
+    "options": {
+      "A": "becomes equal to 109°28'",
+      "B": "is less than 109°28'",
+      "C": "is more than 109°28'",
+      "D": "can't be predicted"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "If back bonding does not take place in N(SiH3)3 then what will be the hybridisation of N atom and Si atom:",
+    "type": "single correct",
+    "options": {
+      "A": "sp2, sp3",
+      "B": "sp2, sp2",
+      "C": "sp3, sp2",
+      "D": "sp3, sp3"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The hybridisation of N in N(SiH3)3; N in H3Si-N=C=S; O in O(SiH3)2 are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3, sp2, sp3",
+      "B": "sp2, sp2, sp2",
+      "C": "sp2, sp, sp2",
+      "D": "sp3, sp, sp2"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In the dimer of BeH2 the kind of overlap present in bridge bond:",
+    "type": "single correct",
+    "options": {
+      "A": "sp3 - s - sp3",
+      "B": "sp3 - s",
+      "C": "sp2 - s - sp2",
+      "D": "sp2 - sp2 - sp2"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In pentagonal bipyramidal geometry:",
+    "type": "single correct",
+    "options": {
+      "A": "Groups / atoms which are occupied at equatorial position will be at 72°",
+      "B": "Groups / atoms which are occupied at axial position will be at 180°",
+      "C": "Equatorial groups & axial groups are at 90° w.r.t. each other",
+      "D": "All"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Find the molecule in which different bond angle is observed but dipole moment of the molecule is zero:",
+    "type": "single correct",
+    "options": {
+      "A": "PCl4+",
+      "B": "BF3",
+      "C": "PCl3F2",
+      "D": "PCl2F3"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following molecule is planar as well as polar?",
+    "type": "single correct",
+    "options": {
+      "A": "B3N3H6",
+      "B": "ClO2",
+      "C": "NH3",
+      "D": "SOF4"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Which of the following molecule contains atleast one lone pair of electron on central atom and has non-zero dipole moment?",
+    "type": "single correct",
+    "options": {
+      "A": "XeF2",
+      "B": "CClF3",
+      "C": "XeF4",
+      "D": "NH3"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "During the hydrolysis of SiCl4 transition state is formed in 1st step. What is the hybridisation of central atom in that transition state?",
+    "type": "single correct",
+    "options": {
+      "A": "sp3d",
+      "B": "sp3d2",
+      "C": "sp3",
+      "D": "sp2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following oxide when reacts with water, mixture of acids is formed?",
+    "type": "single correct",
+    "options": {
+      "A": "CO2",
+      "B": "N2O5",
+      "C": "Mn2O7",
+      "D": "NO2"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the following compounds gives only oxyacid as a final product by the hydrolysis in cold condition?",
+    "type": "single correct",
+    "options": {
+      "A": "NF3",
+      "B": "SbCl3",
+      "C": "H2S2O7",
+      "D": "SO2Cl2"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "X (1 mole) + H2O -> H3PO3 (1 mole) + H3PO4 (1 mole); X is:",
+    "type": "single correct",
+    "options": {
+      "A": "H4P2O8",
+      "B": "H4P2O6",
+      "C": "H4P2O7",
+      "D": "H4P2O5"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "SiCl4 undergoes hydrolysis by:",
+    "type": "single correct",
+    "options": {
+      "A": "SN1 mechanism",
+      "B": "SN2 mechanism",
+      "C": "SNi mechanism",
+      "D": "E2 mechanism"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "PCl3 and PCl5 when undergo hydrolysis, products formed are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "Tribasic acid (H3PO3) & Tribasic acid (H3PO4)",
+      "B": "Dibasic acid (H3PO3) & Dibasic acid (H3PO4)",
+      "C": "Dibasic acid (H3PO3) & Tribasic acid (H3PO4)",
+      "D": "Tribasic acid (H3PO3) & Dibasic acid (H3PO4)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "CCl4 when undergoes reaction with superheated steam the product formed is:",
+    "type": "single correct",
+    "options": {
+      "A": "CO2",
+      "B": "CHCl3",
+      "C": "COCl2",
+      "D": "CCl3(OH)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which xenon fluoride when undergoes hydrolysis, redox reaction does not take place:",
+    "type": "single correct",
+    "options": {
+      "A": "XeF2",
+      "B": "XeF4",
+      "C": "XeF6",
+      "D": "All"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In which of the molecule, hydrolysis can not generate oxyacid of central atom:",
+    "type": "single correct",
+    "options": {
+      "A": "NCl3",
+      "B": "PCl3",
+      "C": "SF4",
+      "D": "P4O10"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Correct order of boiling point of noble gases:",
+    "type": "single correct",
+    "options": {
+      "A": "He > Ne > Ar > Kr > Xe",
+      "B": "He > Xe > Kr > Ar > Ne",
+      "C": "Xe > Kr > Ar > Ne > He",
+      "D": "Kr > Ar > He > Xe > Ne"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "The formula of sodium nitroprusside is Na2[Fe(CN)5NO]. In sodium nitroprusside, the oxidation state, coordination number and EAN of iron are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "+3, 6, 36",
+      "B": "+2, 6, 36",
+      "C": "+3, 5, 36",
+      "D": "6, +3, 35"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Concentrated H2SO4 will not dehydrate which of the following complex:",
+    "type": "single correct",
+    "options": {
+      "A": "[Cr(H2O)5Cl]Cl2.H2O",
+      "B": "[Cr(H2O)6]Cl3",
+      "C": "[Cr(H2O)4Cl2]Cl.2H2O",
+      "D": "All of these"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "On adding AgNO3 solution to a solution of Pt(NH3)3Cl4, the percentage of total chloride ion precipitated is:",
+    "type": "single correct",
+    "options": {
+      "A": "100",
+      "B": "75",
+      "C": "50",
+      "D": "25"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "In Tollen's reagent, the oxidation number, coordination number and effective atomic number of central metal ion are respectively (At. no. of Ag = 47):",
+    "type": "single correct",
+    "options": {
+      "A": "+1, 2, 50",
+      "B": "+1, 2, 51",
+      "C": "+2, 1, 50",
+      "D": "+1, 1, 50"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which will not give test of all the anions present in it?",
+    "type": "single correct",
+    "options": {
+      "A": "K2Fe2(SO4)4.24H2O",
+      "B": "(NH4)2Fe(SO4)2.6H2O",
+      "C": "K3[Fe(CN)6]",
+      "D": "All"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "In the compound CoCl3.5NH3:",
+    "type": "single correct",
+    "options": {
+      "A": "All the Cl show primary valency only",
+      "B": "Two Cl show primary valency and two Cl show secondary valency",
+      "C": "Two Cl show primary valency and one Cl shows primary valency as well as secondary valency",
+      "D": "3 Cl show primary valency and two Cl show primary valency as well as secondary valency"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "For which of the following complex, metal-carbon linkage is present:",
+    "type": "single correct",
+    "options": {
+      "A": "Cr(acac)3",
+      "B": "Ni(DMG)2",
+      "C": "Fe(CO)5",
+      "D": "[Co(C2O4)3]3-"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which one of the following is example of 1:3 electrolyte:",
+    "type": "single correct",
+    "options": {
+      "A": "PtCl4.6NH3",
+      "B": "CrCl3.6NH3",
+      "C": "CoBr3.5NH3",
+      "D": "PtCl4.3NH3"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "KCN (excess) + CuSO4 -> Product (Complex). Complex is:",
+    "type": "single correct",
+    "options": {
+      "A": "K2[Cu(CN)4]",
+      "B": "K[Cu(CN)2]",
+      "C": "K3[Cu(CN)4]",
+      "D": "None"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Mohr salt in aqueous solution gives:",
+    "type": "single correct",
+    "options": {
+      "A": "3 different ions",
+      "B": "2 different ions",
+      "C": "4 different ions",
+      "D": "5 different ions"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which of the following ligand forms only two rings towards a central atom?",
+    "type": "single correct",
+    "options": {
+      "A": "en",
+      "B": "bn",
+      "C": "dien",
+      "D": "trien"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "For which of the following complex, chelate is not formed?",
+    "type": "single correct",
+    "options": {
+      "A": "Bis(dimethylglyoximato)nickel(II)",
+      "B": "Potassium ethylenediaminetetrathiocyanatochromate(III)",
+      "C": "Pentaamminecarbonatocobalt(III) nitrate",
+      "D": "Trans-diglycinatoplatinum(II)"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "A complex of Pt, ammonia & chlorine produces four ions per molecule in the solution. The formula consistent with the observation is:",
+    "type": "single correct",
+    "options": {
+      "A": "[Pt(NH3)5Cl]Cl3",
+      "B": "[Pt(NH3)4Cl2]Cl2",
+      "C": "[Pt(NH3)3Cl3]Cl",
+      "D": "All of these"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "1 mole of which complex produces minimum number of K+ ions on dissociation:",
+    "type": "single correct",
+    "options": {
+      "A": "Potassium tris(oxalato)cobaltate(III)",
+      "B": "Potassium tetrahydroxidozincate(II)",
+      "C": "Potassium hexacyanidoferrate(II)",
+      "D": "Potassium amminepentachloridoplatinate(IV)"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Facial and Meridional isomers are associated with which of the general formula of complex (A, B, C, D are monodentate ligands & AA is bidentate ligand):",
+    "type": "single correct",
+    "options": {
+      "A": "[M(AA)2]",
+      "B": "[M(AA)3]",
+      "C": "[MABCD]",
+      "D": "[MA3B3]"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "In [Fe(EDTA)]-, which of the following statements are correct?",
+    "type": "single correct",
+    "options": {
+      "A": "It shows optical isomerism",
+      "B": "C.N. of Fe3+ is 6",
+      "C": "5 chelates are formed in the complex",
+      "D": "All"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "A coordination complex of type Mx2y2 (M = metal ion; x, y = monodentate ligands) can have either a tetrahedral or a square planar geometry. The number of structures in these two cases are respectively:",
+    "type": "single correct",
+    "options": {
+      "A": "1 & 2",
+      "B": "2 & 1",
+      "C": "1 & 3",
+      "D": "3 & 2"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "Which will give a pair of enantiomers (which are optically active)?",
+    "type": "single correct",
+    "options": {
+      "A": "[Co(NH3)4Cl2]NO2",
+      "B": "[Cr(NH3)6][Co(CN)6]",
+      "C": "[Co(en)2Cl2]Cl",
+      "D": "[Pt(NH3)4][PtCl6]"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following is not a sulfide ore?",
+    "type": "single correct",
+    "options": {
+      "A": "Zinc blende",
+      "B": "Galena",
+      "C": "Cinnabar",
+      "D": "Baryte"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the following is a carbonate ore?",
+    "type": "single correct",
+    "options": {
+      "A": "Siderite",
+      "B": "Magnesite",
+      "C": "Dolomite",
+      "D": "All"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "The salt which is least abundant as mineral is:",
+    "type": "single correct",
+    "options": {
+      "A": "Halide",
+      "B": "Nitrate",
+      "C": "Carbonate",
+      "D": "Sulfide"
+    },
+    "answer": "B"
+  },
+  {
+    "question": "Which ore does not have water of crystallisation?",
+    "type": "single correct",
+    "options": {
+      "A": "Diaspore",
+      "B": "Bauxite",
+      "C": "Gibbsite",
+      "D": "Pyrolusite"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Which of the following is not a halide ore?",
+    "type": "single correct",
+    "options": {
+      "A": "Cryolite",
+      "B": "Fluorspar",
+      "C": "Horn silver",
+      "D": "Limonite"
+    },
+    "answer": "D"
+  },
+  {
+    "question": "Sulphide ore is common between:",
+    "type": "single correct",
+    "options": {
+      "A": "Ag, Cu, Pb",
+      "B": "Ag, Cu, Sn",
+      "C": "Ag, Mg, Pb",
+      "D": "Al, Cu, Pb"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "In the metallurgy of silver and gold, the metal is leached with the reagent:",
+    "type": "single correct",
+    "options": {
+      "A": "NaOH",
+      "B": "NaNH2",
+      "C": "NaCN",
+      "D": "Zn metal"
+    },
+    "answer": "C"
+  },
+  {
+    "question": "Which of the following ore is best concentrated by Froth floatation method?",
+    "type": "single correct",
+    "options": {
+      "A": "Galena",
+      "B": "Cassiterite",
+      "C": "Magnetite",
+      "D": "Malachite green"
+    },
+    "answer": "A"
+  },
+  {
+    "question": "The metal that can't be obtained by electrolysis of an aqueous solution of its salt is:",
+    "type": "single correct",
+    "options": {
+      "A": "Cu",
+      "B": "Cr",
+      "C": "Ag",
+      "D": "Ca"
+    },
+    "answer": "D"
+  }
+]

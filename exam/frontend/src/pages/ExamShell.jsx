@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient, captureTokenFromUrl, getToken } from '../api/client';
 import ViolationMonitor from '../components/ViolationMonitor';
@@ -30,7 +30,12 @@ const ExamShell = () => {
 
   const heartbeatRef = useRef(null);
   const submittingRef = useRef(false);
+  const submittedRef = useRef(false);
+  const deadlineRef = useRef(null);
+  const autoSubmitRetryRef = useRef(null);
+  const autoSubmitAttemptsRef = useRef(0);
   const questionEnteredAt = useRef(Date.now());
+  const questionTimeSpentRef = useRef({});
   const [lockAcquired, setLockAcquired] = useState(false);
   // Tabs are built from the paper the teacher actually assembled, not from a
   // fixed Physics/Chemistry/Mathematics list — a single-subject or Biology test
@@ -96,7 +101,9 @@ const ExamShell = () => {
         setQuestions(mockPaper);
         setActiveSubject(mockPaper[0]?.subject ?? null);
         setActiveSection(mockPaper[0]?.section ?? null);
-        setTimeLeft(180 * 60);
+        const previewSeconds = 180 * 60;
+        deadlineRef.current = Date.now() + previewSeconds * 1000;
+        setTimeLeft(previewSeconds);
         setLoading(false);
         return;
       }
@@ -143,18 +150,23 @@ const ExamShell = () => {
       if (startRes.savedAnswers?.length) {
         const indexByQuestionId = new Map(paper.map((q, idx) => [q.id, idx]));
         const restored = {};
+        const restoredTime = {};
         for (const saved of startRes.savedAnswers) {
           const idx = indexByQuestionId.get(saved.question_id);
           if (idx !== undefined) {
             restored[idx] = { ...(saved.selected_answer || {}), status: saved.status || 'answered' };
           }
+          restoredTime[saved.question_id] = Math.max(0, Number(saved.time_spent_seconds) || 0);
         }
         setResponses(restored);
+        questionTimeSpentRef.current = restoredTime;
       }
 
       // Removed server heartbeat for now, rely on visual timer.
       if (startRes.timeLeftSeconds !== undefined) {
-        setTimeLeft(startRes.timeLeftSeconds);
+        const remainingSeconds = Math.max(0, Number(startRes.timeLeftSeconds) || 0);
+        deadlineRef.current = Date.now() + remainingSeconds * 1000;
+        setTimeLeft(Math.ceil(remainingSeconds));
       }
     } catch (err) {
       setFatalError(err.message || 'Error initializing exam');
@@ -164,23 +176,32 @@ const ExamShell = () => {
   };
 
   useEffect(() => {
-    // No heartbeat interval needed anymore
+    return () => {
+      clearInterval(heartbeatRef.current);
+      clearTimeout(autoSubmitRetryRef.current);
+    };
   }, []);
 
-  // Restart the per-question stopwatch whenever the student moves.
+  // Bank each visit so later answer saves include time from earlier visits.
   useEffect(() => {
+    const questionId = questions[currentQ]?.id;
     questionEnteredAt.current = Date.now();
-  }, [currentQ]);
+    return () => {
+      if (questionId == null) return;
+      const elapsed = Math.max(0, Math.round((Date.now() - questionEnteredAt.current) / 1000));
+      questionTimeSpentRef.current[questionId] =
+        (questionTimeSpentRef.current[questionId] || 0) + elapsed;
+    };
+  }, [currentQ, questions]);
 
-  // Bug #6 fix: single interval, no dependency on timeLeft
   useEffect(() => {
-    if (!hasStarted || loading) return;
-    const visualTimer = setInterval(() => {
-      setTimeLeft(prev => {
-        const next = Math.max(0, prev - 1);
-        return next;
-      });
-    }, 1000);
+    if (!hasStarted || loading || deadlineRef.current === null) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
+      setTimeLeft(remaining);
+    };
+    tick();
+    const visualTimer = setInterval(tick, 1000);
     return () => clearInterval(visualTimer);
   }, [hasStarted, loading]);
 
@@ -200,12 +221,17 @@ const ExamShell = () => {
     if (examData?.isPreview) return; // Nothing to persist for a demo paper.
     if (!examData?.realSessionId) return;
 
+    const elapsed = Math.max(0, Math.round((Date.now() - questionEnteredAt.current) / 1000));
+    questionEnteredAt.current = Date.now();
+    const totalSeconds = (questionTimeSpentRef.current[questionId] || 0) + elapsed;
+    questionTimeSpentRef.current[questionId] = totalSeconds;
+
     try {
       await apiClient.patch(`/attempts/${examData.realSessionId}/answer`, {
         question_id: questionId,
         selected_answer: responsePayload,
         status: status,
-        time_spent_seconds: Math.max(0, Math.round((Date.now() - questionEnteredAt.current) / 1000)),
+        time_spent_seconds: totalSeconds,
       });
       setSaveError('');
     } catch (e) {
@@ -221,11 +247,15 @@ const ExamShell = () => {
   };
 
   const handleFinalSubmit = async (auto = false) => {
-    if (submittingRef.current) return;
+    if (submittedRef.current || submittingRef.current) return;
     submittingRef.current = true;
+    if (auto && timeLeft === 0) autoSubmitAttemptsRef.current += 1;
     clearInterval(heartbeatRef.current);
 
     if (examData?.isPreview) {
+      submittedRef.current = true;
+      clearTimeout(autoSubmitRetryRef.current);
+      autoSubmitRetryRef.current = null;
       setIsSubmitted(true);
       return;
     }
@@ -235,17 +265,33 @@ const ExamShell = () => {
         `/attempts/${examData.realSessionId}/submit`,
         { autoSubmitted: auto },
       );
+      submittedRef.current = true;
+      clearTimeout(autoSubmitRetryRef.current);
+      autoSubmitRetryRef.current = null;
       setResult(summary);
       setIsSubmitted(true);
     } catch (e) {
       submittingRef.current = false;
-      alert('Error submitting: ' + e.message);
+      if (auto && timeLeft === 0 && autoSubmitAttemptsRef.current < 5) {
+        clearTimeout(autoSubmitRetryRef.current);
+        autoSubmitRetryRef.current = setTimeout(() => {
+          autoSubmitRetryRef.current = null;
+          if (
+            !submittedRef.current
+            && deadlineRef.current !== null
+            && Date.now() >= deadlineRef.current
+          ) {
+            handleFinalSubmit(true);
+          }
+        }, 15000);
+      }
+      setSaveError('Error submitting exam: ' + (e?.message || 'Server error') + '. Please try submitting again.');
     }
   };
 
-  const handleViolationLimit = useCallback(() => {
-    setIsTerminated(true);
-  }, []);
+  const handleViolationLimit = () => {
+    handleFinalSubmit(true).finally(() => setIsTerminated(true));
+  };
 
   // Navigation structure comes from the paper, so it matches whatever the
   // teacher assembled — one subject, four subjects, MCQ-only, mixed, anything.
@@ -254,6 +300,25 @@ const ExamShell = () => {
     () => sectionsInSubject(questions, activeSubject),
     [questions, activeSubject],
   );
+
+  // Consecutive sequential numbering within the active section/subject
+  const sectionQIndex = useMemo(() => {
+    const cur = questions[currentQ];
+    if (!cur) return currentQ;
+    const sameSectionQs = questions.filter(
+      q => (!activeSubject || q.subject === cur.subject) && (!activeSection || q.section === cur.section)
+    );
+    const idx = sameSectionQs.findIndex(q => q.id === cur.id);
+    return idx !== -1 ? idx : currentQ;
+  }, [questions, currentQ, activeSubject, activeSection]);
+
+  const handleNavigate = (idx) => {
+    if (idx >= 0 && idx < questions.length) {
+      setCurrentQ(idx);
+      if (questions[idx]?.subject) setActiveSubject(questions[idx].subject);
+      if (questions[idx]?.section) setActiveSection(questions[idx].section);
+    }
+  };
 
   if (!lockAcquired) return null;
 
@@ -277,6 +342,7 @@ const ExamShell = () => {
     );
   }
   if (loading) return <div className="exam-loading">Loading secure environment...</div>;
+  if (isTerminated) return <div className="exam-terminated error"><h2>Exam Terminated</h2><p>Rule violations exceeded limit.</p><button onClick={() => window.close()}>Close Tab</button></div>;
   if (isSubmitted) {
     return (
       <div className="exam-terminated">
@@ -299,7 +365,6 @@ const ExamShell = () => {
       </div>
     );
   }
-  if (isTerminated) return <div className="exam-terminated error"><h2>Exam Terminated</h2><p>Rule violations exceeded limit.</p><button onClick={() => window.close()}>Close Tab</button></div>;
 
   return (
     <div className="exam-shell">
@@ -359,7 +424,7 @@ const ExamShell = () => {
                 if (firstQIdx !== -1) setCurrentQ(firstQIdx);
               }}
             >
-              Section {sec} {sec === 'A' ? '(Objective)' : '(Numerical)'}
+              {sec}
             </button>
           ))}
         </div>
@@ -369,12 +434,12 @@ const ExamShell = () => {
         <div className="exam-main-panel">
           <QuestionPanel 
             question={questions[currentQ]} 
-            qIndex={currentQ}
+            qIndex={sectionQIndex}
             currentResponse={responses[currentQ]}
             onResponseChange={handleResponseChange}
           />
           <ActionBar 
-            currentQ={currentQ} totalQ={questions.length} onNavigate={setCurrentQ}
+            currentQ={currentQ} totalQ={questions.length} onNavigate={handleNavigate}
             currentResponse={responses[currentQ]} questionId={questions[currentQ]?.id}
             onResponseChange={handleResponseChange} onSubmitClick={() => setShowSubmitModal(true)}
           />
@@ -385,11 +450,7 @@ const ExamShell = () => {
           currentQ={currentQ}
           activeSubject={subjects.length > 1 ? activeSubject : null}
           activeSection={sections.length > 1 ? activeSection : null}
-          onNavigate={(idx) => {
-            setCurrentQ(idx);
-            setActiveSubject(questions[idx].subject);
-            setActiveSection(questions[idx].section);
-          }}
+          onNavigate={handleNavigate}
         />
       </div>
       {showSubmitModal && <SubmitConfirmModal responses={responses} total={questions.length} onCancel={() => setShowSubmitModal(false)} onConfirm={() => handleFinalSubmit(false)} />}

@@ -302,7 +302,7 @@ const BatchManagement = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{modal === 'create' ? 'Create New Batch' : 'Edit Batch'}</h2>
-              <button className="close-btn" onClick={() => setModal(null)}><X size={20} /></button>
+              <button className="close-btn" onClick={() => setModal(null)} aria-label="Close dialog" title="Close"><X size={20} /></button>
             </div>
             <form className="batch-form" onSubmit={handleSave}>
               <div className="form-group">

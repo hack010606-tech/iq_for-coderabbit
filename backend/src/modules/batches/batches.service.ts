@@ -138,12 +138,19 @@ export class BatchesService {
       throw new BadRequestException('Only student accounts can be added to a batch.');
     }
 
+    const { data: existing, error: lookupError } = await supabase
+      .from('batch_students')
+      .select('*')
+      .eq('batch_id', batchId)
+      .eq('student_id', studentId)
+      .maybeSingle();
+
+    if (lookupError) throw new Error(lookupError.message);
+    if (existing) return existing;
+
     const { data, error } = await supabase
       .from('batch_students')
-      .upsert(
-        { batch_id: batchId, student_id: studentId },
-        { onConflict: 'batch_id,student_id', ignoreDuplicates: true },
-      )
+      .insert({ batch_id: batchId, student_id: studentId })
       .select()
       .maybeSingle();
 

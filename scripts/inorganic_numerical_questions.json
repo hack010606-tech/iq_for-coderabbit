@@ -1,0 +1,602 @@
+[
+  {
+    "question": "Find the number of molecules having total eight lone pairs present: XeO4; HClO4; H2SO4; N2O3; C3N3Cl3; COCl2; H2SO3",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "How many correct bond energy orders are given: (a) H-H > C-H > C-C, (b) C-F > C-Cl > C-Br > C-I, (c) Cl-Cl > Br-Br > F-F > I-I, (d) C-C > Si-Si > Ge-Ge, (e) N-N > P-P > As-As > Sb-Sb > Bi-Bi, (f) C≡N > C=N > C-N",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "How many molecules/ions are a result of a dative sigma-bond: (a) NH4+, (b) H3N-BF3, (c) I3-, (d) BH4-, (e) SbF6-, (f) H3O+",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "How many molecules have a negative fractional oxidation state for nitrogen: N2O3; N2O5; Hydrazine; Hydrazoic acid; NF3; N2O; NH3",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "How many of the following molecules/ions do not exist: CCl6^2-; CBr6^2-; SiF6^2-; AsF5; AsH5; XeF2; KrCl2",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "How many of the following have M-O-M linkage: (a) trimer of SO3 (S3O9), (b) H2S2O8, (c) Cl2O7, (d) P4O10, (e) P4O6, (f) H2SO5, (g) H2S2O7",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "For how many molecules are all the following points satisfied: (i) central atom is sp3 hybridised, (ii) tetrahedral in shape, (iii) pi bond is present along with sigma bond: CH4, SiCl4, NH4+, BF4-, XeO4, ClO4-, SO4^2-, PO4^3-",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "How many molecules/species are examples of a 16 valence electron system and linear in shape: (a) CO2, (b) Nitronium ion, (c) Azide ion, (d) Nitrous oxide, (e) Cyanate ion, (f) Isocyanate ion, (g) Cyanamide (CN2^2-) ion",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "Total number of odd electron systems among: NO2; NO; ClO2; OF; O3-; O2-; ClO3",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "Find the number of sp3 hybrid orbitals in cyclic trimer gamma-SO3:",
+    "type": "integer",
+    "options": {},
+    "answer": "12"
+  },
+  {
+    "question": "How many molecules having molecular formula PCl_n F_m will be polar: (a) m=0, n=5; (b) n=0, m=5; (c) n=3, m=2; (d) m=3, n=2; (e) n=4, m=1",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Identify the number of molecules in which only two types of bond angles are present: CH4; CH3Cl; CH2Cl2; CHCl3; CCl4; COCl2",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "If the number of planes present in a CH4 molecule which contain the maximum number of atoms is x, then find out x - 1:",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "If the number of planes present in an IF7 molecule which contain the maximum number of atoms is y, then find out y:",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "Find the number of planes containing the maximum number of fluorine atoms (only) in SbF5:",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "In how many molecules/species is the central atom sp3 hybridised: BeF2; BF4-; SO3; AlCl4-; NH4+; ClO4-; N3-; XeO4",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find the number of molecules in which p-p sideways overlapping is present: N2; HCl; Cl2; HF; S8; F2; HCP",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Total number of bond angles of 90° in SiF6^2- is:",
+    "type": "integer",
+    "options": {},
+    "answer": "12"
+  },
+  {
+    "question": "Find the number of atomic orbitals which form only sigma bonds: s, px, py, pz, dx2-y2",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "The number of molecules/ions having a perfectly tetrahedral shape among the following are: NH3, CCl4, PO4^3-, CHCl3, BF4-",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find the ratio of the number of lone pairs to the number of pi bonds in a particular canonical resonating structure of SO4^2-:",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "In how many of the following compounds are all atoms present in the same plane: (a) I3-, (b) ICl4-, (c) XeF4, (d) XeF5+, (e) XeF5-, (f) C(CN)4",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "In how many of the following compounds is the octet of the central atom incomplete (hypovalent): (a) BF3, (b) ICl, (c) ClF3, (d) BeH2, (e) PCl3, (f) AlCl3",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find the number of chemical species in which the bond angle is less than the bond angle in CCl4: PH3; H2S; OCl2; O(CH3)2; ClO2-; NCl3",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find the number of molecules/ions in which the bond angle is equal to the ideal expected bond angle according to the hybridisation of the central atom: (a) PF3, (b) BF3, (c) PCl3, (d) COCl2, (e) NH4+, (f) NMe3",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find out the total number of lone pairs present in the cyclic trimer of isocyanic acid (HNCO)3:",
+    "type": "integer",
+    "options": {},
+    "answer": "9"
+  },
+  {
+    "question": "If the number of pi bonds present in melamine is x and the number of lone pairs present in melamine is y, then find out y / x:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Drago's rule is applicable for how many of the following molecules: SiH4; PH3; PF3; H2S; H2Te; AsH3; PH4+; SbH3",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "How many of the following structures are cyclic in nature: (a) S3O9, (b) P3O9^3-, (c) P4O12^4-, (d) (PNCl2)3, (e) H2S2O7, (f) H2S2O8",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Number of S-O-S linkages present in the cyclic trimer of SO3:",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Number of bond angles which are at exactly 90° w.r.t. each other present in SF4:",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "Number of bond angles which are at exactly 90° w.r.t. each other present in BrF5:",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "In XeF4 + PF5 -> [XeF3]+ [PF6]-, if the total number of 90° angles in the reactants is m and in the products is n, find n - m:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "In how many of the following species is the % s-character of all bonds not identical: IF7; CH4; SF4; XeF3+; OCl2; ICl2-; BF4-",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find out the number of species which do not exist: XeF3-; XeI3-; IF3^2-; FeI3; AlI3; ClI3-; PI5 (in trigonal bipyramidal state)",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find the number of species which have 3pπ - 2pπ back bonding: OCl2; BCl3; CCl3-",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "Find the number of species in which 2pπ - 3dπ back bonding is present: OCl2; BF3; N(SiH3)3; N(CH3)3; CCl3-; O(SiH3)2; :CCl2",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Maximum number of 2c-2e bonds which are formed by sp3 - sp3 overlapping in Al2(CH3)6:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Maximum number of atoms present in one plane in Al2(CH3)6:",
+    "type": "integer",
+    "options": {},
+    "answer": "10"
+  },
+  {
+    "question": "How many compounds on reaction with H2O give a product with pH < 7 in aqueous solution: MgO; Na2O; SO3; Cl2O7; P4O10; BaO; N2O3; SO2",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find out the number of molecules which on complete hydrolysis produce sulphuric acid as one of the products: SOF4; SF4; H2SO5; H2S2O7; SO2Cl2; S3O9",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find the number of water molecules required for complete hydrolysis of one molecule of XeF6:",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find the number of water molecules which are used for complete hydrolysis of one molecule of P4O10:",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "How many water molecules are associated with hydrogen bonds (and not coordinated directly to the metal ion) in CuSO4.5H2O:",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "Among the following, find out the total number of molecules that have more % of p-character in the E-H bond than that of PH3: AsH3; SbH3; NH3; H2O; B2H6",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find out the number of molecules which are non-planar: C2(CN)4; P4; S8; H2O2; F2O2; CF4; S2F10",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "For how many molecules is the C-C bond length shorter than the C-C bond length in graphite: (i) acetylene, (ii) ethene, (iii) benzene, (iv) ethane",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "In IF7, what is the total number of adjacent F-I-F bond angles which are at 72°?",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "For C70 fullerene, find the number of hexagonal faces:",
+    "type": "integer",
+    "options": {},
+    "answer": "25"
+  },
+  {
+    "question": "For how many of the following species do all M-O bonds have a bond order of 1.5: O3; CH3CO2H; CH3CO2-; NO2-; NO3-",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "For [ABSi3O_x], where A & B have +2 & +4 oxidation states respectively, what is the value of x?",
+    "type": "integer",
+    "options": {},
+    "answer": "9"
+  },
+  {
+    "question": "Number of S-S linkages in H2S6O6:",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find the number of S atoms which are at zero oxidation state in H2S6O6:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find the number of species having X-O-X linkage: Pyroxene/chain silicate, Peroxodisulphate ion, Anion of Caro's acid, Pyrosulphate ion, Tetrathionate ion, Thiosulphate ion",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "How many orbitals have higher energy compared to sigma_2s for Li2 molecule from the M.O.s given below: sigma*_1s; sigma*_2s; sigma_1s; pi_2py; pi*_2py; sigma*_2pz; pi*_2pz; pi_2pz",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "How many of the following are paramagnetic: He2+; H2+; H2-; NO+; NO; OF",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "How many molecules/ions have a bond order less than or equal to two: B2; C2; O2^2-; O2+; H2+",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Considering MOT, find out the number of diatomic species which do not have any pi bond: F2; C2; N2; H2; C2^2-",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find the ratio of pi electrons in the C2 molecule to that of the B2 molecule according to MOT:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find the number of chemical species which are paramagnetic in nature: O2^2-; NO; ClO2; OF; B2",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find out the number of species that are paramagnetic in nature as well as having a fractional bond order: B2; NO; OF; N2; KO2; K2O2",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "If s-p mixing is not operative, then total number of valence electrons in bonding molecular orbitals (B.M.O.) of N2+ will be:",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "Find out the total number of species containing N-N or P-P linkage: N2O; N2O3 (symmetrical); N2O5; H2N2O2; H4P2O6; P4O6; P4O10",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find the number of chemical species which are isoelectronic and have the same bond order as CO: CN-; NO+; N2; C2^2-; O2^2+",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Number of adjacent bond pairs at ~90° angle in XeF5- is x. Number of adjacent bond pairs at 90° angle in XeF4 is y. Find the value of y - x:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Select the number of orbitals which can produce a pi bond while overlapping with an s-orbital: (a) px, (b) py, (c) pz, (d) dxy, (e) dyz, (f) s",
+    "type": "integer",
+    "options": {},
+    "answer": "0"
+  },
+  {
+    "question": "Find out the total number of sigma bonds in P6O18^6-:",
+    "type": "integer",
+    "options": {},
+    "answer": "24"
+  },
+  {
+    "question": "The bond order of the cationic species in NOHSO4 is:",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "The difference in the number of sigma and pi bonds in the cyclic trimer of SO3 is (considering covalent double bonds):",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "What is the coordination number of the central atom in [Pt(trien)]^2+?",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find out the number of complexes which follow Sidgwick's rule of EAN: H[AuCl4]; [Pt(NH3)4Cl2]^2+; [HgI4]^2-; NiCl4^2-; [Ti(sigma-C5H5)2(pi-C5H5)2]; K3[Fe(CN)6]; K4[Fe(CN)6]; [Ag(S2O3)2]^3-; [Fe(H2O)5NO]^2+",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "How many ligands are examples of non-classical pi-acid ligands: C2H4, CO, NO+, CN-, PF3, PR3, C2(CN)4",
+    "type": "integer",
+    "options": {},
+    "answer": "7"
+  },
+  {
+    "question": "How many geometrical isomers are possible for the square planar complex [Ir(CO)Cl(PPh3)2]?",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "How many total stereoisomers are possible for the complex [Rh(en)2(NO2)(SCN)]+?",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find the number of ions which have higher crystal field splitting energy than Mn^2+ in an octahedral complex considering the same ligands for all ions: Cu^2+; Ni^2+; Co^2+; Fe^2+; Cr^3+",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "What is the coordination number of aluminium in cryolite?",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "Number of optically active isomers of [Mabcdef] in which ligands 'a' and 'e' are in opposite (trans) positions:",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "In the reaction [M(NH3)2(py)2(NO2)2] -> [M(NH3)3(py)2(NO2)] (by replacing one NO2 with NH3), find the number by which geometrical isomers are reduced in the product side compared to the reactant:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Total number of geometrical and linkage isomers for the square planar complex K2[PtCl2Br(SCN)]:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Number of geometrical isomers in [Mabcdef] where ligands a, b, c are at adjacent (cis/facial) positions with respect to each other:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find out the number of coordination isomers (including the given complex) for [Cr(NH3)6][Co(NO2)6]:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find out the number of coordination isomers (including the given complex) for [Pt(NH3)4][CuCl4]:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find out how many geometrical isomers are possible for the octahedral complex [Mab(AB)2]^n+ (where AB is an unsymmetrical bidentate ligand):",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "In [Co(EDTA)]-, what is the number of N-Co-O 90° linkages present?",
+    "type": "integer",
+    "options": {},
+    "answer": "8"
+  },
+  {
+    "question": "Find the maximum number of atoms lying in one plane for [Cr(CN)6]^3-:",
+    "type": "integer",
+    "options": {},
+    "answer": "9"
+  },
+  {
+    "question": "How many of the following have square planar geometry: [PtCl4]^2-, [PdCl4]^2-, [AgF4]^-, [AuCl4]^-, ICl4^-, CoCl4^2-, FeCl4^2-, NiCl4^2-",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "What is the number of all possible constitutional (structural) isomers of [Ru(NH3)5(NO2)]Cl?",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Maximum number of atoms which are in the same plane in Ni(CO)4:",
+    "type": "integer",
+    "options": {},
+    "answer": "5"
+  },
+  {
+    "question": "Find the number of ligands which are stronger field ligands compared to ethylenediamine (en): NO2-; H2O; NO3-; F-; C2O4^2-; NH3; Cl-; CN-",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "Find the number of optically active isomers for [Pd(en)2(NH3)(H2O)]^n+ cation:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "What is the number of all possible isomeric compounds (geometrical and linkage) for a square planar palladium(II) complex that contains two Cl- and two SCN- ligands?",
+    "type": "integer",
+    "options": {},
+    "answer": "6"
+  },
+  {
+    "question": "Find out the number of unpaired electrons present in FeCl4^2-:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  },
+  {
+    "question": "Find out the number of unpaired electrons present in NiCl4^2-:",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "In MnCl4^2-, how many unpaired electrons are present in the 'e' orbital set according to CFT?",
+    "type": "integer",
+    "options": {},
+    "answer": "2"
+  },
+  {
+    "question": "In CoCl4^2-, how many unpaired electrons are present in the 't2' orbital set according to CFT?",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find out the total number of stereoisomers present in [M(AB)2a2], where AB is an unsymmetrical bidentate ligand and 'a' is a monodentate ligand:",
+    "type": "integer",
+    "options": {},
+    "answer": "8"
+  },
+  {
+    "question": "Find out the total number of stereoisomers present in [M(AB)2ab], where AB is an unsymmetrical bidentate ligand and 'a' & 'b' are monodentate ligands:",
+    "type": "integer",
+    "options": {},
+    "answer": "11"
+  },
+  {
+    "question": "A coordination compound has a spin-only magnetic moment of 3.87 B.M. Find out the number of unpaired electrons in the compound:",
+    "type": "integer",
+    "options": {},
+    "answer": "3"
+  },
+  {
+    "question": "Find out the number of unpaired electrons for a d5 ion having d2sp3 hybridisation:",
+    "type": "integer",
+    "options": {},
+    "answer": "1"
+  },
+  {
+    "question": "If the number of unpaired electrons for a d6 ion having sp3d2 hybridisation is n1, and the number of unpaired electrons for a d6 ion having d2sp3 hybridisation is n2, then find out n1 - n2:",
+    "type": "integer",
+    "options": {},
+    "answer": "4"
+  }
+]

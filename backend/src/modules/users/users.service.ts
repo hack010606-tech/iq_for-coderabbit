@@ -408,7 +408,12 @@ export class UsersService {
     if (!target) throw new NotFoundException('User not found');
 
     // Delete from users table first
-    await supabase.from('users').delete().eq('id', userId);
+    const { error: deleteError } = await supabase.from('users').delete().eq('id', userId);
+    if (deleteError) {
+      throw new BadRequestException(
+        'Cannot delete this user because they still have linked records. Remove or reassign those records first.',
+      );
+    }
     // Delete from auth
     const { error } = await supabase.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);

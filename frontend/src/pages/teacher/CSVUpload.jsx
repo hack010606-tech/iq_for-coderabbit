@@ -192,7 +192,7 @@ const CSVUpload = () => {
         <div className="upload-alert error">
           <AlertTriangle size={18} />
           <span>{error}</span>
-          <button onClick={() => setError(null)}><X size={16} /></button>
+          <button onClick={() => setError(null)} aria-label="Dismiss error" title="Dismiss error"><X size={16} /></button>
         </div>
       )}
 

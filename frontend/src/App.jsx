@@ -8,6 +8,7 @@ import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import LockedLayout from './layouts/LockedLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Loading fallback
 const PageLoader = () => (
@@ -63,7 +64,8 @@ function App() {
   return (
     <AppDataProvider>
       <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Auth */}
             <Route path="/" element={<LoginPage />} />
@@ -148,7 +150,8 @@ function App() {
               <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Routes>
-        </Suspense>
+          </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </AppDataProvider>
   );

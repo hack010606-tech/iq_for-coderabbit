@@ -6,7 +6,8 @@ import { apiClient } from '../../api/client';
 import { parseChatMessage, openImageSafely } from '../../utils/chatMedia';
 import './DoubtChatRoom.css';
 
-const SOCKET_URL = 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'http://localhost:3000');
 
 const DoubtChatRoom = () => {
   const { doubtId } = useParams();
@@ -182,7 +183,7 @@ const DoubtChatRoom = () => {
       const formData = new FormData();
       formData.append('image', file);
       const token = localStorage.getItem('access_token');
-      const res = await fetch(`http://localhost:3000/api/doubts/${doubtId}/upload-image`, {
+      const res = await fetch(`${API_BASE}/doubts/${doubtId}/upload-image`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -326,7 +327,7 @@ const DoubtChatRoom = () => {
           onChange={handleTyping}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
         />
-        <button className="send-btn" onClick={handleSend}><Send size={20} /></button>
+        <button className="send-btn" onClick={handleSend} aria-label="Send message" title="Send message"><Send size={20} /></button>
       </div>
     </div>
   );

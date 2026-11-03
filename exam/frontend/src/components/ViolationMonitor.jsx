@@ -59,9 +59,9 @@ const ViolationMonitor = ({ sessionId, onViolationLimitReached, onViolationWarni
       if (['copy', 'cut', 'paste', 'dragstart'].includes(e.type)) e.preventDefault();
       if (e.type === 'keydown') {
         // Block F12, Ctrl+Shift+I/J/C, Ctrl+U/P/S
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-            (e.ctrlKey && (e.key === 'U' || e.key === 'P' || e.key === 'S'))) {
+        if (e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+          (e.ctrlKey && (e.key === 'U' || e.key === 'P' || e.key === 'S'))) {
           e.preventDefault();
         }
         // Block Alt+Tab awareness (we can't prevent it, but we detect it via visibilitychange)
@@ -70,7 +70,7 @@ const ViolationMonitor = ({ sessionId, onViolationLimitReached, onViolationWarni
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    ['copy', 'cut', 'paste', 'contextmenu', 'dragstart', 'keydown'].forEach(evt => 
+    ['copy', 'cut', 'paste', 'contextmenu', 'dragstart', 'keydown'].forEach(evt =>
       document.addEventListener(evt, blockShortcutsAndContext)
     );
 
@@ -79,7 +79,7 @@ const ViolationMonitor = ({ sessionId, onViolationLimitReached, onViolationWarni
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      ['copy', 'cut', 'paste', 'contextmenu', 'dragstart', 'keydown'].forEach(evt => 
+      ['copy', 'cut', 'paste', 'contextmenu', 'dragstart', 'keydown'].forEach(evt =>
         document.removeEventListener(evt, blockShortcutsAndContext)
       );
     };

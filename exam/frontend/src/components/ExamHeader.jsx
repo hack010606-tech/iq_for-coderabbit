@@ -12,7 +12,7 @@ const ExamHeader = ({ examData, timeLeft, candidateName }) => {
   return (
     <header className="exam-header">
       <div className="exam-header-left">
-        <h1 className="exam-logo">NTA Mock UI</h1>
+        <h1 className="exam-logo">Assessment</h1>
         <span className="exam-title">{examData?.title || 'Secure Assessment'}</span>
       </div>
       <div className={`exam-timer ${isWarning ? 'warning' : ''}`}>

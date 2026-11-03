@@ -189,7 +189,7 @@ const AdminBatchManagement = () => {
           <div className="admin-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Create New Batch</h2>
-              <button className="admin-modal-close" onClick={() => setShowCreateModal(false)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowCreateModal(false)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
             <div className="admin-form-group">
               <label className="admin-form-label">Batch Name</label>
@@ -213,7 +213,7 @@ const AdminBatchManagement = () => {
           <div className="admin-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
               <h2 className="admin-modal-title">Add Student to {showAddStudentModal.name}</h2>
-              <button className="admin-modal-close" onClick={() => setShowAddStudentModal(null)}><X size={18} /></button>
+              <button className="admin-modal-close" onClick={() => setShowAddStudentModal(null)} aria-label="Close dialog" title="Close"><X size={18} /></button>
             </div>
             <div className="admin-form-group">
               <label className="admin-form-label">Select Student</label>

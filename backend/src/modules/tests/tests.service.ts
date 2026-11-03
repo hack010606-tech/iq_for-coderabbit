@@ -225,7 +225,7 @@ export class TestsService {
   private async insertTest(row: Record<string, any>): Promise<any> {
     const { data, error } = await supabase.from('tests').insert(row).select().single();
     if (!error) {
-      if (this.hasPaperPattern === null) this.hasPaperPattern = true;
+      if (this.hasPaperPattern === null && 'paper_pattern' in row) this.hasPaperPattern = true;
       return data;
     }
 
@@ -406,6 +406,11 @@ export class TestsService {
         this.logger.error(
           `Test ${data.id} created but teacher assignment failed: ${teacherError.message}`,
         );
+        return {
+          ...data,
+          teacherAssignmentWarning:
+            'Test created, but teacher assignment failed. Please assign teachers again.',
+        };
       }
     }
 
@@ -497,13 +502,15 @@ export class TestsService {
 
     const existingIds = (existingTestQuestions || []).map((tq) => tq.question_id);
 
-    // Only approved questions may enter a live paper — that is the whole point
-    // of the QA queue. Also enforces the teacher's subject scope.
+    // Only approved questions may enter a published paper — for drafts,
+    // allow unapproved questions so teachers can build papers before
+    // the review queue has been processed.
     const touched = [
       ...ids.filter((id) => !existingIds.includes(id)),
       ...existingIds.filter((id) => !ids.includes(id)),
     ];
-    await this.assertQuestionsUsable(ids, touched, user);
+    const isDraft = (await supabase.from('tests').select('status').eq('id', testId).single())?.data?.status === 'draft';
+    await this.assertQuestionsUsable(ids, touched, user, isDraft);
 
     const rows = ids.map((qId, idx) => ({
       test_id: testId,
@@ -511,10 +518,21 @@ export class TestsService {
       question_order: idx + 1,
     }));
 
+    const previousRows = (existingTestQuestions || []).map((tq, idx) => ({
+      test_id: testId,
+      question_id: tq.question_id,
+      question_order: idx + 1,
+    }));
+
     await supabase.from('test_questions').delete().eq('test_id', testId);
     if (rows.length) {
       const { error } = await supabase.from('test_questions').insert(rows);
-      if (error) throw new Error(error.message);
+      if (error) {
+        if (previousRows.length) {
+          await supabase.from('test_questions').insert(previousRows).catch(() => null);
+        }
+        throw new Error(error.message);
+      }
     }
 
     const totalMarks = await this.recalculateTotalMarks(testId);
@@ -524,11 +542,15 @@ export class TestsService {
   /**
    * Validates that the questions going onto a paper are approved and, for a
    * subject-scoped teacher, inside their subject.
+   *
+   * @param skipApproval - when true (draft mode) the review_status check is
+   *   skipped so teachers can assemble papers before questions are approved.
    */
   private async assertQuestionsUsable(
     questionIds: string[],
     scopeCheckIds: string[],
     user: Requester,
+    skipApproval = false,
   ): Promise<void> {
     const scoped =
       user.role === 'teacher' && user.subject && user.subject !== 'All' ? user.subject : null;
@@ -548,7 +570,7 @@ export class TestsService {
       const q = byId.get(id);
       if (!q) throw new BadRequestException(`Question ${id} does not exist.`);
       if (!q.is_active) throw new BadRequestException('A selected question has been deleted.');
-      if (q.review_status !== 'approved') {
+      if (!skipApproval && q.review_status !== 'approved') {
         throw new BadRequestException(
           'Every question on a test must be approved in the review queue first.',
         );
@@ -588,13 +610,20 @@ export class TestsService {
     await this.assertCanAdminister(id, user);
 
     // An empty paper published by accident is worse than a failed request.
-    const { count } = await supabase
+    const { data: tqRows, count, error: tqError } = await supabase
       .from('test_questions')
-      .select('*', { count: 'exact', head: true })
+      .select('question_id', { count: 'exact' })
       .eq('test_id', id);
 
-    if (!count) {
+    if (tqError) throw new Error(tqError.message);
+    const questionIds = (tqRows || []).map((tq) => tq.question_id).filter(Boolean);
+    if (!count && !questionIds.length) {
       throw new BadRequestException('Add at least one question before publishing this test.');
+    }
+
+    // Ensure all questions are approved and active before making the test live
+    if (questionIds.length) {
+      await this.assertQuestionsUsable(questionIds, questionIds, user, false);
     }
 
     const { data, error } = await supabase
@@ -771,7 +800,8 @@ export class TestsService {
         `)
         .eq('test_id', testId)
         .eq('status', 'submitted')
-        .order('total_score', { ascending: false }),
+        .order('total_score', { ascending: false })
+        .order('id', { ascending: true }),
     );
 
     const scores = rows.map((a: any) => Number(a.total_score) || 0);
@@ -791,6 +821,8 @@ export class TestsService {
 
     const questionStats = await this.buildQuestionStats(rows.map((a: any) => a.id));
 
+    let lastScore: number | null = null;
+    let lastRank = 0;
     return {
       test,
       summary: {
@@ -798,19 +830,25 @@ export class TestsService {
         assigned: assignedCount ?? 0,
         notAttempted: Math.max(0, (assignedCount ?? 0) - rows.length),
         maxMarks,
-        highest: scores.length ? Math.max(...scores) : 0,
-        lowest: scores.length ? Math.min(...scores) : 0,
+        highest: sorted.length ? sorted[sorted.length - 1] : 0,
+        lowest: sorted.length ? sorted[0] : 0,
         average: scores.length
           ? Number((scores.reduce((s, v) => s + v, 0) / scores.length).toFixed(2))
           : 0,
         median: Number(median.toFixed(2)),
         autoSubmitted: rows.filter((a: any) => a.auto_submitted).length,
       },
-      results: rows.map((a: any, idx: number) => ({
-        ...a,
-        rank: idx + 1,
-        percentage: maxMarks > 0 ? Math.round(((Number(a.total_score) || 0) / maxMarks) * 100) : 0,
-      })),
+      results: rows.map((a: any, idx: number) => {
+        const score = Number(a.total_score) || 0;
+        const rank = score === lastScore ? lastRank : idx + 1;
+        lastScore = score;
+        lastRank = rank;
+        return {
+          ...a,
+          rank,
+          percentage: maxMarks > 0 ? Math.round((score / maxMarks) * 100) : 0,
+        };
+      }),
       questionStats,
     };
   }
@@ -873,7 +911,9 @@ export class TestsService {
     const targetStatus = body.status === 'published' ? 'published' : 'draft';
 
     this.assertWindowSane(body.scheduled_start, body.scheduled_end);
-    await this.assertQuestionsUsable(questionIds, questionIds, user);
+    // Skip the approval gate for drafts — teachers can assemble papers
+    // from their full bank before the review queue catches up.
+    await this.assertQuestionsUsable(questionIds, questionIds, user, targetStatus === 'draft');
 
     if (targetStatus === 'published' && !questionIds.length) {
       throw new BadRequestException('Add at least one question before publishing this test.');

@@ -3,16 +3,72 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText, Settings, ListChecks } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
+import MathText from '../../components/MathText';
 import './TestConstructor.css';
 
 const MCQ_TYPES = ['mcq', 'single_correct', 'single', 'scq', 'multi_correct', 'multiple_correct', 'multi', 'multiple', 'assertion'];
 const NAT_TYPES = ['nat', 'integer', 'numerical', 'numeric', 'int'];
+
+// Chapter / topic list per subject — mirrors QuestionBank.jsx
+const CHAPTERS = {
+  Physics: [
+    'DC Circuits and Capacitors', 'Dynamics of a Particle', 'Electrostatics',
+    'EMI and AC Circuits', 'Energy and Momentum', 'Gaseous State and Thermodynamics',
+    'Kinematics of a particle', 'Liquids', 'Magnetic Effects of Current',
+    'Modern Physics', 'Properties of Matter', 'Ray Optics and Wave Optics',
+    'Rotation and Gravitation', 'SHM', 'Thermodynamics', 'Wave Motion',
+    'Work, Power and Energy',
+  ],
+  Chemistry: [
+    'Atomic Structure', 'Chemical Bonding', 'Chemical Equilibrium', 'Chemical Kinetics',
+    'Colligative Properties of Solutions', 'Coordination Compounds', 'd-Block Elements',
+    'Electrochemistry', 'Gaseous State', 'Hydrogen and s-Block Elements',
+    'IOC and Hydrocarbons', 'Ionic Equilibrium', 'Metallurgy',
+    'Nitrogen Containing Organic Compounds', 'Organic Halides and Organic Concepts',
+    'Oxygen Containing Organic Compound-I', 'Oxygen Containing Organic Compound-II',
+    'Oxygen Containing Organic Compounds-III', 'p-Block Element-II', 'p-Block Elements-I',
+    'Qualitative Analysis', 'Solid State', 'Stoichiometry-I and II',
+    'Surf., Bio., Practical Org. Chem. and Polymers', 'Thermodynamics and Thermochemistry',
+  ],
+  Mathematics: [
+    'Binomial Theorem', 'Circle', 'Complex Numbers', 'Conic Sections',
+    'Differential Calculus-1', 'Differential Calculus-2', 'Differential Equations',
+    'Functions', 'Integral Calculus-1', 'Integral Calculus-2', 'Matrices and Determinants',
+    'Permutation and Combination', 'Probability', 'Quadratic Equations',
+    'Sequence and Series', 'Sets Relations Functions', 'Straight Line',
+    'Three Dimensional Geometry', 'Trigonometry', 'Vectors',
+  ],
+  Biology: [],
+};
 
 function getQuestionType(q) {
   const key = String(q.q_type || q.type || '').trim().toLowerCase();
   if (MCQ_TYPES.includes(key)) return 'mcq';
   if (NAT_TYPES.includes(key)) return 'nat';
   return Array.isArray(q.options) && q.options.length > 0 ? 'mcq' : 'nat';
+}
+
+function getCleanSnippet(q, maxLen = 45) {
+  const rawText = (typeof q === 'string') ? q : (q?.question_text || q?.text || '');
+  if (!rawText) {
+    if (q?.image_url) return '🖼️ [Image Question]';
+    return 'Question';
+  }
+  let clean = rawText
+    .replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\mathrm\{([^}]*)\}/g, '$1')
+    .replace(/\\mathbf\{([^}]*)\}/g, '$1')
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2')
+    .replace(/\\sqrt\{([^}]*)\}/g, '√($1)')
+    .replace(/\$+/g, '') // remove math dollar signs
+    .replace(/\\[a-zA-Z]+/g, ' ') // remove other latex commands
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (clean.length > maxLen) {
+    return clean.substring(0, maxLen).trim() + '…';
+  }
+  return clean || 'Question';
 }
 
 const TestConstructor = () => {
@@ -22,14 +78,65 @@ const TestConstructor = () => {
   const [step, setStep] = useState(1);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [lightboxUrl, setLightboxUrl] = useState(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userSubject = user.subject && user.subject !== 'All' ? user.subject : null;
 
   const [subjectFilter, setSubjectFilter] = useState(userSubject || '');
+  const [topicFilter, setTopicFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
-  // Safety check: if questions is undefined, default to []
-  const safeQuestions = questions || [];
+  // Topics come from the hardcoded chapter map (same source as QuestionBank)
+  const availableTopics = CHAPTERS[subjectFilter] || [];
+
+  // ── Server-side paginated question bank ──────────────────────────────────
+  const [bankPage, setBankPage]         = useState(1);
+  const [bankPageSize, setBankPageSize] = useState(10);
+  const [bankTotal, setBankTotal]       = useState(0);
+  const [bankPages, setBankPages]       = useState(1);
+  const [bankLoading, setBankLoading]   = useState(false);
+  const [bankData, setBankData]         = useState([]);
+
+  // Reset topic filter when subject changes
+
+  // Fetch a page of questions from the server whenever filters/page changes
+  useEffect(() => {
+    let cancelled = false;
+    const fetchBank = async () => {
+      setBankLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(bankPage),
+          limit: String(bankPageSize),
+          review_status: 'all',
+        });
+        if (subjectFilter || userSubject) params.set('subject', subjectFilter || userSubject);
+        if (topicFilter)  params.set('topic', topicFilter);
+        if (typeFilter) {
+          // Map UI value → possible raw db values so backend eq filter matches
+          const typeMap = { mcq: 'single_correct', nat: 'numerical' };
+          params.set('q_type', typeMap[typeFilter] || typeFilter);
+        }
+        if (searchQuery) params.set('search', searchQuery);
+        const res = await apiClient.get(`/questions?${params}`);
+        if (cancelled) return;
+        const rows = Array.isArray(res) ? res : (res?.data ?? []);
+        setBankData(rows);
+        setBankTotal(res?.total ?? rows.length);
+        setBankPages(res?.totalPages ?? 1);
+      } catch (e) {
+        console.error('Failed to fetch question bank:', e);
+      } finally {
+        if (!cancelled) setBankLoading(false);
+      }
+    };
+    fetchBank();
+    return () => { cancelled = true; };
+  }, [bankPage, bankPageSize, subjectFilter, topicFilter, typeFilter, searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setBankPage(1); }, [subjectFilter, topicFilter, typeFilter, searchQuery, bankPageSize]);
 
   // Toast State
   const [toast, setToast] = useState('');
@@ -219,33 +326,34 @@ const TestConstructor = () => {
   );
 
   return (
-    <div className="test-constructor">
-      <header className="page-header d-flex justify-between align-center">
-        <div>
-          {/* A teacher only ever reaches this page to fill in an assigned
-              paper; building one from scratch is an admin action. */}
-          <h1>{isInitiator ? 'Test Constructor' : 'Add Questions'}</h1>
-          <p>
-            {isInitiator
-              ? 'Design, build, and publish new assessments.'
-              : `Add the ${userSubject ? `${userSubject} ` : ''}questions for this paper.`}
-          </p>
-        </div>
-        <div className="header-actions">
-          <button className="btn-outline" onClick={handleSaveDraft}>
-            {isInitiator ? 'Save Draft' : 'Save Questions'}
-          </button>
-          {step < 3 ? (
-            <button className="btn-primary" onClick={handleNext}>Next Step <ChevronRight size={18} /></button>
-          ) : (
-            isInitiator ? (
-              <button className="btn-primary success-bg" onClick={handlePublish}>Publish Test</button>
+    <>
+      <div className="test-constructor">
+        <header className="page-header d-flex justify-between align-center">
+          <div>
+            {/* A teacher only ever reaches this page to fill in an assigned
+                paper; building one from scratch is an admin action. */}
+            <h1>{isInitiator ? 'Test Constructor' : 'Add Questions'}</h1>
+            <p>
+              {isInitiator
+                ? 'Design, build, and publish new assessments.'
+                : `Add the ${userSubject ? `${userSubject} ` : ''}questions for this paper.`}
+            </p>
+          </div>
+          <div className="header-actions">
+            <button className="btn-outline" onClick={handleSaveDraft}>
+              {isInitiator ? 'Save Draft' : 'Save Questions'}
+            </button>
+            {step < 3 ? (
+              <button className="btn-primary" onClick={handleNext}>Next Step <ChevronRight size={18} /></button>
             ) : (
-              <button className="btn-primary success-bg" onClick={handleSaveDraft}>Save Questions</button>
-            )
-          )}
-        </div>
-      </header>
+              isInitiator ? (
+                <button className="btn-primary success-bg" onClick={handlePublish}>Publish Test</button>
+              ) : (
+                <button className="btn-primary success-bg" onClick={handleSaveDraft}>Save Questions</button>
+              )
+            )}
+          </div>
+        </header>
 
       {toast && <div className="toast-notification">{toast}</div>}
 
@@ -347,78 +455,239 @@ const TestConstructor = () => {
             <div className="step-pane step-2">
               <h2>Select Questions</h2>
               <div className="question-builder">
-                <div className="question-bank-panel">
-                  <div className="search-bar">
-                    <Search size={18} className="search-icon" />
-                    <input
-                      type="text"
-                      placeholder="Search question bank..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                    />
+                {/* ── Left: Question Bank Panel ── */}
+                <div className="tc-bank-panel">
+                  {/* Search input with integrated icon & clear button */}
+                  <div className="tc-search-bar">
+                    <div className="tc-search-input-wrap">
+                      <Search size={16} className="tc-search-icon" />
+                      <input
+                        type="text"
+                        className="tc-search-input"
+                        placeholder="Search question bank by keyword..."
+                        value={searchQuery}
+                        onChange={e => {
+                          setSearchQuery(e.target.value);
+                          setBankPage(1);
+                        }}
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          className="tc-search-clear"
+                          onClick={() => {
+                            setSearchQuery('');
+                            setBankPage(1);
+                          }}
+                          title="Clear search"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="subject-chips" style={{ marginBottom: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '0 16px' }}>
+
+                  {/* Subject Filter Chips */}
+                  <div className="tc-subject-chips">
                     <button
-                      className={`chip ${subjectFilter === '' ? 'active' : ''}`}
-                      onClick={() => !userSubject && setSubjectFilter('')}
+                      type="button"
+                      className={`tc-chip ${subjectFilter === '' ? 'active' : ''}`}
+                      onClick={() => {
+                        if (!userSubject) {
+                          setSubjectFilter('');
+                          setTopicFilter('');
+                          setBankPage(1);
+                        }
+                      }}
                       disabled={!!userSubject}
-                      style={{ padding: '6px 12px', borderRadius: '16px', border: '1px solid #e2e8f0', background: subjectFilter === '' ? '#6366f1' : '#f8fafc', color: subjectFilter === '' ? '#fff' : '#475569', cursor: userSubject ? 'not-allowed' : 'pointer', opacity: userSubject ? 0.5 : 1 }}
-                    >All</button>
+                    >
+                      All Subjects
+                    </button>
                     {['Physics', 'Chemistry', 'Mathematics', 'Biology'].map(sub => (
                       <button
+                        type="button"
                         key={sub}
-                        className={`chip ${subjectFilter === sub ? 'active' : ''}`}
-                        onClick={() => !userSubject && setSubjectFilter(sub)}
+                        className={`tc-chip ${subjectFilter === sub ? 'active' : ''}`}
+                        onClick={() => {
+                          if (!userSubject) {
+                            setSubjectFilter(sub);
+                            setTopicFilter('');
+                            setBankPage(1);
+                          }
+                        }}
                         disabled={userSubject && userSubject !== sub}
-                        style={{ padding: '6px 12px', borderRadius: '16px', border: '1px solid #e2e8f0', background: subjectFilter === sub ? '#6366f1' : '#f8fafc', color: subjectFilter === sub ? '#fff' : '#475569', cursor: (userSubject && userSubject !== sub) ? 'not-allowed' : 'pointer', opacity: (userSubject && userSubject !== sub) ? 0.5 : 1 }}
                       >
                         {sub}
                       </button>
                     ))}
                   </div>
-                  <div className="question-list">
-                    {(() => {
-                      const filteredQs = safeQuestions
-                        .filter(q => (q.question_text || q.text || '').toLowerCase().includes(searchQuery.toLowerCase()))
-                        .filter(q => subjectFilter === '' || (q.subject || '').toLowerCase() === subjectFilter.toLowerCase());
 
-                      if (filteredQs.length === 0) {
-                        return (
-                          <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
-                            <p>No questions found for the current filters.</p>
-                            <p style={{ fontSize: '12px' }}>Bank total: {safeQuestions.length} | Subject: {subjectFilter || 'All'}</p>
-                          </div>
-                        );
-                      }
+                  {/* Topic & Type Dropdown Filters */}
+                  <div className="tc-filter-row">
+                    <select
+                      value={topicFilter}
+                      onChange={e => { setTopicFilter(e.target.value); setBankPage(1); }}
+                      className="tc-select"
+                    >
+                      <option value="">All Topics</option>
+                      {availableTopics.map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
 
-                      return filteredQs.map(q => {
-                        const isSelected = selectedQuestions.find(sq => sq.id === q.id);
-                        return (
-                          <div key={q.id} className={`q-card ${isSelected ? 'selected' : ''}`}>
-                            <div className="q-card-header">
-                              <span className="q-subject">{q.subject}</span>
-                              <span className={`q-diff ${q.difficulty ? q.difficulty.toLowerCase() : 'medium'}`}>{q.difficulty || 'Medium'}</span>
+                    <select
+                      value={typeFilter}
+                      onChange={e => { setTypeFilter(e.target.value); setBankPage(1); }}
+                      className="tc-select"
+                    >
+                      <option value="">All Types</option>
+                      <option value="mcq">MCQ</option>
+                      <option value="nat">Numerical</option>
+                    </select>
+                  </div>
+
+                  {/* Question cards list */}
+                  <div className="tc-question-list">
+                    {bankLoading && (
+                      <div className="tc-loading-state">
+                        <div className="tc-spinner" />
+                        <p>Loading questions…</p>
+                      </div>
+                    )}
+                    {!bankLoading && bankData.length === 0 && (
+                      <div className="tc-empty-state">
+                        <p className="tc-empty-title">No questions found</p>
+                        <p className="tc-empty-sub">Try adjusting your filters or search keywords.</p>
+                      </div>
+                    )}
+                    {!bankLoading && bankData.map(q => {
+                      const isSelected = !!selectedQuestions.find(sq => sq.id === q.id);
+                      const qType = getQuestionType(q);
+                      const typeLabel = q.type === 'single_correct' ? 'Single Choice'
+                        : q.type === 'multi_correct' ? 'Multiple Choice'
+                        : q.type === 'numerical' ? 'Numerical'
+                        : (qType === 'mcq' ? 'MCQ' : 'Numerical');
+
+                      return (
+                        <div key={q.id} className={`tc-q-card ${isSelected ? 'selected' : ''}`}>
+                          <div className="tc-q-card-header">
+                            <div className="tc-q-badges">
+                              <span className="tc-q-subject">{q.subject}</span>
+                              <span className="tc-q-type-badge">{typeLabel}</span>
+                              {q.topic && <span className="tc-q-topic-badge" title={q.topic}>{q.topic}</span>}
                             </div>
-                            <p className="q-text">{q.question_text || q.text}</p>
-                            {q.image_url && <img src={q.image_url} alt="Question Diagram" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '4px', marginTop: '10px' }} />}
-                            <div className="q-card-footer">
-                              <span className="q-marks">{q.marks || 4} Marks</span>
-                              <button className={`btn-sm ${isSelected ? 'btn-danger' : 'btn-primary'}`} onClick={() => toggleQuestion(q)}>
-                                {isSelected ? 'Remove' : 'Add'}
-                              </button>
-                            </div>
+                            <span className={`tc-q-diff ${q.difficulty ? q.difficulty.toLowerCase() : 'medium'}`}>
+                              {q.difficulty || 'Medium'}
+                            </span>
                           </div>
+
+                          <div className="tc-q-body">
+                            {q.image_url ? (
+                              <img
+                                src={q.image_url}
+                                alt="Question"
+                                onClick={() => setLightboxUrl(q.image_url)}
+                                className="tc-q-image"
+                              />
+                            ) : (
+                              <MathText as="div" className="tc-q-text" text={q.question_text || q.text || ''} />
+                            )}
+                          </div>
+
+                          <div className="tc-q-footer">
+                            <span className="tc-q-marks">{q.marks || 4} Marks</span>
+                            <button
+                              type="button"
+                              className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : 'tc-btn-add'}`}
+                              onClick={() => toggleQuestion(q)}
+                            >
+                              {isSelected ? '✓ Added' : '+ Add Question'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── Pagination bar ── */}
+                  <div className="tc-pagination-bar">
+                    <div className="tc-pagination-info">
+                      <span>Rows:</span>
+                      <select
+                        value={bankPageSize}
+                        onChange={e => { setBankPageSize(Number(e.target.value)); setBankPage(1); }}
+                        className="tc-pagination-select"
+                      >
+                        {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                      <span className="tc-pagination-total">({bankTotal} questions)</span>
+                    </div>
+
+                    <div className="tc-pagination-nav">
+                      <button
+                        type="button"
+                        className="tc-page-btn"
+                        onClick={() => setBankPage(p => Math.max(1, p - 1))}
+                        disabled={bankPage === 1}
+                        title="Previous page"
+                      >
+                        ‹
+                      </button>
+
+                      {(() => {
+                        const pages = [];
+                        const total = bankPages;
+                        const cur = bankPage;
+                        const add = (n) => pages.push(
+                          <button
+                            type="button"
+                            key={n}
+                            onClick={() => setBankPage(n)}
+                            className={`tc-page-btn ${cur === n ? 'active' : ''}`}
+                          >
+                            {n}
+                          </button>
                         );
-                      });
-                    })()}
+                        const ellipsis = (k) => pages.push(<span key={k} className="tc-page-ellipsis">…</span>);
+
+                        if (total <= 7) {
+                          for (let i = 1; i <= total; i++) add(i);
+                        } else {
+                          add(1);
+                          if (cur > 4) ellipsis('s');
+                          const start = Math.max(2, cur - 2);
+                          const end   = Math.min(total - 1, cur + 2);
+                          for (let i = start; i <= end; i++) add(i);
+                          if (cur < total - 3) ellipsis('e');
+                          add(total);
+                        }
+                        return pages;
+                      })()}
+
+                      <button
+                        type="button"
+                        className="tc-page-btn"
+                        onClick={() => setBankPage(p => Math.min(bankPages, p + 1))}
+                        disabled={bankPage === bankPages}
+                        title="Next page"
+                      >
+                        ›
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="selected-questions-panel">
-                  <h3>Selected ({selectedQuestions.length})</h3>
+                {/* ── Right: Selected Questions Panel ── */}
+                <div className="tc-selected-panel">
+                  <div className="tc-selected-header">
+                    <h3 className="tc-selected-title">
+                      Selected Questions
+                      <span className="tc-selected-badge">{selectedQuestions.length}</span>
+                    </h3>
+                  </div>
 
                   {testData.t_type === 'jee_main' ? (
-                    <div className="selected-list">
+                    <div className="tc-selected-list">
                       {['Physics', 'Chemistry', 'Mathematics', 'Biology'].map(sub => {
                         const subQs = selectedQuestions.filter(q => q.subject === sub);
                         if (subQs.length === 0 && (!userSubject || userSubject !== sub)) return null;
@@ -427,55 +696,95 @@ const TestConstructor = () => {
                         const natQs = subQs.filter(q => getQuestionType(q) === 'nat');
 
                         return (
-                          <div key={sub} style={{ marginBottom: '20px' }}>
-                            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>{sub}</h4>
+                          <div key={sub} className="tc-selected-subject-group">
+                            <div className="tc-selected-subject-title">{sub}</div>
 
-                            <div style={{ marginBottom: '12px' }}>
-                              <div style={{ fontSize: '12px', fontWeight: '600', color: mcqQs.length === 20 ? '#10b981' : '#6366f1', marginBottom: '6px' }}>
-                                Section A (MCQ): {mcqQs.length} / 20
+                            <div className="tc-selected-section">
+                              <div className="tc-selected-section-header">
+                                <span>Section A (MCQ)</span>
+                                <span className={`tc-quota-tag ${mcqQs.length === 20 ? 'full' : mcqQs.length > 20 ? 'overflow' : ''}`}>
+                                  {mcqQs.length} / 20
+                                </span>
                               </div>
                               {mcqQs.map((q, idx) => (
-                                <div key={q.id} className="selected-q-item">
-                                  <span className="q-number">{idx + 1}.</span>
-                                  <span className="q-snippet">{(q.question_text || q.text || '').substring(0, 30)}...</span>
+                                <div key={q.id} className="tc-selected-item">
+                                  <span className="tc-selected-num">{idx + 1}.</span>
+                                  <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
+                                    {getCleanSnippet(q)}
+                                  </span>
                                   {(!userSubject || userSubject === q.subject) && (
-                                    <button className="icon-btn-danger" onClick={() => toggleQuestion(q)}><Trash2 size={16} /></button>
+                                    <button
+                                      type="button"
+                                      className="tc-selected-del"
+                                      onClick={() => toggleQuestion(q)}
+                                      title="Remove question"
+                                    >
+                                      <Trash2 size={15} />
+                                    </button>
                                   )}
                                 </div>
                               ))}
-                              {mcqQs.length === 0 && <p className="empty-state" style={{ fontSize: '12px', margin: '4px 0' }}>No MCQs selected.</p>}
+                              {mcqQs.length === 0 && (
+                                <p className="tc-selected-empty">No MCQs selected.</p>
+                              )}
                             </div>
 
-                            <div>
-                              <div style={{ fontSize: '12px', fontWeight: '600', color: natQs.length === 10 ? '#10b981' : '#6366f1', marginBottom: '6px' }}>
-                                Section B (Numerical): {natQs.length} / 10
+                            <div className="tc-selected-section">
+                              <div className="tc-selected-section-header">
+                                <span>Section B (Numerical)</span>
+                                <span className={`tc-quota-tag ${natQs.length === 10 ? 'full' : natQs.length > 10 ? 'overflow' : ''}`}>
+                                  {natQs.length} / 10
+                                </span>
                               </div>
                               {natQs.map((q, idx) => (
-                                <div key={q.id} className="selected-q-item">
-                                  <span className="q-number">{idx + 1}.</span>
-                                  <span className="q-snippet">{(q.question_text || q.text || '').substring(0, 30)}...</span>
+                                <div key={q.id} className="tc-selected-item">
+                                  <span className="tc-selected-num">{idx + 1}.</span>
+                                  <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
+                                    {getCleanSnippet(q)}
+                                  </span>
                                   {(!userSubject || userSubject === q.subject) && (
-                                    <button className="icon-btn-danger" onClick={() => toggleQuestion(q)}><Trash2 size={16} /></button>
+                                    <button
+                                      type="button"
+                                      className="tc-selected-del"
+                                      onClick={() => toggleQuestion(q)}
+                                      title="Remove question"
+                                    >
+                                      <Trash2 size={15} />
+                                    </button>
                                   )}
                                 </div>
                               ))}
-                              {natQs.length === 0 && <p className="empty-state" style={{ fontSize: '12px', margin: '4px 0' }}>No Numerical questions selected.</p>}
+                              {natQs.length === 0 && (
+                                <p className="tc-selected-empty">No Numerical questions selected.</p>
+                              )}
                             </div>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   ) : (
-                    <div className="selected-list">
+                    <div className="tc-selected-list">
                       {selectedQuestions.length === 0 ? (
-                        <p className="empty-state">No questions selected yet.</p>
+                        <div className="tc-selected-empty-wrap">
+                          <p className="tc-selected-empty">No questions selected yet.</p>
+                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Click "+ Add Question" on any card to add.</span>
+                        </div>
                       ) : (
                         selectedQuestions.map((q, idx) => (
-                          <div key={q.id} className="selected-q-item">
-                            <span className="q-number">{idx + 1}.</span>
-                            <span className="q-snippet">{(q.question_text || q.text || '').substring(0, 40)}...</span>
+                          <div key={q.id} className="tc-selected-item">
+                            <span className="tc-selected-num">{idx + 1}.</span>
+                            <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
+                              {getCleanSnippet(q)}
+                            </span>
                             {(!userSubject || userSubject === q.subject) && (
-                              <button className="icon-btn-danger" onClick={() => toggleQuestion(q)}><Trash2 size={16} /></button>
+                              <button
+                                type="button"
+                                className="tc-selected-del"
+                                onClick={() => toggleQuestion(q)}
+                                title="Remove question"
+                              >
+                                <Trash2 size={15} />
+                              </button>
                             )}
                           </div>
                         ))
@@ -540,6 +849,44 @@ const TestConstructor = () => {
         </div>
       </div>
     </div>
+
+    {/* Image Lightbox */}
+    {lightboxUrl && (
+      <div
+        onClick={() => setLightboxUrl(null)}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'zoom-out', padding: '24px'
+        }}
+      >
+        <button
+          onClick={() => setLightboxUrl(null)}
+          aria-label="Close image preview"
+          title="Close image preview"
+          style={{
+            position: 'absolute', top: '16px', right: '20px',
+            background: 'rgba(255,255,255,0.15)', border: 'none',
+            color: '#fff', fontSize: '28px', cursor: 'pointer',
+            borderRadius: '50%', width: '40px', height: '40px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            lineHeight: 1
+          }}
+        >&times;</button>
+        <img
+          src={lightboxUrl}
+          alt="Question enlarged"
+          onClick={e => e.stopPropagation()}
+          style={{
+            maxWidth: '90vw', maxHeight: '90vh',
+            borderRadius: '8px', boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
+    )}
+    </>
   );
 };
 
