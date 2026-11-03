@@ -1,5 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (typeof globalThis.WebSocket === 'undefined') {
+    globalThis.WebSocket = class WebSocketDummy {
+    };
+}
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const app_module_1 = require("./app.module");

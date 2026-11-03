@@ -35,6 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.supabaseAuth = exports.supabase = void 0;
 exports.createUserAuthClient = createUserAuthClient;
+if (typeof globalThis.WebSocket === 'undefined') {
+    globalThis.WebSocket = class WebSocketDummy {
+    };
+}
 const supabase_js_1 = require("@supabase/supabase-js");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();

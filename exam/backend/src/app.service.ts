@@ -1,3 +1,6 @@
+if (typeof (globalThis as any).WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = class WebSocketDummy {};
+}
 import {
   ForbiddenException,
   Injectable,

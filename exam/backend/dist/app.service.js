@@ -44,6 +44,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var AppService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppService = void 0;
+if (typeof globalThis.WebSocket === 'undefined') {
+    globalThis.WebSocket = class WebSocketDummy {
+    };
+}
 const common_1 = require("@nestjs/common");
 const supabase_js_1 = require("@supabase/supabase-js");
 const dotenv = __importStar(require("dotenv"));
