@@ -529,7 +529,11 @@ export class TestsService {
       const { error } = await supabase.from('test_questions').insert(rows);
       if (error) {
         if (previousRows.length) {
-          await supabase.from('test_questions').insert(previousRows).catch(() => null);
+          try {
+            await supabase.from('test_questions').insert(previousRows);
+          } catch {
+            // best-effort restore
+          }
         }
         throw new Error(error.message);
       }

@@ -1,0 +1,102 @@
+import { AttemptsService } from './attempts.service';
+import { LogViolationDto, SaveAnswerDto, SubmitAttemptDto, ToggleFlagDto } from './dto/attempt.dto';
+export declare class AttemptsController {
+    private readonly attemptsService;
+    constructor(attemptsService: AttemptsService);
+    startAttempt(testId: string, user: any): Promise<{
+        attemptId: string;
+        testId: string;
+        resumed: boolean;
+        startedAt: string;
+        expiresAt: string;
+        timeLeftSeconds: number;
+        savedAnswers: any[];
+    } | {
+        attemptId: any;
+        testId: string;
+        resumed: boolean;
+        startedAt: string;
+        expiresAt: string;
+        timeLeftSeconds: number;
+        savedAnswers: never[];
+    }>;
+    getMyAttempts(user: any): Promise<{
+        id: any;
+        status: any;
+        total_score: any;
+        started_at: any;
+        submitted_at: any;
+        tests: {
+            id: any;
+            title: any;
+            total_marks: any;
+        }[];
+    }[]>;
+    saveAnswer(id: string, user: any, body: SaveAnswerDto): any;
+    logViolation(id: string, user: any, body: LogViolationDto): Promise<{
+        terminated: boolean;
+        strikes: number;
+        limit: number;
+        degraded?: undefined;
+    } | {
+        terminated: boolean;
+        strikes: number;
+        limit: number;
+        degraded: boolean;
+    }>;
+    toggleFlag(id: string, user: any, body: ToggleFlagDto): Promise<{
+        flagged: boolean;
+    }>;
+    submit(id: string, user: any, body: SubmitAttemptDto): Promise<{
+        attemptId: string;
+        testId: string;
+        score: number;
+        maxScore: any;
+        correct: number;
+        incorrect: number;
+        unattempted: number;
+        accuracy: number;
+        timeTakenSeconds: number;
+        autoSubmitted: boolean;
+        negativeMarking: boolean;
+        negativeMarks: number;
+    }>;
+    getResult(id: string, user: any): Promise<{
+        cohort: {
+            rank: number;
+            totalStudents: number;
+            percentile: number;
+            average: number;
+            highest: number;
+        } | null;
+        id: any;
+        status: any;
+        total_score: any;
+        started_at: any;
+        submitted_at: any;
+        auto_submitted: any;
+        tests: {
+            id: any;
+            title: any;
+            total_marks: any;
+            duration_minutes: any;
+        }[];
+        answers: {
+            question_id: any;
+            selected_answer: any;
+            is_correct: any;
+            time_spent_seconds: any;
+            flagged_for_doubt: any;
+            questions: {
+                id: any;
+                question_text: any;
+                options: any;
+                correct_answer: any;
+                subject: any;
+                topic: any;
+                difficulty: any;
+                marks: any;
+            }[];
+        }[];
+    }>;
+}
