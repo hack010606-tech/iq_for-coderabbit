@@ -65,7 +65,7 @@ export class RedisIoAdapter extends IoAdapter {
       cors: {
         origin: (origin: string | undefined, callback: (err: Error | null, ok?: boolean) => void) => {
           if (!origin) return callback(null, true);
-          if (this.allowList.includes(origin)) return callback(null, true);
+          if (this.allowList.includes('*') || this.allowList.includes(origin) || origin.endsWith('.vercel.app')) return callback(null, true);
           if (!this.isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
             return callback(null, true);
           }
