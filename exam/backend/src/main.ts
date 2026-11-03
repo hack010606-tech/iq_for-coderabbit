@@ -65,7 +65,7 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const port = process.env.PORT || 3001; // 3001 so it doesn't clash with the main backend
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.log(`Secure exam service running on port ${port}`);
 }
 
