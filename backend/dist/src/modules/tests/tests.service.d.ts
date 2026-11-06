@@ -31,7 +31,7 @@ export declare class TestsService {
     findOne(id: string, user: Requester): Promise<{
         error: true;
     } & `Expected identifier at \`${string},
-        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, difficulty, q_type, marks, image_url))\``>;
+        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, correct_answer, difficulty, q_type, marks, image_url))\``>;
     create(body: CreateTestDto, user: Requester): Promise<any>;
     assignTeachers(testId: string, teacherIds: string[]): Promise<{
         id: any;

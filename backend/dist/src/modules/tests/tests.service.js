@@ -211,7 +211,7 @@ let TestsService = TestsService_1 = class TestsService {
         const { data, error } = await supabase_config_1.supabase
             .from('tests')
             .select(`${base},
-        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, difficulty, q_type, marks, image_url))`)
+        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, correct_answer, difficulty, q_type, marks, image_url))`)
             .eq('id', id)
             .single();
         if (error || !data)

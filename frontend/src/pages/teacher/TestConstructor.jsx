@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText, Settings, ListChecks } from 'lucide-react';
+import {
+  Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
+  Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
+  Layers, ChevronDown, ChevronUp, Printer, FileDown, Download
+} from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
 import MathText from '../../components/MathText';
+import TestPDFExportModal from './TestPDFExportModal';
 import './TestConstructor.css';
 
 const MCQ_TYPES = ['mcq', 'single_correct', 'single', 'scq', 'multi_correct', 'multiple_correct', 'multi', 'multiple', 'assertion'];
@@ -71,14 +76,120 @@ function getCleanSnippet(q, maxLen = 45) {
   return clean || 'Question';
 }
 
+function getAnswerDetails(q) {
+  const options = Array.isArray(q.options) ? q.options : [];
+  const rawAns = q.correct_answer;
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+  // Numerical value: e.g. { value: "..." }
+  if (rawAns?.value !== undefined && rawAns?.value !== null && rawAns?.value !== '') {
+    return {
+      type: 'numerical',
+      value: String(rawAns.value),
+      display: String(rawAns.value),
+      isCorrectIndex: () => false,
+    };
+  }
+
+  // Multiple indices: { indices: [0, 2] }
+  if (Array.isArray(rawAns?.indices) && rawAns.indices.length > 0) {
+    const list = rawAns.indices.map(i => letters[i] ?? `Option ${i + 1}`);
+    return {
+      type: 'multiple',
+      indices: rawAns.indices,
+      display: list.join(', '),
+      isCorrectIndex: (i) => rawAns.indices.includes(i),
+    };
+  }
+
+  // Multiple letters: { letters: ['A', 'C'] }
+  if (Array.isArray(rawAns?.letters) && rawAns.letters.length > 0) {
+    return {
+      type: 'multiple',
+      letters: rawAns.letters,
+      display: rawAns.letters.join(', '),
+      isCorrectIndex: (i) => rawAns.letters.includes(letters[i]),
+    };
+  }
+
+  // Single letter: { letter: 'B' }
+  if (rawAns?.letter) {
+    const l = String(rawAns.letter).toUpperCase().trim();
+    const idx = letters.indexOf(l);
+    return {
+      type: 'single',
+      index: idx >= 0 ? idx : null,
+      letter: l,
+      display: `Option ${l}`,
+      isCorrectIndex: (i) => (idx >= 0 ? i === idx : letters[i] === l),
+    };
+  }
+
+  // Single index: { index: 1 }
+  const idx = rawAns?.index !== undefined && rawAns?.index !== null ? Number(rawAns.index) : null;
+  if (idx !== null && !isNaN(idx)) {
+    const letter = letters[idx] ?? `Option ${idx + 1}`;
+    return {
+      type: 'single',
+      index: idx,
+      letter: letters[idx] || null,
+      display: `Option ${letter}`,
+      isCorrectIndex: (i) => i === idx,
+    };
+  }
+
+  // Primitive string or number
+  if (typeof rawAns === 'string' || typeof rawAns === 'number') {
+    const s = String(rawAns).trim();
+    if (/^[A-F]$/i.test(s)) {
+      const l = s.toUpperCase();
+      const i = letters.indexOf(l);
+      return {
+        type: 'single',
+        index: i,
+        letter: l,
+        display: `Option ${l}`,
+        isCorrectIndex: (ind) => ind === i,
+      };
+    }
+    return {
+      type: 'numerical',
+      value: s,
+      display: s,
+      isCorrectIndex: () => false,
+    };
+  }
+
+  // Fallback if options exist but correct_answer is missing
+  if (options.length > 0) {
+    return {
+      type: 'single',
+      display: 'Not specified',
+      isCorrectIndex: () => false,
+    };
+  }
+
+  return {
+    type: 'unknown',
+    display: 'Not specified',
+    isCorrectIndex: () => false,
+  };
+}
+
 const TestConstructor = () => {
   const navigate = useNavigate();
   const { testId } = useParams();
   const { questions, batches, refreshTests } = useAppData();
   const [step, setStep] = useState(1);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [expandedSolutions, setExpandedSolutions] = useState({});
+
+  const toggleSolution = (qId) => {
+    setExpandedSolutions(prev => ({ ...prev, [qId]: !prev[qId] }));
+  };
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userSubject = user.subject && user.subject !== 'All' ? user.subject : null;
@@ -325,6 +436,82 @@ const TestConstructor = () => {
     </div>
   );
 
+  // Quota & Target calculations for assigned test / step 2
+  const paperPattern = String(testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
+  const testTitle = String(testData.title || existingTest?.title || '').toLowerCase();
+  const isJeeMain = paperPattern.includes('jee_main') || testTitle.includes('jee main') || testTitle.includes('jee mains');
+  const isJeeAdv  = paperPattern.includes('jee_advanced') || testTitle.includes('jee adv');
+  const isNeet    = paperPattern.includes('neet') || testTitle.includes('neet');
+
+  let targetTotal = 30;
+  let targetMcq   = 20;
+  let targetNat   = 10;
+  let quotaPatternName = 'Custom Paper';
+
+  if (isJeeMain) {
+    quotaPatternName = 'JEE Main Pattern';
+    if (userSubject) {
+      targetTotal = 30;
+      targetMcq   = 20;
+      targetNat   = 10;
+    } else {
+      targetTotal = 90;
+      targetMcq   = 60;
+      targetNat   = 30;
+    }
+  } else if (isJeeAdv) {
+    quotaPatternName = 'JEE Advanced Pattern';
+    if (userSubject) {
+      targetTotal = 18;
+      targetMcq   = 12;
+      targetNat   = 6;
+    } else {
+      targetTotal = 54;
+      targetMcq   = 36;
+      targetNat   = 18;
+    }
+  } else if (isNeet) {
+    quotaPatternName = 'NEET Pattern';
+    if (userSubject === 'Biology') {
+      targetTotal = 90;
+      targetMcq   = 90;
+      targetNat   = 0;
+    } else if (userSubject) {
+      targetTotal = 45;
+      targetMcq   = 45;
+      targetNat   = 0;
+    } else {
+      targetTotal = 180;
+      targetMcq   = 180;
+      targetNat   = 0;
+    }
+  } else {
+    // Custom test: check if description holds a total count
+    const descMatch = existingTest?.description?.match(/Total Questions:\s*(\d+)/i);
+    if (descMatch) {
+      targetTotal = parseInt(descMatch[1], 10);
+    } else {
+      targetTotal = 30;
+    }
+    targetMcq = Math.round(targetTotal * 0.7);
+    targetNat = targetTotal - targetMcq;
+    quotaPatternName = 'Custom Paper';
+  }
+
+  // Count relevant selected questions
+  const relevantSelected = userSubject
+    ? selectedQuestions.filter(q => q.subject === userSubject)
+    : selectedQuestions;
+
+  const addedCount    = relevantSelected.length;
+  const questionsLeft = Math.max(0, targetTotal - addedCount);
+  const progressPct   = Math.min(100, Math.round((addedCount / targetTotal) * 100));
+
+  const mcqAdded = relevantSelected.filter(q => getQuestionType(q) === 'mcq').length;
+  const natAdded = relevantSelected.filter(q => getQuestionType(q) === 'nat').length;
+  const mcqLeft  = Math.max(0, targetMcq - mcqAdded);
+  const natLeft  = Math.max(0, targetNat - natAdded);
+
   return (
     <>
       <div className="test-constructor">
@@ -333,11 +520,6 @@ const TestConstructor = () => {
             {/* A teacher only ever reaches this page to fill in an assigned
                 paper; building one from scratch is an admin action. */}
             <h1>{isInitiator ? 'Test Constructor' : 'Add Questions'}</h1>
-            <p>
-              {isInitiator
-                ? 'Design, build, and publish new assessments.'
-                : `Add the ${userSubject ? `${userSubject} ` : ''}questions for this paper.`}
-            </p>
           </div>
           <div className="header-actions">
             <button className="btn-outline" onClick={handleSaveDraft}>
@@ -359,11 +541,27 @@ const TestConstructor = () => {
 
       <div className="constructor-container">
         <div className="constructor-sidebar">
-          <StepIndicator />
-          <div className="step-labels">
-            <div className={`step-label ${step === 1 ? 'active' : ''}`}><Settings size={18} /> 1. Test Metadata</div>
-            <div className={`step-label ${step === 2 ? 'active' : ''}`}><ListChecks size={18} /> 2. Add Questions</div>
-            <div className={`step-label ${step === 3 ? 'active' : ''}`}><FileText size={18} /> 3. Review & Publish</div>
+          <div className="tc-stepper-rail">
+            {[
+              { num: 1, label: 'Metadata', icon: Settings, title: '1. Test Metadata' },
+              { num: 2, label: 'Questions', icon: ListChecks, title: '2. Add Questions' },
+              { num: 3, label: 'Review', icon: FileText, title: '3. Review & Publish' },
+            ].map(({ num, label, icon: Icon, title }, idx) => (
+              <React.Fragment key={num}>
+                <button
+                  type="button"
+                  className={`tc-rail-step ${step === num ? 'active' : ''} ${step > num ? 'completed' : ''}`}
+                  onClick={() => setStep(num)}
+                  title={title}
+                >
+                  <div className="tc-rail-circle">
+                    {step > num ? <Check size={16} /> : <Icon size={16} />}
+                  </div>
+                  <span className="tc-rail-label">{label}</span>
+                </button>
+                {idx < 2 && <div className={`tc-rail-line ${step > num ? 'active' : ''}`} />}
+              </React.Fragment>
+            ))}
           </div>
         </div>
 
@@ -453,9 +651,111 @@ const TestConstructor = () => {
 
           {step === 2 && (
             <div className="step-pane step-2">
-              <h2>Select Questions</h2>
+              {/* ── Compact Squeezed Header & Live Quota Tracker Strip ── */}
+              <div className="tc-compact-tracker">
+                <div className="tc-tracker-row-main">
+                  {/* Left: Title + Context */}
+                  <div className="tc-tracker-title-group">
+                    <h2 className="tc-tracker-title">Select Questions</h2>
+                    <div className="tc-tracker-paper-badge">
+                      <span className="tc-t-name">{testData.title || existingTest?.title || 'JEE Mains 1'}</span>
+                      <span className="tc-t-pattern">{quotaPatternName}</span>
+                      {userSubject && <span className="tc-t-subject">{userSubject}</span>}
+                    </div>
+                  </div>
+
+                  {/* Center: Live Quota Metrics & Breakdown in one slim row! */}
+                  <div className="tc-tracker-metrics-row">
+                    {/* Added / Target metric */}
+                    <div className="tc-metric-pill added" title="Questions added so far">
+                      <span className="tc-pill-label">Added:</span>
+                      <strong className="tc-pill-val">{addedCount} / {targetTotal}</strong>
+                    </div>
+
+                    {/* Questions Left metric */}
+                    <div className={`tc-metric-pill remaining ${questionsLeft === 0 ? 'complete' : ''}`} title="Questions remaining">
+                      <span className="tc-pill-label">Left:</span>
+                      <strong className="tc-pill-val">{questionsLeft}</strong>
+                    </div>
+
+                    {/* Section A filter chip */}
+                    {(isJeeMain || targetMcq > 0) && (
+                      <button
+                        type="button"
+                        className={`tc-filter-pill ${typeFilter === 'mcq' ? 'active' : ''}`}
+                        onClick={() => { setTypeFilter(typeFilter === 'mcq' ? '' : 'mcq'); setBankPage(1); }}
+                        title="Filter to Section A (MCQs)"
+                      >
+                        <span className="tc-pill-sec">Sec A (MCQ):</span>
+                        <strong>{mcqAdded}/{targetMcq}</strong>
+                        <span className="tc-chip-sub">({mcqLeft} left)</span>
+                      </button>
+                    )}
+
+                    {/* Section B filter chip */}
+                    {(isJeeMain || targetNat > 0) && (
+                      <button
+                        type="button"
+                        className={`tc-filter-pill ${typeFilter === 'nat' ? 'active' : ''}`}
+                        onClick={() => { setTypeFilter(typeFilter === 'nat' ? '' : 'nat'); setBankPage(1); }}
+                        title="Filter to Section B (Numericals)"
+                      >
+                        <span className="tc-pill-sec">Sec B (Numerical):</span>
+                        <strong>{natAdded}/{targetNat}</strong>
+                        <span className="tc-chip-sub">({natLeft} left)</span>
+                      </button>
+                    )}
+
+                    {typeFilter && (
+                      <button
+                        type="button"
+                        className="tc-filter-reset-pill"
+                        onClick={() => { setTypeFilter(''); setBankPage(1); }}
+                        title="Show all question types"
+                      >
+                        All Types
+                      </button>
+                    )}
+
+                    {/* Total Marks */}
+                    <div className="tc-metric-pill marks" title="Total paper marks">
+                      <Sparkles size={12} />
+                      <span>{selectedQuestions.reduce((sum, q) => sum + (q.marks || 4), 0)} pts</span>
+                    </div>
+                  </div>
+
+                  {/* Right: Status Tag & View Selected button */}
+                  <div className="tc-tracker-actions">
+                    {questionsLeft === 0 ? (
+                      <span className="tc-status-mini complete">
+                        <CheckCircle2 size={13} /> Quota Met
+                      </span>
+                    ) : addedCount > targetTotal ? (
+                      <span className="tc-status-mini exceed">
+                        <AlertCircle size={13} /> +{addedCount - targetTotal} Over
+                      </span>
+                    ) : (
+                      <span className="tc-status-mini pending">
+                        <Clock size={13} /> {questionsLeft} Needed
+                      </span>
+                    )}
+
+
+                  </div>
+                </div>
+
+                {/* Sleek 3px Progress Line at the bottom */}
+                <div className="tc-compact-progress-track">
+                  <div
+                    className={`tc-compact-progress-bar ${questionsLeft === 0 ? 'complete' : ''}`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* ── Question Builder (Bank + Selected) with Increased Space ── */}
               <div className="question-builder">
-                {/* ── Left: Question Bank Panel ── */}
+                {/* ── Full-Width Question Bank Panel ── */}
                 <div className="tc-bank-panel">
                   {/* Search input with integrated icon & clear button */}
                   <div className="tc-search-bar">
@@ -487,41 +787,6 @@ const TestConstructor = () => {
                     </div>
                   </div>
 
-                  {/* Subject Filter Chips */}
-                  <div className="tc-subject-chips">
-                    <button
-                      type="button"
-                      className={`tc-chip ${subjectFilter === '' ? 'active' : ''}`}
-                      onClick={() => {
-                        if (!userSubject) {
-                          setSubjectFilter('');
-                          setTopicFilter('');
-                          setBankPage(1);
-                        }
-                      }}
-                      disabled={!!userSubject}
-                    >
-                      All Subjects
-                    </button>
-                    {['Physics', 'Chemistry', 'Mathematics', 'Biology'].map(sub => (
-                      <button
-                        type="button"
-                        key={sub}
-                        className={`tc-chip ${subjectFilter === sub ? 'active' : ''}`}
-                        onClick={() => {
-                          if (!userSubject) {
-                            setSubjectFilter(sub);
-                            setTopicFilter('');
-                            setBankPage(1);
-                          }
-                        }}
-                        disabled={userSubject && userSubject !== sub}
-                      >
-                        {sub}
-                      </button>
-                    ))}
-                  </div>
-
                   {/* Topic & Type Dropdown Filters */}
                   <div className="tc-filter-row">
                     <select
@@ -544,6 +809,8 @@ const TestConstructor = () => {
                       <option value="mcq">MCQ</option>
                       <option value="nat">Numerical</option>
                     </select>
+
+
                   </div>
 
                   {/* Question cards list */}
@@ -568,41 +835,138 @@ const TestConstructor = () => {
                         : q.type === 'numerical' ? 'Numerical'
                         : (qType === 'mcq' ? 'MCQ' : 'Numerical');
 
+                      const ansDetails = getAnswerDetails(q);
+                      const rawOptions = Array.isArray(q.options) ? q.options : [];
+                      const hasOptions = rawOptions.length > 0;
+                      const isExpandedSol = !!expandedSolutions[q.id];
+
                       return (
                         <div key={q.id} className={`tc-q-card ${isSelected ? 'selected' : ''}`}>
+                          {/* ── Card Header ── */}
                           <div className="tc-q-card-header">
                             <div className="tc-q-badges">
                               <span className="tc-q-subject">{q.subject}</span>
                               <span className="tc-q-type-badge">{typeLabel}</span>
                               {q.topic && <span className="tc-q-topic-badge" title={q.topic}>{q.topic}</span>}
+                              <span className={`tc-q-diff ${q.difficulty ? q.difficulty.toLowerCase() : 'medium'}`}>
+                                {q.difficulty || 'Medium'}
+                              </span>
                             </div>
-                            <span className={`tc-q-diff ${q.difficulty ? q.difficulty.toLowerCase() : 'medium'}`}>
-                              {q.difficulty || 'Medium'}
-                            </span>
+
+                            <div className="tc-q-header-actions">
+                              <span className="tc-q-marks">{q.marks || 4} Marks</span>
+                              <button
+                                type="button"
+                                className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : 'tc-btn-add'}`}
+                                onClick={() => toggleQuestion(q)}
+                              >
+                                {isSelected ? (
+                                  <>
+                                    <Check size={14} /> Added
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus size={14} /> Add Question
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           </div>
 
+                          {/* ── Question Content ── */}
                           <div className="tc-q-body">
-                            {q.image_url ? (
-                              <img
-                                src={q.image_url}
-                                alt="Question"
-                                onClick={() => setLightboxUrl(q.image_url)}
-                                className="tc-q-image"
-                              />
-                            ) : (
+                            {q.image_url && (
+                              <div className="tc-q-image-container">
+                                <img
+                                  src={q.image_url}
+                                  alt="Question diagram"
+                                  onClick={() => setLightboxUrl(q.image_url)}
+                                  className="tc-q-image"
+                                />
+                                <span className="tc-q-image-hint">Click image to enlarge</span>
+                              </div>
+                            )}
+                            {q.question_text && (
                               <MathText as="div" className="tc-q-text" text={q.question_text || q.text || ''} />
                             )}
                           </div>
 
-                          <div className="tc-q-footer">
-                            <span className="tc-q-marks">{q.marks || 4} Marks</span>
-                            <button
-                              type="button"
-                              className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : 'tc-btn-add'}`}
-                              onClick={() => toggleQuestion(q)}
-                            >
-                              {isSelected ? '✓ Added' : '+ Add Question'}
-                            </button>
+                          {/* ── Options Section (when available) ── */}
+                          {hasOptions && (
+                            <div className="tc-q-options-wrapper">
+                              <div className="tc-q-options-header">
+                                <span className="tc-q-options-title">Options:</span>
+                              </div>
+                              <div className="tc-q-options-grid">
+                                {rawOptions.map((opt, optIdx) => {
+                                  const isCorrect = ansDetails.isCorrectIndex(optIdx);
+                                  const optLetter = ['A', 'B', 'C', 'D', 'E', 'F'][optIdx] || String(optIdx + 1);
+                                  const optText = typeof opt === 'string' ? opt : (opt?.text ?? String(opt));
+
+                                  return (
+                                    <div
+                                      key={optIdx}
+                                      className={`tc-q-option-item ${isCorrect ? 'is-correct' : ''}`}
+                                    >
+                                      <span className={`tc-opt-letter ${isCorrect ? 'is-correct' : ''}`}>
+                                        {optLetter}
+                                      </span>
+                                      <div className="tc-opt-content">
+                                        <MathText text={optText} />
+                                      </div>
+                                      {isCorrect && (
+                                        <span className="tc-opt-correct-tag">
+                                          <Check size={12} /> Correct
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ── Answer Section (Crystal Clear & High Visibility) ── */}
+                          <div className="tc-q-answer-card">
+                            <div className="tc-ans-header-row">
+                              <div className="tc-ans-icon-wrap">
+                                <CheckCircle2 size={16} />
+                              </div>
+                              <span className="tc-ans-label">Correct Answer:</span>
+                              <div className="tc-ans-value-box">
+                                {ansDetails.type === 'numerical' ? (
+                                  <span className="tc-ans-numerical">
+                                    <MathText text={ansDetails.display} />
+                                  </span>
+                                ) : ansDetails.type === 'multiple' ? (
+                                  <span className="tc-ans-badge multiple">
+                                    Options: {ansDetails.display}
+                                  </span>
+                                ) : (
+                                  <span className="tc-ans-badge single">
+                                    {ansDetails.display}
+                                  </span>
+                                )}
+                              </div>
+                              {q.solution && (
+                                <button
+                                  type="button"
+                                  className="tc-solution-toggle-btn"
+                                  onClick={() => toggleSolution(q.id)}
+                                >
+                                  {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                  <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Collapsible Solution */}
+                            {q.solution && isExpandedSol && (
+                              <div className="tc-solution-content">
+                                <div className="tc-solution-title">Solution / Explanation:</div>
+                                <MathText text={q.solution} />
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -677,131 +1041,47 @@ const TestConstructor = () => {
                   </div>
                 </div>
 
-                {/* ── Right: Selected Questions Panel ── */}
-                <div className="tc-selected-panel">
-                  <div className="tc-selected-header">
-                    <h3 className="tc-selected-title">
-                      Selected Questions
-                      <span className="tc-selected-badge">{selectedQuestions.length}</span>
-                    </h3>
-                  </div>
-
-                  {testData.t_type === 'jee_main' ? (
-                    <div className="tc-selected-list">
-                      {['Physics', 'Chemistry', 'Mathematics', 'Biology'].map(sub => {
-                        const subQs = selectedQuestions.filter(q => q.subject === sub);
-                        if (subQs.length === 0 && (!userSubject || userSubject !== sub)) return null;
-
-                        const mcqQs = subQs.filter(q => getQuestionType(q) === 'mcq');
-                        const natQs = subQs.filter(q => getQuestionType(q) === 'nat');
-
-                        return (
-                          <div key={sub} className="tc-selected-subject-group">
-                            <div className="tc-selected-subject-title">{sub}</div>
-
-                            <div className="tc-selected-section">
-                              <div className="tc-selected-section-header">
-                                <span>Section A (MCQ)</span>
-                                <span className={`tc-quota-tag ${mcqQs.length === 20 ? 'full' : mcqQs.length > 20 ? 'overflow' : ''}`}>
-                                  {mcqQs.length} / 20
-                                </span>
-                              </div>
-                              {mcqQs.map((q, idx) => (
-                                <div key={q.id} className="tc-selected-item">
-                                  <span className="tc-selected-num">{idx + 1}.</span>
-                                  <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
-                                    {getCleanSnippet(q)}
-                                  </span>
-                                  {(!userSubject || userSubject === q.subject) && (
-                                    <button
-                                      type="button"
-                                      className="tc-selected-del"
-                                      onClick={() => toggleQuestion(q)}
-                                      title="Remove question"
-                                    >
-                                      <Trash2 size={15} />
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                              {mcqQs.length === 0 && (
-                                <p className="tc-selected-empty">No MCQs selected.</p>
-                              )}
-                            </div>
-
-                            <div className="tc-selected-section">
-                              <div className="tc-selected-section-header">
-                                <span>Section B (Numerical)</span>
-                                <span className={`tc-quota-tag ${natQs.length === 10 ? 'full' : natQs.length > 10 ? 'overflow' : ''}`}>
-                                  {natQs.length} / 10
-                                </span>
-                              </div>
-                              {natQs.map((q, idx) => (
-                                <div key={q.id} className="tc-selected-item">
-                                  <span className="tc-selected-num">{idx + 1}.</span>
-                                  <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
-                                    {getCleanSnippet(q)}
-                                  </span>
-                                  {(!userSubject || userSubject === q.subject) && (
-                                    <button
-                                      type="button"
-                                      className="tc-selected-del"
-                                      onClick={() => toggleQuestion(q)}
-                                      title="Remove question"
-                                    >
-                                      <Trash2 size={15} />
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                              {natQs.length === 0 && (
-                                <p className="tc-selected-empty">No Numerical questions selected.</p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="tc-selected-list">
-                      {selectedQuestions.length === 0 ? (
-                        <div className="tc-selected-empty-wrap">
-                          <p className="tc-selected-empty">No questions selected yet.</p>
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Click "+ Add Question" on any card to add.</span>
-                        </div>
-                      ) : (
-                        selectedQuestions.map((q, idx) => (
-                          <div key={q.id} className="tc-selected-item">
-                            <span className="tc-selected-num">{idx + 1}.</span>
-                            <span className="tc-selected-snippet" title={q.question_text || q.text || ''}>
-                              {getCleanSnippet(q)}
-                            </span>
-                            {(!userSubject || userSubject === q.subject) && (
-                              <button
-                                type="button"
-                                className="tc-selected-del"
-                                onClick={() => toggleQuestion(q)}
-                                title="Remove question"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div className="step-pane step-3">
-              <h2>Review Summary</h2>
-              <div className="summary-card">
+              {/* Review Header Banner */}
+              <div className="tc-review-header-bar">
+                <div className="tc-review-header-left">
+                  <div className="tc-review-badge-strip">
+                    <span className="tc-review-step-pill">Step 3 · Final Review</span>
+                    <span className="tc-review-paper-pill">{testData.title || 'Untitled Assessment'}</span>
+                    <span className="tc-review-sub-pill">{testData.subject}</span>
+                  </div>
+                  <h2>Review & Publish Test</h2>
+                  <p className="tc-review-sub">
+                    Verify your test parameters and inspect all {selectedQuestions.length} selected questions before finalizing. You can export this entire question paper as a formatted PDF for offline tests or student handouts.
+                  </p>
+                </div>
+                <div className="tc-review-header-actions">
+                  <button
+                    type="button"
+                    className="tc-btn-export-pdf"
+                    onClick={() => setIsPdfExportOpen(true)}
+                    title="Export questions and test paper as PDF"
+                  >
+                    <FileDown size={18} />
+                    <span>Export as PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Summary Parameters Card */}
+              <div className="summary-card tc-review-summary-card">
                 <div className="summary-header">
-                  <h3>{testData.title || 'Untitled Test'}</h3>
+                  <div>
+                    <h3>{testData.title || 'Untitled Test'}</h3>
+                    <div className="tc-summary-subtext">
+                      Pattern: <strong>{testData.t_type || 'Standard Quiz'}</strong> · Scope: <strong>{testData.subject}</strong>
+                    </div>
+                  </div>
                   <span className="subject-badge">{testData.subject}</span>
                 </div>
 
@@ -815,28 +1095,174 @@ const TestConstructor = () => {
                     <span className="value">{testData.totalMarks}</span>
                   </div>
                   <div className="summary-item">
-                    <span className="label">Questions</span>
+                    <span className="label">Questions Selected</span>
                     <span className="value">{selectedQuestions.length}</span>
                   </div>
                   <div className="summary-item">
                     <span className="label">Negative Marking</span>
-                    <span className="value">{testData.negativeMarking ? `Yes (-${testData.negativeMarks})` : 'No'}</span>
+                    <span className="value">{testData.negativeMarking ? `Yes (−${testData.negativeMarks})` : 'No'}</span>
                   </div>
                   <div className="summary-item">
-                    <span className="label">Scheduled</span>
+                    <span className="label">Scheduled Window</span>
                     <span className="value">{testData.date ? `${testData.date} at ${testData.time}` : 'Unscheduled'}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="label">Questions Added</span>
+                    <span className="value">{addedCount} / {targetTotal} Total</span>
                   </div>
                 </div>
 
-                <div className="summary-section">
-                  <h4>Target Batches</h4>
-                  <div className="batches-list">
-                    {testData.targetBatches.map(bId => {
-                      const batch = batches.find(b => b.id === bId);
-                      return <span key={bId} className="batch-chip">{batch ? batch.name : bId}</span>
-                    })}
+                {testData.targetBatches && testData.targetBatches.length > 0 && (
+                  <div className="summary-section">
+                    <h4>Assigned Batches</h4>
+                    <div className="batches-list">
+                      {testData.targetBatches.map(bId => {
+                        const batch = batches.find(b => b.id === bId);
+                        return <span key={bId} className="batch-chip">{batch ? batch.name : bId}</span>;
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Questions Review List */}
+              <div className="tc-review-questions-section">
+                <div className="tc-review-qs-header">
+                  <div className="tc-rqs-title-group">
+                    <h3>Questions Included in Paper ({selectedQuestions.length})</h3>
+                    <p className="tc-rqs-hint">Review questions, KaTeX equations, options, and answers before publishing.</p>
+                  </div>
+                  <div className="tc-rqs-actions">
+                    <button
+                      type="button"
+                      className="tc-btn-preview-pdf"
+                      onClick={() => setIsPdfExportOpen(true)}
+                    >
+                      <Printer size={15} />
+                      <span>Print / PDF Preview</span>
+                    </button>
                   </div>
                 </div>
+
+                {selectedQuestions.length === 0 ? (
+                  <div className="tc-review-empty-state">
+                    <AlertCircle size={36} color="#94a3b8" />
+                    <h4>No Questions Selected Yet</h4>
+                    <p>Go back to Step 2 to pick questions from the question bank.</p>
+                    <button type="button" className="btn-primary" onClick={() => setStep(2)}>
+                      <Plus size={16} />
+                      <span>Add Questions</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="tc-review-questions-list">
+                    {selectedQuestions.map((q, idx) => {
+                      const ansDetails = getAnswerDetails(q);
+                      const isExpandedSol = !!expandedSolutions[q.id];
+
+                      return (
+                        <div key={q.id || idx} className="tc-review-q-card">
+                          <div className="tc-rq-top">
+                            <div className="tc-rq-num-col">
+                              <span className="tc-rq-num">Q{idx + 1}</span>
+                            </div>
+                            <div className="tc-rq-meta-tags">
+                              <span className="tc-tag tc-tag-sub">{q.subject || testData.subject}</span>
+                              <span className="tc-tag tc-tag-type">{getQuestionType(q) === 'mcq' ? 'MCQ' : 'Numerical'}</span>
+                              {q.topic && <span className="tc-tag tc-tag-topic">{q.topic}</span>}
+                              <span className={`tc-tag tc-tag-diff ${q.difficulty || 'medium'}`}>
+                                {q.difficulty || 'medium'}
+                              </span>
+                              <span className="tc-tag tc-tag-marks">{q.marks || 4} Marks</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="tc-rq-remove-btn"
+                              onClick={() => toggleQuestion(q)}
+                              title="Remove question from paper"
+                            >
+                              <Trash2 size={15} />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+
+                          <div className="tc-rq-body">
+                            <MathText text={q.question_text || q.text || ''} />
+                            {q.image_url && (
+                              <div className="tc-rq-img-wrap" onClick={() => setLightboxUrl(q.image_url)}>
+                                <img src={q.image_url} alt={`Diagram for Q${idx + 1}`} />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Options if MCQ */}
+                          {Array.isArray(q.options) && q.options.length > 0 && (
+                            <div className="tc-rq-options-grid">
+                              {q.options.map((opt, optIdx) => {
+                                const isCorrect = ansDetails.isCorrectIndex(optIdx);
+                                const optLetter = ['A', 'B', 'C', 'D', 'E', 'F'][optIdx] || String(optIdx + 1);
+                                const optText = typeof opt === 'string' ? opt : (opt?.text ?? String(opt));
+
+                                return (
+                                  <div
+                                    key={optIdx}
+                                    className={`tc-rq-opt-item ${isCorrect ? 'is-correct' : ''}`}
+                                  >
+                                    <span className={`tc-rq-opt-letter ${isCorrect ? 'is-correct' : ''}`}>
+                                      {optLetter}
+                                    </span>
+                                    <div className="tc-rq-opt-content">
+                                      <MathText text={optText} />
+                                    </div>
+                                    {isCorrect && (
+                                      <span className="tc-rq-opt-correct-tag">
+                                        <Check size={12} /> Correct
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Answer Row */}
+                          <div className="tc-rq-ans-strip">
+                            <div className="tc-rq-ans-label-group">
+                              <CheckCircle2 size={16} className="tc-rq-ans-icon" />
+                              <span className="tc-rq-ans-title">Correct Answer:</span>
+                              <div className="tc-rq-ans-val">
+                                {ansDetails.type === 'numerical' ? (
+                                  <MathText text={ansDetails.display} />
+                                ) : (
+                                  <span>{ansDetails.display}</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {q.solution && (
+                              <button
+                                type="button"
+                                className="tc-rq-toggle-sol-btn"
+                                onClick={() => toggleSolution(q.id)}
+                              >
+                                {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Solution Accordion */}
+                          {q.solution && isExpandedSol && (
+                            <div className="tc-rq-sol-box">
+                              <strong>Solution / Explanation:</strong>
+                              <MathText text={q.solution} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -845,10 +1271,28 @@ const TestConstructor = () => {
             {step > 1 ? (
               <button className="btn-outline" onClick={handlePrev}><ChevronLeft size={18} /> Previous</button>
             ) : <div></div>}
+            {step === 3 && (
+              <button
+                type="button"
+                className="btn-outline tc-btn-pdf-nav"
+                onClick={() => setIsPdfExportOpen(true)}
+              >
+                <FileDown size={16} />
+                <span>Export as PDF</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
     </div>
+
+    {/* PDF Export Modal */}
+    <TestPDFExportModal
+      isOpen={isPdfExportOpen}
+      onClose={() => setIsPdfExportOpen(false)}
+      testData={testData}
+      selectedQuestions={selectedQuestions}
+    />
 
     {/* Image Lightbox */}
     {lightboxUrl && (

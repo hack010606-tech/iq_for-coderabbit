@@ -1,0 +1,541 @@
+/* ── TestPDFExportModal.css ── */
+
+.tc-pdf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: tcPdfFadeIn 0.2s ease-out;
+}
+
+@keyframes tcPdfFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Top Toolbar ── */
+.tc-pdf-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  z-index: 10;
+}
+
+.tc-pdf-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tc-pdf-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tc-pdf-toolbar-left h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.tc-pdf-meta-hint {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.tc-pdf-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.tc-pdf-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  user-select: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.tc-pdf-toggle:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.tc-pdf-toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #6366f1;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.tc-pdf-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s ease;
+}
+
+.tc-pdf-btn-print:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
+}
+
+.tc-pdf-btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tc-pdf-btn-close:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+/* ── Document Container ── */
+.tc-pdf-doc-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px 20px 60px 20px;
+  background: #475569;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Simulated A4 Page ── */
+.tc-pdf-page {
+  width: 100%;
+  max-width: 840px;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  padding: 48px 52px;
+  min-height: 1100px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ── Exam Header ── */
+.tc-exam-header {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.tc-exam-inst-title {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.tc-exam-title {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.tc-exam-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.tc-exam-meta-item strong {
+  color: #0f172a;
+}
+
+.tc-exam-meta-item.tc-negative {
+  color: #b91c1c;
+}
+
+/* Candidate Details Line */
+.tc-exam-candidate-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin: 18px 0;
+  padding: 10px 0;
+  font-size: 13px;
+  color: #334155;
+}
+
+.tc-cand-field {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.tc-cand-underline {
+  flex: 1;
+  border-bottom: 1.5px dotted #94a3b8;
+  height: 18px;
+  display: inline-block;
+}
+
+/* General Instructions */
+.tc-exam-instructions {
+  background: #fbfcfe;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #6366f1;
+  border-radius: 6px;
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+
+.tc-exam-instructions strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #1e293b;
+  font-size: 12.5px;
+}
+
+.tc-exam-instructions ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tc-exam-instructions li {
+  margin-bottom: 3px;
+}
+
+.tc-exam-divider {
+  border-bottom: 2px solid #0f172a;
+  margin: 22px 0 26px 0;
+}
+
+/* ── Questions List ── */
+.tc-pdf-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.tc-pdf-q-item {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.tc-pdf-q-item:last-child {
+  border-bottom: none;
+}
+
+.tc-pdf-q-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tc-pdf-q-num {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.tc-pdf-q-text {
+  flex: 1;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.tc-pdf-q-marks {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.tc-pdf-q-image-wrap {
+  margin: 12px 0 16px 26px;
+}
+
+.tc-pdf-q-image {
+  max-width: 380px;
+  max-height: 220px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  object-fit: contain;
+}
+
+/* ── Options Grid ── */
+.tc-pdf-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 20px;
+  margin-left: 26px;
+  margin-top: 10px;
+}
+
+.tc-pdf-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+.tc-pdf-opt-label {
+  font-weight: 700;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.tc-pdf-opt-text {
+  flex: 1;
+}
+
+.tc-pdf-opt-correct {
+  background: #ecfdf5 !important;
+  border-color: #86efac !important;
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+.tc-pdf-opt-correct .tc-pdf-opt-label {
+  color: #047857;
+}
+
+/* ── Solution Box ── */
+.tc-pdf-solution-box {
+  margin-left: 26px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #1e3a8a;
+}
+
+.tc-pdf-solution-box strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #1d4ed8;
+}
+
+/* ── Answer Key Section ── */
+.tc-pdf-answer-key-section {
+  page-break-before: always;
+  break-before: page;
+  margin-top: 36px;
+}
+
+.tc-pdf-key-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.tc-pdf-key-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.tc-pdf-key-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.tc-key-q {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tc-key-ans {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* ── Paper Footer ── */
+.tc-pdf-page-footer {
+  margin-top: 48px;
+  padding-top: 14px;
+  border-top: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.tc-pdf-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+/* ── Print Specific Rules ── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 12mm 12mm 12mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Hide app navigation and modal controls */
+  .sidebar,
+  .app-sidebar,
+  .main-header,
+  .topbar,
+  .page-header,
+  .constructor-container,
+  .step-navigation,
+  .tc-pdf-toolbar {
+    display: none !important;
+  }
+
+  .tc-pdf-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    overflow: visible !important;
+    animation: none !important;
+  }
+
+  .tc-pdf-doc-container {
+    padding: 0 !important;
+    background: transparent !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .tc-pdf-page {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    font-size: 12pt !important;
+  }
+
+  .tc-pdf-q-item {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .tc-pdf-answer-key-section {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .tc-pdf-key-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
