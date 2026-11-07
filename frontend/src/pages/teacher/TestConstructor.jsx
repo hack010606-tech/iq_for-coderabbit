@@ -312,6 +312,8 @@ const TestConstructor = () => {
   const [bankPages, setBankPages]       = useState(1);
   const [bankLoading, setBankLoading]   = useState(false);
   const [bankData, setBankData]         = useState([]);
+  const [bankError, setBankError]       = useState(null);
+  const [bankReloadKey, setBankReloadKey] = useState(0);
 
   // Reset topic filter when subject changes
 
@@ -320,12 +322,12 @@ const TestConstructor = () => {
     let cancelled = false;
     const fetchBank = async () => {
       setBankLoading(true);
+      setBankError(null);
       try {
         const params = new URLSearchParams({
           page: String(bankPage),
           limit: String(bankPageSize),
           review_status: 'all',
-          exclude_subjective: 'true',
         });
         if (subjectFilter || userSubject) params.set('subject', subjectFilter || userSubject);
         if (topicFilter)  params.set('topic', topicFilter);
@@ -343,13 +345,17 @@ const TestConstructor = () => {
         setBankPages(res?.totalPages ?? 1);
       } catch (e) {
         console.error('Failed to fetch question bank:', e);
+        if (!cancelled) {
+          setBankError(e.message || 'Failed to load questions from server');
+          setBankData([]);
+        }
       } finally {
         if (!cancelled) setBankLoading(false);
       }
     };
     fetchBank();
     return () => { cancelled = true; };
-  }, [bankPage, bankPageSize, subjectFilter, topicFilter, typeFilter, searchQuery]);
+  }, [bankPage, bankPageSize, subjectFilter, topicFilter, typeFilter, searchQuery, bankReloadKey]);
 
   // Reset to page 1 when filters change
   useEffect(() => { setBankPage(1); }, [subjectFilter, topicFilter, typeFilter, searchQuery, bankPageSize]);
@@ -1095,7 +1101,21 @@ const TestConstructor = () => {
                         <p>Loading questions…</p>
                       </div>
                     )}
-                    {!bankLoading && bankData.length === 0 && (
+                    {!bankLoading && bankError && (
+                      <div className="tc-empty-state" style={{ borderColor: '#fca5a5', background: '#fef2f2' }}>
+                        <p className="tc-empty-title" style={{ color: '#b91c1c' }}>Failed to load questions</p>
+                        <p className="tc-empty-sub" style={{ color: '#991b1b', marginBottom: 12 }}>{bankError}</p>
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          style={{ fontSize: 13, padding: '6px 14px' }}
+                          onClick={() => setBankReloadKey(k => k + 1)}
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    )}
+                    {!bankLoading && !bankError && bankData.length === 0 && (
                       <div className="tc-empty-state">
                         <p className="tc-empty-title">No questions found</p>
                         <p className="tc-empty-sub">Try adjusting your filters or search keywords.</p>
