@@ -613,7 +613,7 @@ const TestConstructor = () => {
 
               {/* Grid of structured configuration cards */}
               <div className="tc-meta-cards-grid">
-                {/* Card 1: Basic Paper Info */}
+                {/* Card 1: Paper Configuration */}
                 <div className="tc-meta-card">
                   <div className="tc-meta-card-head">
                     <div className="tc-meta-card-icon-box">
@@ -621,8 +621,13 @@ const TestConstructor = () => {
                     </div>
                     <div>
                       <h3 className="tc-meta-card-title">Paper Details</h3>
-                      <span className="tc-meta-card-sub">Title, subject category, and pattern format</span>
+                      <span className="tc-meta-card-sub">Title, duration, and assessment format</span>
                     </div>
+                    {userSubject && (
+                      <span className="tc-subject-badge-pill">
+                        {userSubject}
+                      </span>
+                    )}
                   </div>
 
                   <div className="tc-meta-field">
@@ -642,33 +647,34 @@ const TestConstructor = () => {
 
                   <div className="tc-meta-field">
                     <label className="tc-meta-label">
-                      <span>Subject</span>
-                      {userSubject && <span className="tc-locked-tag">Assigned to {userSubject}</span>}
+                      <span>Duration (Minutes)</span>
                     </label>
-                    <div className="tc-subject-pill-grid">
-                      {[
-                        { id: 'Physics', label: 'Physics', icon: '⚛️' },
-                        { id: 'Chemistry', label: 'Chemistry', icon: '🧪' },
-                        { id: 'Mathematics', label: 'Mathematics', icon: '📐' },
-                        { id: 'Biology', label: 'Biology', icon: '🧬' }
-                      ].map(sub => {
-                        const isSelected = testData.subject === sub.id;
-                        const isLocked = userSubject && userSubject !== sub.id;
-                        return (
-                          <button
-                            key={sub.id}
-                            type="button"
-                            className={`tc-sub-pill ${isSelected ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
-                            onClick={() => !userSubject && isInitiator && setTestData({ ...testData, subject: sub.id })}
-                            disabled={isLocked || !isInitiator}
-                          >
-                            <span className="tc-sub-pill-emoji">{sub.icon}</span>
-                            <span className="tc-sub-pill-text">{sub.label}</span>
-                            {isSelected && <Check size={14} className="tc-sub-pill-check" />}
-                          </button>
-                        );
-                      })}
+                    <div className="tc-input-unit-wrap">
+                      <input
+                        type="number"
+                        min="5"
+                        max="360"
+                        className="tc-meta-input tc-input-has-unit"
+                        value={testData.duration}
+                        onChange={e => setTestData({ ...testData, duration: Math.max(1, parseInt(e.target.value) || 0) })}
+                        disabled={!isInitiator}
+                      />
+                      <span className="tc-input-unit">mins</span>
                     </div>
+                    {isInitiator && (
+                      <div className="tc-presets-row">
+                        {[30, 45, 60, 90, 180].map(mins => (
+                          <button
+                            key={mins}
+                            type="button"
+                            className={`tc-preset-chip ${Number(testData.duration) === mins ? 'active' : ''}`}
+                            onClick={() => setTestData({ ...testData, duration: mins })}
+                          >
+                            {mins}m
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="tc-meta-field">
@@ -696,105 +702,8 @@ const TestConstructor = () => {
                   </div>
                 </div>
 
-                {/* Card 2: Timing & Scoring Rules */}
+                {/* Card 2: Scheduling & Target Batches */}
                 <div className="tc-meta-card">
-                  <div className="tc-meta-card-head">
-                    <div className="tc-meta-card-icon-box">
-                      <Clock size={17} />
-                    </div>
-                    <div>
-                      <h3 className="tc-meta-card-title">Duration & Scoring</h3>
-                      <span className="tc-meta-card-sub">Time limits, mark tallies, and penalty scheme</span>
-                    </div>
-                  </div>
-
-                  <div className="tc-meta-two-col">
-                    <div className="tc-meta-field">
-                      <label className="tc-meta-label">Duration (Minutes)</label>
-                      <div className="tc-input-unit-wrap">
-                        <input
-                          type="number"
-                          min="5"
-                          max="360"
-                          className="tc-meta-input tc-input-has-unit"
-                          value={testData.duration}
-                          onChange={e => setTestData({ ...testData, duration: Math.max(1, parseInt(e.target.value) || 0) })}
-                          disabled={!isInitiator}
-                        />
-                        <span className="tc-input-unit">mins</span>
-                      </div>
-                      {isInitiator && (
-                        <div className="tc-presets-row">
-                          {[30, 45, 60, 90, 180].map(mins => (
-                            <button
-                              key={mins}
-                              type="button"
-                              className={`tc-preset-chip ${Number(testData.duration) === mins ? 'active' : ''}`}
-                              onClick={() => setTestData({ ...testData, duration: mins })}
-                            >
-                              {mins}m
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="tc-meta-field">
-                      <label className="tc-meta-label">Total Marks</label>
-                      <div className="tc-score-stat-card">
-                        <div className="tc-score-stat-num">{testData.totalMarks || 0}</div>
-                        <div className="tc-score-stat-lbl">
-                          <span>Marks</span>
-                          <span className="tc-auto-pill">Auto</span>
-                        </div>
-                      </div>
-                      <span className="tc-field-hint">
-                        Calculated from {selectedQuestions.length} added questions
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Negative marking card */}
-                  <div className={`tc-neg-marking-card ${testData.negativeMarking ? 'is-active' : ''}`}>
-                    <div className="tc-neg-marking-top">
-                      <label className="tc-toggle-control">
-                        <input
-                          type="checkbox"
-                          checked={testData.negativeMarking}
-                          onChange={e => isInitiator && setTestData({ ...testData, negativeMarking: e.target.checked })}
-                          disabled={!isInitiator}
-                        />
-                        <span className="tc-toggle-slider" />
-                        <span className="tc-toggle-title">Enable Negative Marking</span>
-                      </label>
-                      <span className="tc-neg-status-badge">
-                        {testData.negativeMarking ? 'Active' : 'Disabled'}
-                      </span>
-                    </div>
-                    {testData.negativeMarking && (
-                      <div className="tc-neg-marking-input-row">
-                        <span className="tc-neg-desc">Penalty per incorrect answer:</span>
-                        <div className="tc-neg-stepper">
-                          <span className="tc-minus-symbol">-</span>
-                          <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            className="tc-neg-input"
-                            value={testData.negativeMarks}
-                            onChange={e => isInitiator && setTestData({ ...testData, negativeMarks: e.target.value })}
-                            disabled={!isInitiator}
-                          />
-                          <span className="tc-neg-unit">Mark(s)</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card 3: Scheduling & Batches */}
-                <div className="tc-meta-card tc-meta-card-wide">
                   <div className="tc-meta-card-head">
                     <div className="tc-meta-card-icon-box">
                       <Calendar size={17} />
