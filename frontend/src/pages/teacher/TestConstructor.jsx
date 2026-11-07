@@ -350,8 +350,8 @@ const TestConstructor = () => {
           const subQs = selectedQuestions.filter(q => q.subject === sub);
           const mcqCount = subQs.filter(q => getQuestionType(q) === 'mcq').length;
           const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
-          if (mcqCount !== 20 || natCount !== 10) {
-            showToast(`Cannot publish: ${sub} has ${mcqCount}/20 MCQs and ${natCount}/10 Numericals.`);
+          if (mcqCount !== 20 || natCount !== 5) {
+            showToast(`Cannot publish: ${sub} has ${mcqCount}/20 MCQs and ${natCount}/5 Numericals.`);
             return;
           }
         }
@@ -413,7 +413,7 @@ const TestConstructor = () => {
         const subjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
         const qType = getQuestionType(q);
         const currentCount = subjectQuestions.filter(sq => getQuestionType(sq) === qType).length;
-        const limit = qType === 'mcq' ? 20 : 10;
+        const limit = qType === 'mcq' ? 20 : 5;
 
         if (currentCount >= limit) {
           showToast(`Cannot add more than ${limit} ${qType === 'mcq' ? 'MCQ' : 'Numerical'} questions for ${q.subject} in JEE Main pattern.`);
@@ -444,21 +444,21 @@ const TestConstructor = () => {
   const isJeeAdv  = paperPattern.includes('jee_advanced') || testTitle.includes('jee adv');
   const isNeet    = paperPattern.includes('neet') || testTitle.includes('neet');
 
-  let targetTotal = 30;
+  let targetTotal = 25;
   let targetMcq   = 20;
-  let targetNat   = 10;
+  let targetNat   = 5;
   let quotaPatternName = 'Custom Paper';
 
   if (isJeeMain) {
     quotaPatternName = 'JEE Main Pattern';
     if (userSubject) {
-      targetTotal = 30;
+      targetTotal = 25;
       targetMcq   = 20;
-      targetNat   = 10;
+      targetNat   = 5;
     } else {
-      targetTotal = 90;
+      targetTotal = 75;
       targetMcq   = 60;
-      targetNat   = 30;
+      targetNat   = 15;
     }
   } else if (isJeeAdv) {
     quotaPatternName = 'JEE Advanced Pattern';
@@ -696,7 +696,7 @@ const TestConstructor = () => {
                         disabled={!isInitiator}
                       >
                         <span className="tc-pt-title">JEE Main</span>
-                        <span className="tc-pt-desc">20 MCQs + 10 Numericals per subject</span>
+                        <span className="tc-pt-desc">20 MCQs + 5 Mandatory Numericals per subject</span>
                       </button>
                     </div>
                   </div>

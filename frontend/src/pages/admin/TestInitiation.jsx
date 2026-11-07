@@ -5,11 +5,11 @@ import { apiClient } from '../../api/client';
 
 /* ─── JEE preset definitions ─────────────────────────────────────────── */
 const JEE_MAIN_PRESET = {
-  label: 'JEE Main', duration_minutes: 180, totalQuestions: 90, totalMarks: 300, negativeMarking: true,
+  label: 'JEE Main', duration_minutes: 180, totalQuestions: 75, totalMarks: 300, negativeMarking: true,
   subjects: [
-    { name: 'Physics',    sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 10, marks: 4, negative: 0 }] },
-    { name: 'Chemistry',  sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 10, marks: 4, negative: 0 }] },
-    { name: 'Mathematics',sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 10, marks: 4, negative: 0 }] },
+    { name: 'Physics',    sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 5, marks: 4, negative: -1 }] },
+    { name: 'Chemistry',  sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 5, marks: 4, negative: -1 }] },
+    { name: 'Mathematics',sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }, { label: 'Section B — Integer', q_type: 'integer', count: 5, marks: 4, negative: -1 }] },
   ],
 };
 const JEE_ADVANCED_PRESET = {
@@ -510,7 +510,7 @@ const TestInitiation = () => {
             <div className="admin-form-group">
               <label className="admin-form-label">Test Format</label>
               <div style={{ display: 'flex', gap: 10 }}>
-                <TypeCard id="jee_main"     active={testType === 'jee_main'}     onClick={() => setTestType('jee_main')}     icon={Zap}     title="JEE Main"     subtitle="180 min · 90 Q · 300 marks" badge={{ text: 'NTA Pattern', bg: '#dbeafe', color: '#1d4ed8' }} />
+                <TypeCard id="jee_main"     active={testType === 'jee_main'}     onClick={() => setTestType('jee_main')}     icon={Zap}     title="JEE Main"     subtitle="180 min · 75 Q · 300 marks" badge={{ text: 'NTA Pattern', bg: '#dbeafe', color: '#1d4ed8' }} />
                 <TypeCard id="jee_advanced" active={testType === 'jee_advanced'} onClick={() => setTestType('jee_advanced')} icon={Trophy}  title="JEE Advanced" subtitle="180 min · 54 Q · 186 marks" badge={{ text: 'IIT Pattern', bg: '#fef3c7', color: '#92400e' }} />
                 <TypeCard id="custom"       active={testType === 'custom'}       onClick={() => setTestType('custom')}       icon={Settings} title="Custom"       subtitle="Set your own subjects, types & time" />
               </div>
