@@ -1670,32 +1670,6 @@
   max-width: 780px;
 }
 
-.tc-review-header-actions {
-  flex-shrink: 0;
-}
-
-.tc-btn-export-pdf {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-  transition: all 0.2s ease;
-}
-
-.tc-btn-export-pdf:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
-}
-
 .tc-review-summary-card {
   background: #ffffff;
   border: 1px solid var(--border-color);
@@ -1744,27 +1718,6 @@
   margin: 0;
   font-size: 12.5px;
   color: #64748b;
-}
-
-.tc-btn-preview-pdf {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.tc-btn-preview-pdf:hover {
-  background: #ede9fe;
-  color: #4f46e5;
-  border-color: #c7d2fe;
 }
 
 .tc-review-empty-state {
@@ -2019,21 +1972,6 @@
   display: block;
   margin-bottom: 4px;
   color: #1d4ed8;
-}
-
-.tc-btn-pdf-nav {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #4f46e5 !important;
-  border-color: #c7d2fe !important;
-  background: #f5f3ff !important;
-  font-weight: 600;
-}
-
-.tc-btn-pdf-nav:hover {
-  background: #ede9fe !important;
-  border-color: #a5b4fc !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

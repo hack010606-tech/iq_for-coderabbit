@@ -3,13 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
   Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
-  Layers, ChevronDown, ChevronUp, Printer, FileDown, Download,
+  Layers, ChevronDown, ChevronUp,
   Calendar, Users, Award, Info, ShieldAlert
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
 import MathText from '../../components/MathText';
-import TestPDFExportModal from './TestPDFExportModal';
 import './TestConstructor.css';
 
 const MCQ_TYPES = ['mcq', 'single_correct', 'single', 'scq', 'multi_correct', 'multiple_correct', 'multi', 'multiple', 'assertion'];
@@ -183,7 +182,6 @@ const TestConstructor = () => {
   const { questions, batches, refreshTests } = useAppData();
   const [step, setStep] = useState(1);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
-  const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [lightboxUrl, setLightboxUrl] = useState(null);
   const [expandedSolutions, setExpandedSolutions] = useState({});
@@ -1210,19 +1208,8 @@ const TestConstructor = () => {
                   </div>
                   <h2>Review & Publish Test</h2>
                   <p className="tc-review-sub">
-                    Verify your test parameters and inspect all {selectedQuestions.length} selected questions before finalizing. You can export this entire question paper as a formatted PDF for offline tests or student handouts.
+                    Verify your test parameters and inspect all {selectedQuestions.length} selected questions before finalizing.
                   </p>
-                </div>
-                <div className="tc-review-header-actions">
-                  <button
-                    type="button"
-                    className="tc-btn-export-pdf"
-                    onClick={() => setIsPdfExportOpen(true)}
-                    title="Export questions and test paper as PDF"
-                  >
-                    <FileDown size={18} />
-                    <span>Export as PDF</span>
-                  </button>
                 </div>
               </div>
 
@@ -1284,16 +1271,6 @@ const TestConstructor = () => {
                   <div className="tc-rqs-title-group">
                     <h3>Questions Included in Paper ({selectedQuestions.length})</h3>
                     <p className="tc-rqs-hint">Review questions, KaTeX equations, options, and answers before publishing.</p>
-                  </div>
-                  <div className="tc-rqs-actions">
-                    <button
-                      type="button"
-                      className="tc-btn-preview-pdf"
-                      onClick={() => setIsPdfExportOpen(true)}
-                    >
-                      <Printer size={15} />
-                      <span>Print / PDF Preview</span>
-                    </button>
                   </div>
                 </div>
 
@@ -1424,28 +1401,10 @@ const TestConstructor = () => {
             {step > 1 ? (
               <button className="btn-outline" onClick={handlePrev}><ChevronLeft size={18} /> Previous</button>
             ) : <div></div>}
-            {step === 3 && (
-              <button
-                type="button"
-                className="btn-outline tc-btn-pdf-nav"
-                onClick={() => setIsPdfExportOpen(true)}
-              >
-                <FileDown size={16} />
-                <span>Export as PDF</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
     </div>
-
-    {/* PDF Export Modal */}
-    <TestPDFExportModal
-      isOpen={isPdfExportOpen}
-      onClose={() => setIsPdfExportOpen(false)}
-      testData={testData}
-      selectedQuestions={selectedQuestions}
-    />
 
     {/* Image Lightbox */}
     {lightboxUrl && (
