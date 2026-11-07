@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
   Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
-  Layers, ChevronDown, ChevronUp, Printer, FileDown, Download
+  Layers, ChevronDown, ChevronUp, Printer, FileDown, Download,
+  Calendar, Users, Award, Info, ShieldAlert
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
@@ -567,84 +568,327 @@ const TestConstructor = () => {
 
         <div className="constructor-content">
           {step === 1 && (
-            <div className="step-pane step-1">
-              <h2>Test Metadata</h2>
-              {!isInitiator && (
-                <div style={{ background: '#fef3c7', padding: '10px 15px', borderRadius: '8px', color: '#92400e', marginBottom: '15px' }}>
-                  <strong>Collaboration Mode:</strong> You can only add or remove questions for your subject. Only the test initiator can edit metadata or delete this test.
+            <div className="step-pane step-1 tc-meta-pane">
+              {/* Header Title & Subtitle */}
+              <div className="tc-meta-intro">
+                <div className="tc-meta-intro-left">
+                  <div className="tc-meta-badge-tag">
+                    <Settings size={14} />
+                    <span>Configuration Phase</span>
+                  </div>
+                  <h2 className="tc-meta-main-title">Assessment Metadata & Settings</h2>
+                  <p className="tc-meta-main-desc">
+                    Review paper details, scoring rules, and assigned cohorts before building your question paper.
+                  </p>
                 </div>
-              )}
-              <div className="form-group">
-                <label>Test Title</label>
-                <input type="text" placeholder="e.g. Weekly Mock Test #4" value={testData.title} onChange={e => setTestData({ ...testData, title: e.target.value })} disabled={!isInitiator} />
-              </div>
-
-              <div className="form-group">
-                <label>Subject</label>
-                <div className="subject-chips">
-                  {['Physics', 'Chemistry', 'Mathematics', 'Biology'].map(sub => (
-                    <button
-                      key={sub}
-                      className={`chip ${testData.subject === sub ? 'active' : ''}`}
-                      onClick={() => !userSubject && setTestData({ ...testData, subject: sub })}
-                      disabled={userSubject && userSubject !== sub}
-                      style={userSubject && userSubject !== sub ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                    >
-                      {sub}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Duration (mins)</label>
-                  <input type="number" value={testData.duration} onChange={e => setTestData({ ...testData, duration: e.target.value })} disabled={!isInitiator} />
-                </div>
-                <div className="form-group">
-                  <label>Total Marks (Auto-calculated)</label>
-                  <input type="number" value={testData.totalMarks} disabled style={{ backgroundColor: '#f1f5f9' }} />
-                </div>
-              </div>
-
-              <div className="form-group toggle-group">
-                <label className="toggle-label">
-                  <input type="checkbox" checked={testData.negativeMarking} onChange={e => setTestData({ ...testData, negativeMarking: e.target.checked })} disabled={!isInitiator} />
-                  Enable Negative Marking
-                </label>
-                {testData.negativeMarking && (
-                  <input type="number" className="inline-input" value={testData.negativeMarks} onChange={e => setTestData({ ...testData, negativeMarks: e.target.value })} disabled={!isInitiator} />
+                {testData.t_type === 'jee_main' && (
+                  <div className="tc-meta-pattern-badge">
+                    <Sparkles size={14} />
+                    <span>JEE Main Pattern</span>
+                  </div>
                 )}
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Schedule Date (Optional)</label>
-                  <input type="date" value={testData.date} onChange={e => setTestData({ ...testData, date: e.target.value })} disabled={!isInitiator} />
+              {!isInitiator && (
+                <div className="tc-collab-banner">
+                  <div className="tc-collab-icon-box">
+                    <Users size={20} />
+                  </div>
+                  <div className="tc-collab-body">
+                    <strong>Collaborator Mode: Subject Question Contributor</strong>
+                    <p>
+                      This paper was initialized by an administrator. Metadata and scheduling are locked. You can proceed to Step 2 to add or edit questions for <strong>{userSubject || testData.subject || 'your subject'}</strong>.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-primary tc-collab-btn"
+                    onClick={() => setStep(2)}
+                  >
+                    <span>Proceed to Questions</span>
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
-                <div className="form-group">
-                  <label>Time (Optional)</label>
-                  <input type="time" value={testData.time} onChange={e => setTestData({ ...testData, time: e.target.value })} disabled={!isInitiator} />
+              )}
+
+              {/* Grid of structured configuration cards */}
+              <div className="tc-meta-cards-grid">
+                {/* Card 1: Basic Paper Info */}
+                <div className="tc-meta-card">
+                  <div className="tc-meta-card-head">
+                    <div className="tc-meta-card-icon-box">
+                      <FileText size={17} />
+                    </div>
+                    <div>
+                      <h3 className="tc-meta-card-title">Paper Details</h3>
+                      <span className="tc-meta-card-sub">Title, subject category, and pattern format</span>
+                    </div>
+                  </div>
+
+                  <div className="tc-meta-field">
+                    <label className="tc-meta-label">
+                      <span>Test Title</span>
+                      <span className="tc-req">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="tc-meta-input"
+                      placeholder="e.g. Full Syllabus Mock Test #3"
+                      value={testData.title}
+                      onChange={e => setTestData({ ...testData, title: e.target.value })}
+                      disabled={!isInitiator}
+                    />
+                  </div>
+
+                  <div className="tc-meta-field">
+                    <label className="tc-meta-label">
+                      <span>Subject</span>
+                      {userSubject && <span className="tc-locked-tag">Assigned to {userSubject}</span>}
+                    </label>
+                    <div className="tc-subject-pill-grid">
+                      {[
+                        { id: 'Physics', label: 'Physics', icon: '⚛️' },
+                        { id: 'Chemistry', label: 'Chemistry', icon: '🧪' },
+                        { id: 'Mathematics', label: 'Mathematics', icon: '📐' },
+                        { id: 'Biology', label: 'Biology', icon: '🧬' }
+                      ].map(sub => {
+                        const isSelected = testData.subject === sub.id;
+                        const isLocked = userSubject && userSubject !== sub.id;
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            className={`tc-sub-pill ${isSelected ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+                            onClick={() => !userSubject && isInitiator && setTestData({ ...testData, subject: sub.id })}
+                            disabled={isLocked || !isInitiator}
+                          >
+                            <span className="tc-sub-pill-emoji">{sub.icon}</span>
+                            <span className="tc-sub-pill-text">{sub.label}</span>
+                            {isSelected && <Check size={14} className="tc-sub-pill-check" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="tc-meta-field">
+                    <label className="tc-meta-label">Assessment Pattern</label>
+                    <div className="tc-pattern-tabs">
+                      <button
+                        type="button"
+                        className={`tc-pattern-tab ${testData.t_type !== 'jee_main' ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'quiz' })}
+                        disabled={!isInitiator}
+                      >
+                        <span className="tc-pt-title">Standard Quiz</span>
+                        <span className="tc-pt-desc">Flexible question mix & custom marks</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`tc-pattern-tab ${testData.t_type === 'jee_main' ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_main' })}
+                        disabled={!isInitiator}
+                      >
+                        <span className="tc-pt-title">JEE Main</span>
+                        <span className="tc-pt-desc">20 MCQs + 10 Numericals per subject</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 2: Timing & Scoring Rules */}
+                <div className="tc-meta-card">
+                  <div className="tc-meta-card-head">
+                    <div className="tc-meta-card-icon-box">
+                      <Clock size={17} />
+                    </div>
+                    <div>
+                      <h3 className="tc-meta-card-title">Duration & Scoring</h3>
+                      <span className="tc-meta-card-sub">Time limits, mark tallies, and penalty scheme</span>
+                    </div>
+                  </div>
+
+                  <div className="tc-meta-two-col">
+                    <div className="tc-meta-field">
+                      <label className="tc-meta-label">Duration (Minutes)</label>
+                      <div className="tc-input-unit-wrap">
+                        <input
+                          type="number"
+                          min="5"
+                          max="360"
+                          className="tc-meta-input tc-input-has-unit"
+                          value={testData.duration}
+                          onChange={e => setTestData({ ...testData, duration: Math.max(1, parseInt(e.target.value) || 0) })}
+                          disabled={!isInitiator}
+                        />
+                        <span className="tc-input-unit">mins</span>
+                      </div>
+                      {isInitiator && (
+                        <div className="tc-presets-row">
+                          {[30, 45, 60, 90, 180].map(mins => (
+                            <button
+                              key={mins}
+                              type="button"
+                              className={`tc-preset-chip ${Number(testData.duration) === mins ? 'active' : ''}`}
+                              onClick={() => setTestData({ ...testData, duration: mins })}
+                            >
+                              {mins}m
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="tc-meta-field">
+                      <label className="tc-meta-label">Total Marks</label>
+                      <div className="tc-score-stat-card">
+                        <div className="tc-score-stat-num">{testData.totalMarks || 0}</div>
+                        <div className="tc-score-stat-lbl">
+                          <span>Marks</span>
+                          <span className="tc-auto-pill">Auto</span>
+                        </div>
+                      </div>
+                      <span className="tc-field-hint">
+                        Calculated from {selectedQuestions.length} added questions
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Negative marking card */}
+                  <div className={`tc-neg-marking-card ${testData.negativeMarking ? 'is-active' : ''}`}>
+                    <div className="tc-neg-marking-top">
+                      <label className="tc-toggle-control">
+                        <input
+                          type="checkbox"
+                          checked={testData.negativeMarking}
+                          onChange={e => isInitiator && setTestData({ ...testData, negativeMarking: e.target.checked })}
+                          disabled={!isInitiator}
+                        />
+                        <span className="tc-toggle-slider" />
+                        <span className="tc-toggle-title">Enable Negative Marking</span>
+                      </label>
+                      <span className="tc-neg-status-badge">
+                        {testData.negativeMarking ? 'Active' : 'Disabled'}
+                      </span>
+                    </div>
+                    {testData.negativeMarking && (
+                      <div className="tc-neg-marking-input-row">
+                        <span className="tc-neg-desc">Penalty per incorrect answer:</span>
+                        <div className="tc-neg-stepper">
+                          <span className="tc-minus-symbol">-</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.5"
+                            className="tc-neg-input"
+                            value={testData.negativeMarks}
+                            onChange={e => isInitiator && setTestData({ ...testData, negativeMarks: e.target.value })}
+                            disabled={!isInitiator}
+                          />
+                          <span className="tc-neg-unit">Mark(s)</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card 3: Scheduling & Batches */}
+                <div className="tc-meta-card tc-meta-card-wide">
+                  <div className="tc-meta-card-head">
+                    <div className="tc-meta-card-icon-box">
+                      <Calendar size={17} />
+                    </div>
+                    <div>
+                      <h3 className="tc-meta-card-title">Schedule & Target Batches</h3>
+                      <span className="tc-meta-card-sub">Window availability and assigned student cohorts</span>
+                    </div>
+                  </div>
+
+                  <div className="tc-meta-two-col">
+                    <div className="tc-meta-field">
+                      <label className="tc-meta-label">Schedule Date (Optional)</label>
+                      <input
+                        type="date"
+                        className="tc-meta-input"
+                        value={testData.date}
+                        onChange={e => setTestData({ ...testData, date: e.target.value })}
+                        disabled={!isInitiator}
+                      />
+                    </div>
+                    <div className="tc-meta-field">
+                      <label className="tc-meta-label">Schedule Time (Optional)</label>
+                      <input
+                        type="time"
+                        className="tc-meta-input"
+                        value={testData.time}
+                        onChange={e => setTestData({ ...testData, time: e.target.value })}
+                        disabled={!isInitiator}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="tc-meta-field" style={{ marginTop: '12px' }}>
+                    <div className="tc-batches-head">
+                      <label className="tc-meta-label" style={{ marginBottom: 0 }}>Target Batches</label>
+                      <span className="tc-batches-count">
+                        {(testData.targetBatches || []).length} of {batches?.length || 0} Batches Selected
+                      </span>
+                    </div>
+
+                    <div className="tc-batch-pills-list">
+                      {!batches || batches.length === 0 ? (
+                        <div className="tc-batch-empty-hint">No batches created in system.</div>
+                      ) : (
+                        batches.map(b => {
+                          const isAssigned = (testData.targetBatches || []).includes(b.id);
+                          return (
+                            <button
+                              key={b.id}
+                              type="button"
+                              className={`tc-batch-tag ${isAssigned ? 'selected' : ''}`}
+                              onClick={() => {
+                                if (!isInitiator) return;
+                                const current = testData.targetBatches || [];
+                                const next = current.includes(b.id)
+                                  ? current.filter(id => id !== b.id)
+                                  : [...current, b.id];
+                                setTestData({ ...testData, targetBatches: next });
+                              }}
+                              disabled={!isInitiator}
+                              title={isInitiator ? 'Click to toggle assignment' : 'Assignment locked by initiator'}
+                            >
+                              <div className={`tc-batch-tag-box ${isAssigned ? 'checked' : ''}`}>
+                                {isAssigned && <Check size={12} strokeWidth={3} />}
+                              </div>
+                              <span className="tc-batch-tag-name">{b.name}</span>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Target Batches</label>
-                <select
-                  multiple
-                  className="multi-select"
-                  value={testData.targetBatches}
-                  onChange={e => {
-                    const options = Array.from(e.target.selectedOptions, option => option.value);
-                    setTestData({ ...testData, targetBatches: options });
-                  }}
-                  disabled={!isInitiator}
+              {/* Bottom Navigation CTA strip */}
+              <div className="tc-meta-footer-cta">
+                <div className="tc-meta-footer-info">
+                  <Info size={16} className="tc-meta-footer-icon" />
+                  <span>
+                    {isInitiator
+                      ? 'Settings configured? Move to Step 2 to add questions from your repository.'
+                      : 'You can now proceed to Step 2 to manage questions for your subject.'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-primary tc-meta-next-btn"
+                  onClick={handleNext}
                 >
-                  {batches.map(b => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
-                  ))}
-                </select>
-                <span className="help-text">Hold Ctrl/Cmd to select multiple batches.</span>
+                  <span>Proceed to Select Questions</span>
+                  <ChevronRight size={18} />
+                </button>
               </div>
             </div>
           )}
