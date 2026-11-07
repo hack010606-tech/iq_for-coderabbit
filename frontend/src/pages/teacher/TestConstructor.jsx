@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
   Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
@@ -17,11 +17,41 @@ const NAT_TYPES = ['nat', 'integer', 'numerical', 'numeric', 'int'];
 // Chapter / topic list per subject — mirrors QuestionBank.jsx
 const CHAPTERS = {
   Physics: [
-    'DC Circuits and Capacitors', 'Dynamics of a Particle', 'Electrostatics',
-    'EMI and AC Circuits', 'Energy and Momentum', 'Gaseous State and Thermodynamics',
-    'Kinematics of a particle', 'Liquids', 'Magnetic Effects of Current',
-    'Modern Physics', 'Properties of Matter', 'Ray Optics and Wave Optics',
-    'Rotation and Gravitation', 'SHM', 'Thermodynamics', 'Wave Motion',
+    'Conductors and Dielectrics in an Electric Field',
+    'Constant Electric Field in Vacuum',
+    'DC Circuits and Capacitors',
+    'Dynamics of a Particle',
+    'Dynamics of a Solid Body',
+    'EMI and AC Circuits',
+    'Elastic Deformations of a Solid Body',
+    'Electric Capacitance. Energy of an Electric Field',
+    'Electric Current',
+    'Electrostatics',
+    'Energy and Momentum',
+    'Equation of the Gas State. Processes',
+    'Gaseous State and Thermodynamics',
+    'Hydrodynamics',
+    'Kinematics',
+    'Kinematics of a particle',
+    "Kinetic Theory of Gases. Boltzmann's Law and Maxwell's Distribution",
+    'Laws of Conservation of Energy, Momentum, and Angular Momentum',
+    'Liquids',
+    'Liquids. Capillary Effects',
+    'Magnetic Effects of Current',
+    'Modern Physics',
+    'Phase Transformations',
+    'Properties of Matter',
+    'Ray Optics and Wave Optics',
+    'Relativistic Mechanics',
+    'Rotation and Gravitation',
+    'SHM',
+    'The First Law of Thermodynamics. Heat Capacity',
+    'The Fundamental Equation of Dynamics',
+    'The Second Law of Thermodynamics. Entropy',
+    'Thermodynamics',
+    'Transport Phenomena',
+    'Universal Gravitation',
+    'Wave Motion',
     'Work, Power and Energy',
   ],
   Chemistry: [
@@ -36,21 +66,72 @@ const CHAPTERS = {
     'Surf., Bio., Practical Org. Chem. and Polymers', 'Thermodynamics and Thermochemistry',
   ],
   Mathematics: [
-    'Binomial Theorem', 'Circle', 'Complex Numbers', 'Conic Sections',
-    'Differential Calculus-1', 'Differential Calculus-2', 'Differential Equations',
-    'Functions', 'Integral Calculus-1', 'Integral Calculus-2', 'Matrices and Determinants',
-    'Permutation and Combination', 'Probability', 'Quadratic Equations',
-    'Sequence and Series', 'Sets Relations Functions', 'Straight Line',
-    'Three Dimensional Geometry', 'Trigonometry', 'Vectors',
+    'Application of Derivatives',
+    'Area Under Curves',
+    'Binomial Theorem',
+    'Circle',
+    'Complex Numbers',
+    'Compound Angles',
+    'Conic Sections',
+    'Continuity, Differentiability and Differentiation',
+    'Determinants',
+    'Differential Calculus-1',
+    'Differential Calculus-2',
+    'Differential Equations',
+    'Ellipse',
+    'Function',
+    'Functions',
+    'Hyperbola',
+    'Indefinite and Definite Integration',
+    'Integral Calculus-1',
+    'Integral Calculus-2',
+    'Inverse Trigonometric Functions',
+    'Limit',
+    'Matrices',
+    'Matrices and Determinants',
+    'Parabola',
+    'Permutation and Combination',
+    'Permutation and Combinations',
+    'Probability',
+    'Quadratic Equations',
+    'Sequence and Series',
+    'Sets Relations Functions',
+    'Solution of Triangles',
+    'Straight Line',
+    'Straight Lines',
+    'Three Dimensional Geometry',
+    'Trigonometric Equations',
+    'Trigonometry',
+    'Vector & 3Dimensional Geometry',
+    'Vectors',
   ],
   Biology: [],
 };
 
+function extractRealInteger(val) {
+  if (val === null || val === undefined) return null;
+  const raw = String(typeof val === 'object' ? (val.value ?? '') : val).trim();
+  if (!raw) return null;
+  if (/^-?\d+$/.test(raw)) return raw;
+  const cleaned = raw
+    .replace(/\\text\{[^}]*\}/g, '')
+    .replace(/\\mathrm\{[^}]*\}/g, '')
+    .replace(/[\$\s]/g, '')
+    .replace(/(km\/h|m\/s|cm\/s|m\/s\^2|cm|mm|km|m|s|min|h|kg|g|N|J|W|V|A|C|T|Hz|rad\/s|rad|deg|degrees|°)/gi, '');
+  if (/^-?\d+$/.test(cleaned)) return cleaned;
+  if (/^-?\d+\.0+$/.test(cleaned)) return String(parseInt(cleaned, 10));
+  return null;
+}
+
 function getQuestionType(q) {
   const key = String(q.q_type || q.type || '').trim().toLowerCase();
   if (MCQ_TYPES.includes(key)) return 'mcq';
-  if (NAT_TYPES.includes(key)) return 'nat';
-  return Array.isArray(q.options) && q.options.length > 0 ? 'mcq' : 'nat';
+  if (NAT_TYPES.includes(key)) {
+    // In numerical section only keep questions with real integer answer
+    return extractRealInteger(q.correct_answer) !== null ? 'nat' : 'subjective';
+  }
+  if (key === 'subjective') return 'subjective';
+  return Array.isArray(q.options) && q.options.length > 0 ? 'mcq' : 'subjective';
 }
 
 function getCleanSnippet(q, maxLen = 45) {
@@ -83,10 +164,12 @@ function getAnswerDetails(q) {
 
   // Numerical value: e.g. { value: "..." }
   if (rawAns?.value !== undefined && rawAns?.value !== null && rawAns?.value !== '') {
+    const realInt = extractRealInteger(rawAns);
+    const displayVal = realInt !== null ? realInt : String(rawAns.value);
     return {
       type: 'numerical',
-      value: String(rawAns.value),
-      display: String(rawAns.value),
+      value: displayVal,
+      display: displayVal,
       isCorrectIndex: () => false,
     };
   }
@@ -179,8 +262,29 @@ function getAnswerDetails(q) {
 const TestConstructor = () => {
   const navigate = useNavigate();
   const { testId } = useParams();
-  const { questions, batches, refreshTests } = useAppData();
-  const [step, setStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const { questions, batches, refreshTests, setSidebarCollapsed } = useAppData();
+  const [step, setStep] = useState(searchParams.get('step') === '2' ? 2 : 1);
+
+  // Automatically collapse sidebar into icon-only mode when on Step 2 (Select Questions)
+  // to maximize horizontal space for browsing and adding exam questions.
+  useEffect(() => {
+    if (step === 2) {
+      if (typeof setSidebarCollapsed === 'function') {
+        setSidebarCollapsed(true);
+      }
+    } else {
+      if (typeof setSidebarCollapsed === 'function') {
+        setSidebarCollapsed(false);
+      }
+    }
+    return () => {
+      if (typeof setSidebarCollapsed === 'function') {
+        setSidebarCollapsed(false);
+      }
+    };
+  }, [step, setSidebarCollapsed]);
+
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [lightboxUrl, setLightboxUrl] = useState(null);
@@ -196,6 +300,7 @@ const TestConstructor = () => {
   const [subjectFilter, setSubjectFilter] = useState(userSubject || '');
   const [topicFilter, setTopicFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [sortBy, setSortBy] = useState('default');
 
   // Topics come from the hardcoded chapter map (same source as QuestionBank)
   const availableTopics = CHAPTERS[subjectFilter] || [];
@@ -220,6 +325,7 @@ const TestConstructor = () => {
           page: String(bankPage),
           limit: String(bankPageSize),
           review_status: 'all',
+          exclude_subjective: 'true',
         });
         if (subjectFilter || userSubject) params.set('subject', subjectFilter || userSubject);
         if (topicFilter)  params.set('topic', topicFilter);
@@ -292,6 +398,10 @@ const TestConstructor = () => {
         if (data.test_questions) {
           const qs = data.test_questions.map(tq => ({ ...tq.questions, marks: tq.questions.marks || 4 }));
           setSelectedQuestions(qs);
+        }
+        // Collaborator teacher is entering this test to add questions for their subject!
+        if (data.created_by && data.created_by !== user.id) {
+          setStep(2);
         }
       }).catch(err => showToast('Failed to load test: ' + err.message));
     }
@@ -408,8 +518,12 @@ const TestConstructor = () => {
       setSelectedQuestions(selectedQuestions.filter(sq => sq.id !== q.id));
     } else {
       if (isJeeMain) {
-        const subjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
         const qType = getQuestionType(q);
+        if (qType === 'subjective') {
+          showToast('JEE Main paper only accepts MCQ and Numerical (integer answer) questions.');
+          return;
+        }
+        const subjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
         const currentCount = subjectQuestions.filter(sq => getQuestionType(sq) === qType).length;
         const limit = qType === 'mcq' ? 20 : 5;
 
@@ -908,14 +1022,14 @@ const TestConstructor = () => {
               <div className="question-builder">
                 {/* ── Full-Width Question Bank Panel ── */}
                 <div className="tc-bank-panel">
-                  {/* Search input with integrated icon & clear button */}
-                  <div className="tc-search-bar">
+                  {/* Unified Compact 1-Line Search, Filter & Sort Toolbar */}
+                  <div className="tc-compact-toolbar">
                     <div className="tc-search-input-wrap">
-                      <Search size={16} className="tc-search-icon" />
+                      <Search size={15} className="tc-search-icon" />
                       <input
                         type="text"
                         className="tc-search-input"
-                        placeholder="Search question bank by keyword..."
+                        placeholder="Search questions by keyword..."
                         value={searchQuery}
                         onChange={e => {
                           setSearchQuery(e.target.value);
@@ -936,14 +1050,12 @@ const TestConstructor = () => {
                         </button>
                       )}
                     </div>
-                  </div>
 
-                  {/* Topic & Type Dropdown Filters */}
-                  <div className="tc-filter-row">
                     <select
                       value={topicFilter}
                       onChange={e => { setTopicFilter(e.target.value); setBankPage(1); }}
-                      className="tc-select"
+                      className="tc-select tc-select-topic"
+                      title="Filter by Topic"
                     >
                       <option value="">All Topics</option>
                       {availableTopics.map(t => (
@@ -954,14 +1066,25 @@ const TestConstructor = () => {
                     <select
                       value={typeFilter}
                       onChange={e => { setTypeFilter(e.target.value); setBankPage(1); }}
-                      className="tc-select"
+                      className="tc-select tc-select-type"
+                      title="Filter by Question Type"
                     >
                       <option value="">All Types</option>
                       <option value="mcq">MCQ</option>
                       <option value="nat">Numerical</option>
                     </select>
 
-
+                    <select
+                      value={sortBy}
+                      onChange={e => setSortBy(e.target.value)}
+                      className="tc-select tc-select-sort"
+                      title="Sort questions"
+                    >
+                      <option value="default">Sort: Default</option>
+                      <option value="diff_asc">Difficulty: Easy → Hard</option>
+                      <option value="diff_desc">Difficulty: Hard → Easy</option>
+                      <option value="topic_asc">Topic: A → Z</option>
+                    </select>
                   </div>
 
                   {/* Question cards list */}
@@ -978,7 +1101,23 @@ const TestConstructor = () => {
                         <p className="tc-empty-sub">Try adjusting your filters or search keywords.</p>
                       </div>
                     )}
-                    {!bankLoading && bankData.map(q => {
+                    {!bankLoading && bankData
+                      .filter(q => q.q_type !== 'subjective' && (q.options?.length > 0 || extractRealInteger(q.correct_answer) !== null))
+                      .sort((a, b) => {
+                        if (sortBy === 'diff_asc') {
+                          const diffMap = { easy: 1, medium: 2, hard: 3 };
+                          return (diffMap[a.difficulty?.toLowerCase()] || 2) - (diffMap[b.difficulty?.toLowerCase()] || 2);
+                        }
+                        if (sortBy === 'diff_desc') {
+                          const diffMap = { easy: 1, medium: 2, hard: 3 };
+                          return (diffMap[b.difficulty?.toLowerCase()] || 2) - (diffMap[a.difficulty?.toLowerCase()] || 2);
+                        }
+                        if (sortBy === 'topic_asc') {
+                          return (a.topic || '').localeCompare(b.topic || '');
+                        }
+                        return 0;
+                      })
+                      .map(q => {
                       const isSelected = !!selectedQuestions.find(sq => sq.id === q.id);
                       const qType = getQuestionType(q);
                       const typeLabel = q.type === 'single_correct' ? 'Single Choice'
@@ -989,6 +1128,7 @@ const TestConstructor = () => {
                       const ansDetails = getAnswerDetails(q);
                       const rawOptions = Array.isArray(q.options) ? q.options : [];
                       const hasOptions = rawOptions.length > 0;
+                      const hasCorrectTicked = hasOptions && rawOptions.some((_, idx) => ansDetails.isCorrectIndex(idx));
                       const isExpandedSol = !!expandedSolutions[q.id];
 
                       return (
@@ -996,8 +1136,6 @@ const TestConstructor = () => {
                           {/* ── Card Header ── */}
                           <div className="tc-q-card-header">
                             <div className="tc-q-badges">
-                              <span className="tc-q-subject">{q.subject}</span>
-                              <span className="tc-q-type-badge">{typeLabel}</span>
                               {q.topic && <span className="tc-q-topic-badge" title={q.topic}>{q.topic}</span>}
                               <span className={`tc-q-diff ${q.difficulty ? q.difficulty.toLowerCase() : 'medium'}`}>
                                 {q.difficulty || 'Medium'}
@@ -1005,7 +1143,6 @@ const TestConstructor = () => {
                             </div>
 
                             <div className="tc-q-header-actions">
-                              <span className="tc-q-marks">{q.marks || 4} Marks</span>
                               <button
                                 type="button"
                                 className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : 'tc-btn-add'}`}
@@ -1045,9 +1182,6 @@ const TestConstructor = () => {
                           {/* ── Options Section (when available) ── */}
                           {hasOptions && (
                             <div className="tc-q-options-wrapper">
-                              <div className="tc-q-options-header">
-                                <span className="tc-q-options-title">Options:</span>
-                              </div>
                               <div className="tc-q-options-grid">
                                 {rawOptions.map((opt, optIdx) => {
                                   const isCorrect = ansDetails.isCorrectIndex(optIdx);
@@ -1077,48 +1211,70 @@ const TestConstructor = () => {
                             </div>
                           )}
 
-                          {/* ── Answer Section (Crystal Clear & High Visibility) ── */}
-                          <div className="tc-q-answer-card">
-                            <div className="tc-ans-header-row">
-                              <div className="tc-ans-icon-wrap">
-                                <CheckCircle2 size={16} />
-                              </div>
-                              <span className="tc-ans-label">Correct Answer:</span>
-                              <div className="tc-ans-value-box">
-                                {ansDetails.type === 'numerical' ? (
-                                  <span className="tc-ans-numerical">
-                                    <MathText text={ansDetails.display} />
-                                  </span>
-                                ) : ansDetails.type === 'multiple' ? (
-                                  <span className="tc-ans-badge multiple">
-                                    Options: {ansDetails.display}
-                                  </span>
-                                ) : (
-                                  <span className="tc-ans-badge single">
-                                    {ansDetails.display}
-                                  </span>
+                          {/* ── Answer Section:
+                               Only shown for non-option questions (numerical/subjective) where answer is not ticked in options.
+                               For questions with options, the correct option is already highlighted in the options grid above.
+                          ── */}
+                          {!hasCorrectTicked ? (
+                            <div className="tc-q-answer-card">
+                              <div className="tc-ans-header-row">
+                                <div className="tc-ans-icon-wrap">
+                                  <CheckCircle2 size={16} />
+                                </div>
+                                <span className="tc-ans-label">Correct Answer:</span>
+                                <div className="tc-ans-value-box">
+                                  {ansDetails.type === 'numerical' ? (
+                                    <span className="tc-ans-numerical">
+                                      <MathText text={ansDetails.display} />
+                                    </span>
+                                  ) : ansDetails.type === 'multiple' ? (
+                                    <span className="tc-ans-badge multiple">
+                                      Options: {ansDetails.display}
+                                    </span>
+                                  ) : (
+                                    <span className="tc-ans-badge single">
+                                      {ansDetails.display}
+                                    </span>
+                                  )}
+                                </div>
+                                {q.solution && (
+                                  <button
+                                    type="button"
+                                    className="tc-solution-toggle-btn"
+                                    onClick={() => toggleSolution(q.id)}
+                                  >
+                                    {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                                  </button>
                                 )}
                               </div>
-                              {q.solution && (
-                                <button
-                                  type="button"
-                                  className="tc-solution-toggle-btn"
-                                  onClick={() => toggleSolution(q.id)}
-                                >
-                                  {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                  <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
-                                </button>
+
+                              {/* Collapsible Solution */}
+                              {q.solution && isExpandedSol && (
+                                <div className="tc-solution-content">
+                                  <div className="tc-solution-title">Solution / Explanation:</div>
+                                  <MathText text={q.solution} />
+                                </div>
                               )}
                             </div>
-
-                            {/* Collapsible Solution */}
-                            {q.solution && isExpandedSol && (
-                              <div className="tc-solution-content">
-                                <div className="tc-solution-title">Solution / Explanation:</div>
-                                <MathText text={q.solution} />
-                              </div>
-                            )}
-                          </div>
+                          ) : q.solution ? (
+                            <div className="tc-q-solution-row">
+                              <button
+                                type="button"
+                                className="tc-solution-toggle-btn"
+                                onClick={() => toggleSolution(q.id)}
+                              >
+                                {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                              </button>
+                              {isExpandedSol && (
+                                <div className="tc-solution-content">
+                                  <div className="tc-solution-title">Solution / Explanation:</div>
+                                  <MathText text={q.solution} />
+                                </div>
+                              )}
+                            </div>
+                          ) : null}
                         </div>
                       );
                     })}
@@ -1288,6 +1444,9 @@ const TestConstructor = () => {
                   <div className="tc-review-questions-list">
                     {selectedQuestions.map((q, idx) => {
                       const ansDetails = getAnswerDetails(q);
+                      const rawOptions = Array.isArray(q.options) ? q.options : [];
+                      const hasOptions = rawOptions.length > 0;
+                      const hasCorrectTicked = hasOptions && rawOptions.some((_, oIdx) => ansDetails.isCorrectIndex(oIdx));
                       const isExpandedSol = !!expandedSolutions[q.id];
 
                       return (
@@ -1297,13 +1456,10 @@ const TestConstructor = () => {
                               <span className="tc-rq-num">Q{idx + 1}</span>
                             </div>
                             <div className="tc-rq-meta-tags">
-                              <span className="tc-tag tc-tag-sub">{q.subject || testData.subject}</span>
-                              <span className="tc-tag tc-tag-type">{getQuestionType(q) === 'mcq' ? 'MCQ' : 'Numerical'}</span>
                               {q.topic && <span className="tc-tag tc-tag-topic">{q.topic}</span>}
                               <span className={`tc-tag tc-tag-diff ${q.difficulty || 'medium'}`}>
                                 {q.difficulty || 'medium'}
                               </span>
-                              <span className="tc-tag tc-tag-marks">{q.marks || 4} Marks</span>
                             </div>
                             <button
                               type="button"
@@ -1355,21 +1511,34 @@ const TestConstructor = () => {
                             </div>
                           )}
 
-                          {/* Answer Row */}
-                          <div className="tc-rq-ans-strip">
-                            <div className="tc-rq-ans-label-group">
-                              <CheckCircle2 size={16} className="tc-rq-ans-icon" />
-                              <span className="tc-rq-ans-title">Correct Answer:</span>
-                              <div className="tc-rq-ans-val">
-                                {ansDetails.type === 'numerical' ? (
-                                  <MathText text={ansDetails.display} />
-                                ) : (
-                                  <span>{ansDetails.display}</span>
-                                )}
+                          {/* Answer Row (only when no options are shown or no option was ticked) */}
+                          {!hasCorrectTicked ? (
+                            <div className="tc-rq-ans-strip">
+                              <div className="tc-rq-ans-label-group">
+                                <CheckCircle2 size={16} className="tc-rq-ans-icon" />
+                                <span className="tc-rq-ans-title">Correct Answer:</span>
+                                <div className="tc-rq-ans-val">
+                                  {ansDetails.type === 'numerical' ? (
+                                    <MathText text={ansDetails.display} />
+                                  ) : (
+                                    <span>{ansDetails.display}</span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
 
-                            {q.solution && (
+                              {q.solution && (
+                                <button
+                                  type="button"
+                                  className="tc-rq-toggle-sol-btn"
+                                  onClick={() => toggleSolution(q.id)}
+                                >
+                                  {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                  <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                                </button>
+                              )}
+                            </div>
+                          ) : q.solution ? (
+                            <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
                               <button
                                 type="button"
                                 className="tc-rq-toggle-sol-btn"
@@ -1378,8 +1547,8 @@ const TestConstructor = () => {
                                 {isExpandedSol ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                 <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
                               </button>
-                            )}
-                          </div>
+                            </div>
+                          ) : null}
 
                           {/* Solution Accordion */}
                           {q.solution && isExpandedSol && (

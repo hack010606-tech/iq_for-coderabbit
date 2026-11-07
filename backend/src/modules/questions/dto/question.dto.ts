@@ -27,7 +27,7 @@ import {
  */
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
-export const QUESTION_TYPES = ['single_correct', 'multi_correct', 'numerical', 'assertion'] as const;
+export const QUESTION_TYPES = ['single_correct', 'multi_correct', 'numerical', 'assertion', 'subjective'] as const;
 
 /** Enough for a long LaTeX question; short enough to bound a request body. */
 const MAX_QUESTION_TEXT = 8000;
@@ -177,6 +177,11 @@ export class QuestionQueryDto {
   @IsIn(['pending', 'approved', 'rejected', 'all'])
   review_status?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  exclude_subjective?: string;
+
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)
@@ -199,6 +204,11 @@ export class ReviewQueueQueryDto {
   @IsString()
   @MaxLength(100)
   subject?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  exclude_subjective?: string;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

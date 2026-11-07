@@ -87,6 +87,20 @@ async function seed() {
             subject: 'Mathematics',
         },
         {
+            email: 'zoology_teacher@edu.com',
+            password: 'teacher123',
+            full_name: 'Dr. Jane Zoology',
+            role: 'teacher',
+            subject: 'Biology',
+        },
+        {
+            email: 'botany_teacher@edu.com',
+            password: 'teacher123',
+            full_name: 'Dr. Gregor Botany',
+            role: 'teacher',
+            subject: 'Biology',
+        },
+        {
             email: 'admin@edu.com',
             password: 'admin123',
             full_name: 'Super Admin',

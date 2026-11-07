@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Search, Plus, Edit, Copy, Trash2, X, Image as ImageIcon,
   ChevronLeft, ChevronRight, Loader2, LayoutGrid, List,
-  CheckCircle2, ChevronDown, ChevronUp, Check, Database
+  CheckCircle2, ChevronDown, ChevronUp, Check, Database, Upload
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { useAppData } from '../../context/AppDataContext';
@@ -25,21 +25,82 @@ const CHAPTERS = {
     'Surf., Bio., Practical Org. Chem. and Polymers', 'Thermodynamics and Thermochemistry',
   ],
   Physics: [
-    'DC Circuits and Capacitors', 'Dynamics of a Particle', 'Each of the following Question has',
-    'Electrostatics', 'EMI and AC Circuits', 'Energy and Momentum',
-    'Gaseous State and Thermodynamics', 'Kinematics of a particle', 'Liquids',
-    'Magnetic Effects of Current', 'Modern Physics', 'Paragraph for Q',
-    'Properties of Matter', 'Ray Optics and Wave Optics', 'Rotation and Gravitation',
-    'SHM', 'Thermodynamics', 'Wave Motion', 'Work, Power and Energy',
+    'Conductors and Dielectrics in an Electric Field',
+    'Constant Electric Field in Vacuum',
+    'DC Circuits and Capacitors',
+    'Dynamics of a Particle',
+    'Dynamics of a Solid Body',
+    'EMI and AC Circuits',
+    'Elastic Deformations of a Solid Body',
+    'Electric Capacitance. Energy of an Electric Field',
+    'Electric Current',
+    'Electrostatics',
+    'Energy and Momentum',
+    'Equation of the Gas State. Processes',
+    'Gaseous State and Thermodynamics',
+    'Hydrodynamics',
+    'Kinematics',
+    'Kinematics of a particle',
+    "Kinetic Theory of Gases. Boltzmann's Law and Maxwell's Distribution",
+    'Laws of Conservation of Energy, Momentum, and Angular Momentum',
+    'Liquids',
+    'Liquids. Capillary Effects',
+    'Magnetic Effects of Current',
+    'Modern Physics',
+    'Phase Transformations',
+    'Properties of Matter',
+    'Ray Optics and Wave Optics',
+    'Relativistic Mechanics',
+    'Rotation and Gravitation',
+    'SHM',
+    'The First Law of Thermodynamics. Heat Capacity',
+    'The Fundamental Equation of Dynamics',
+    'The Second Law of Thermodynamics. Entropy',
+    'Thermodynamics',
+    'Transport Phenomena',
+    'Universal Gravitation',
+    'Wave Motion',
+    'Work, Power and Energy',
   ],
   Mathematics: [
-    '84. MATCH THE FOLLOWING', 'Binomial Theorem', 'Circle', 'Complex Numbers',
-    'Conic Sections', 'Differential Calculus-1', 'Differential Calculus-2',
-    'Differential Equations', 'Each of the following Question has', 'For Questions',
-    'Functions', 'Integral Calculus-1', 'Integral Calculus-2', 'M atrices and Determinants',
-    'Permutation and Combination', 'Probability', 'Quadratic Equations',
-    'Sequence and Series', 'Sets Relations Functions', 'Straight Line',
-    'Three Dimensional Geometry', 'Trigonometry', 'Vectors',
+    'Application of Derivatives',
+    'Area Under Curves',
+    'Binomial Theorem',
+    'Circle',
+    'Complex Numbers',
+    'Compound Angles',
+    'Conic Sections',
+    'Continuity, Differentiability and Differentiation',
+    'Determinants',
+    'Differential Calculus-1',
+    'Differential Calculus-2',
+    'Differential Equations',
+    'Ellipse',
+    'Function',
+    'Functions',
+    'Hyperbola',
+    'Indefinite and Definite Integration',
+    'Integral Calculus-1',
+    'Integral Calculus-2',
+    'Inverse Trigonometric Functions',
+    'Limit',
+    'Matrices',
+    'Matrices and Determinants',
+    'Parabola',
+    'Permutation and Combination',
+    'Permutation and Combinations',
+    'Probability',
+    'Quadratic Equations',
+    'Sequence and Series',
+    'Sets Relations Functions',
+    'Solution of Triangles',
+    'Straight Line',
+    'Straight Lines',
+    'Three Dimensional Geometry',
+    'Trigonometric Equations',
+    'Trigonometry',
+    'Vector & 3Dimensional Geometry',
+    'Vectors',
   ],
   Biology: [],
 };
@@ -56,6 +117,21 @@ const emptyQuestion = () => ({
   solution: '',
 });
 
+function extractRealInteger(val) {
+  if (val === null || val === undefined) return null;
+  const raw = String(typeof val === 'object' ? (val.value ?? '') : val).trim();
+  if (!raw) return null;
+  if (/^-?\d+$/.test(raw)) return raw;
+  const cleaned = raw
+    .replace(/\\text\{[^}]*\}/g, '')
+    .replace(/\\mathrm\{[^}]*\}/g, '')
+    .replace(/[\$\s]/g, '')
+    .replace(/(km\/h|m\/s|cm\/s|m\/s\^2|cm|mm|km|m|s|min|h|kg|g|N|J|W|V|A|C|T|Hz|rad\/s|rad|deg|degrees|°)/gi, '');
+  if (/^-?\d+$/.test(cleaned)) return cleaned;
+  if (/^-?\d+\.0+$/.test(cleaned)) return String(parseInt(cleaned, 10));
+  return null;
+}
+
 function getAnswerDetails(q) {
   const options = Array.isArray(q.options) ? q.options : [];
   const rawAns = q.correct_answer;
@@ -63,10 +139,12 @@ function getAnswerDetails(q) {
 
   // Numerical value: e.g. { value: "..." }
   if (rawAns?.value !== undefined && rawAns?.value !== null && rawAns?.value !== '') {
+    const realInt = extractRealInteger(rawAns);
+    const displayVal = realInt !== null ? realInt : String(rawAns.value);
     return {
       type: 'numerical',
-      value: String(rawAns.value),
-      display: String(rawAns.value),
+      value: displayVal,
+      display: displayVal,
       isCorrectIndex: () => false,
     };
   }
@@ -159,6 +237,7 @@ function formatType(t) {
   if (t === 'single_correct') return 'Single Choice';
   if (t === 'multi_correct') return 'Multiple Choice';
   if (t === 'numerical' || t === 'integer') return 'Numerical';
+  if (t === 'subjective') return 'Subjective';
   return t ? t.replace(/_/g, ' ') : 'MCQ';
 }
 
@@ -283,8 +362,9 @@ const QuestionBank = () => {
   const handleSave = async () => {
     setBusy(true);
     try {
-      const options = draft.q_type === 'numerical' ? [] : draft.options;
-      const correct_answer = draft.q_type === 'numerical'
+      const isFreeText = draft.q_type === 'numerical' || draft.q_type === 'subjective';
+      const options = isFreeText ? [] : draft.options;
+      const correct_answer = isFreeText
         ? { value: draft.solution || '' }
         : { index: Number(draft.correctIndex) };
 
@@ -363,6 +443,26 @@ const QuestionBank = () => {
 
   useEffect(() => { if (rows.length) setGlobalQuestions(rows); }, [rows, setGlobalQuestions]);
 
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('examType', 'jee');
+      await apiClient.post('/questions/bulk-upload-pdf', fd);
+      showToast('PDF processed — questions added to queue.');
+      load();
+    } catch (err) {
+      showToast(err.message || 'Upload failed');
+    } finally {
+      setUploadingPdf(false);
+      e.target.value = '';
+    }
+  };
+
   const toggleRow = (id) =>
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
@@ -375,9 +475,22 @@ const QuestionBank = () => {
         <div>
           <h1>Question Bank{teacherSubject ? ` — ${teacherSubject}` : ''}</h1>
         </div>
-        <button className="btn-primary" onClick={openCreate}>
-          <Plus size={18} /> Add New Question
-        </button>
+        <div className="qb-header-actions">
+          <label className="qb-btn-upload-pdf" title="Upload question paper PDF">
+            <Upload size={15} />
+            <span>{uploadingPdf ? 'Uploading…' : 'Upload PDF'}</span>
+            <input
+              type="file"
+              accept=".pdf"
+              style={{ display: 'none' }}
+              onChange={handlePdfUpload}
+              disabled={uploadingPdf}
+            />
+          </label>
+          <button className="btn-primary" onClick={openCreate}>
+            <Plus size={16} /> Add New Question
+          </button>
+        </div>
       </header>
 
       {toast && <div className="toast-notification">{toast}</div>}
@@ -441,6 +554,7 @@ const QuestionBank = () => {
             <option value="single_correct">Single Choice</option>
             <option value="multi_correct">Multiple Choice</option>
             <option value="numerical">Numerical</option>
+            <option value="subjective">Subjective</option>
           </select>
 
           {/* Difficulty Filter */}
@@ -531,6 +645,7 @@ const QuestionBank = () => {
                 const ansDetails = getAnswerDetails(q);
                 const rawOptions = Array.isArray(q.options) ? q.options : [];
                 const hasOptions = rawOptions.length > 0;
+                const hasCorrectTicked = hasOptions && rawOptions.some((_, idx) => ansDetails.isCorrectIndex(idx));
                 const isExpandedSol = !!expandedSolutions[q.id];
                 const isSelected = selected.includes(q.id);
 
@@ -552,7 +667,6 @@ const QuestionBank = () => {
                         <span className={`qb-badge-diff ${(q.difficulty || 'medium').toLowerCase()}`}>
                           {q.difficulty || 'Medium'}
                         </span>
-                        <span className="qb-badge-marks">{q.marks || 4} Marks</span>
                       </div>
 
                       <div className="qb-card-actions">
@@ -618,48 +732,68 @@ const QuestionBank = () => {
                       </div>
                     )}
 
-                    {/* ── Answer Callout Card ── */}
-                    <div className="qb-answer-card">
-                      <div className="qb-ans-row">
-                        <div className="qb-ans-icon">
-                          <CheckCircle2 size={15} />
-                        </div>
-                        <span className="qb-ans-label">Correct Answer:</span>
-                        <div className="qb-ans-val-box">
-                          {ansDetails.type === 'numerical' ? (
-                            <span className="qb-ans-numerical">
-                              <MathText text={ansDetails.display} />
-                            </span>
-                          ) : ansDetails.type === 'multiple' ? (
-                            <span className="qb-ans-badge multiple">
-                              Options: {ansDetails.display}
-                            </span>
-                          ) : (
-                            <span className="qb-ans-badge single">
-                              {ansDetails.display}
-                            </span>
+                    {/* ── Answer Callout Card (only for non-option questions or when no option was ticked) ── */}
+                    {!hasCorrectTicked ? (
+                      <div className="qb-answer-card">
+                        <div className="qb-ans-row">
+                          <div className="qb-ans-icon">
+                            <CheckCircle2 size={15} />
+                          </div>
+                          <span className="qb-ans-label">Correct Answer:</span>
+                          <div className="qb-ans-val-box">
+                            {ansDetails.type === 'numerical' ? (
+                              <span className="qb-ans-numerical">
+                                <MathText text={ansDetails.display} />
+                              </span>
+                            ) : ansDetails.type === 'multiple' ? (
+                              <span className="qb-ans-badge multiple">
+                                Options: {ansDetails.display}
+                              </span>
+                            ) : (
+                              <span className="qb-ans-badge single">
+                                {ansDetails.display}
+                              </span>
+                            )}
+                          </div>
+
+                          {q.solution && (
+                            <button
+                              type="button"
+                              className="qb-sol-toggle"
+                              onClick={() => toggleSolution(q.id)}
+                            >
+                              {isExpandedSol ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                              <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                            </button>
                           )}
                         </div>
 
-                        {q.solution && (
-                          <button
-                            type="button"
-                            className="qb-sol-toggle"
-                            onClick={() => toggleSolution(q.id)}
-                          >
-                            {isExpandedSol ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                            <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
-                          </button>
+                        {q.solution && isExpandedSol && (
+                          <div className="qb-sol-content">
+                            <div className="qb-sol-title">Solution / Explanation:</div>
+                            <MathText text={q.solution} />
+                          </div>
                         )}
                       </div>
-
-                      {q.solution && isExpandedSol && (
-                        <div className="qb-sol-content">
-                          <div className="qb-sol-title">Solution / Explanation:</div>
-                          <MathText text={q.solution} />
-                        </div>
-                      )}
-                    </div>
+                    ) : q.solution ? (
+                      <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <button
+                          type="button"
+                          className="qb-sol-toggle"
+                          style={{ alignSelf: 'flex-start' }}
+                          onClick={() => toggleSolution(q.id)}
+                        >
+                          {isExpandedSol ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          <span>{isExpandedSol ? 'Hide Solution' : 'View Solution'}</span>
+                        </button>
+                        {isExpandedSol && (
+                          <div className="qb-sol-content">
+                            <div className="qb-sol-title">Solution / Explanation:</div>
+                            <MathText text={q.solution} />
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
@@ -842,6 +976,7 @@ const QuestionBank = () => {
                     <option value="single_correct">Single MCQ</option>
                     <option value="multi_correct">Multi MCQ</option>
                     <option value="numerical">Numerical</option>
+                    <option value="subjective">Subjective</option>
                   </select>
                 </div>
                 <div className="form-group flex-1">
@@ -893,32 +1028,44 @@ const QuestionBank = () => {
                 )}
               </div>
 
-              <div className="options-section">
-                <label>Options (mark the correct answer)</label>
-                {['A', 'B', 'C', 'D'].map((opt, idx) => (
-                  <div key={opt} className="option-row">
-                    <input
-                      type="radio"
-                      name="correct-opt"
-                      className="correct-radio"
-                      checked={Number(draft.correctIndex) === idx}
-                      onChange={() => setDraft({ ...draft, correctIndex: idx })}
-                    />
-                    <span className="opt-label">{opt}</span>
-                    <input
-                      type="text"
-                      className="opt-input"
-                      placeholder={`Option ${opt}`}
-                      value={draft.options[idx]}
-                      onChange={(e) => {
-                        const options = [...draft.options];
-                        options[idx] = e.target.value;
-                        setDraft({ ...draft, options });
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              {draft.q_type === 'numerical' || draft.q_type === 'subjective' ? (
+                <div className="form-group" style={{ marginTop: 16 }}>
+                  <label>Correct Answer / Solution</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 42 or formula expression"
+                    value={draft.solution}
+                    onChange={(e) => setDraft({ ...draft, solution: e.target.value })}
+                  />
+                </div>
+              ) : (
+                <div className="options-section">
+                  <label>Options (mark the correct answer)</label>
+                  {['A', 'B', 'C', 'D'].map((opt, idx) => (
+                    <div key={opt} className="option-row">
+                      <input
+                        type="radio"
+                        name="correct-opt"
+                        className="correct-radio"
+                        checked={Number(draft.correctIndex) === idx}
+                        onChange={() => setDraft({ ...draft, correctIndex: idx })}
+                      />
+                      <span className="opt-label">{opt}</span>
+                      <input
+                        type="text"
+                        className="opt-input"
+                        placeholder={`Option ${opt}`}
+                        value={draft.options[idx]}
+                        onChange={(e) => {
+                          const options = [...draft.options];
+                          options[idx] = e.target.value;
+                          setDraft({ ...draft, options });
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="modal-footer">

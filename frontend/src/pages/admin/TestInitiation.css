@@ -1,0 +1,134 @@
+/* ── Test Initiation Custom Styles ── */
+
+/* Action Buttons in Table */
+.ti-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.ti-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 9px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ti-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1);
+}
+
+.ti-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.ti-btn-icon {
+  flex-shrink: 0;
+}
+
+.ti-btn-label {
+  letter-spacing: 0.2px;
+}
+
+/* Assign Teachers Button */
+.ti-action-assign {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1.5px solid #c4b5fd;
+}
+
+.ti-action-assign:hover {
+  background: #ede9fe;
+  border-color: #7c3aed;
+  color: #6d28d9;
+}
+
+/* Publish Test Button */
+.ti-action-publish {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1.5px solid #6ee7b7;
+}
+
+.ti-action-publish:hover {
+  background: #d1fae5;
+  border-color: #059669;
+  color: #047857;
+}
+
+/* Schedule / Batches Button */
+.ti-action-schedule {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1.5px solid #93c5fd;
+}
+
+.ti-action-schedule:hover {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+
+/* Delete Button */
+.ti-action-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+  padding: 0 14px;
+}
+
+.ti-action-delete:hover {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
+/* ── Large Spacious Initiate Test Modal ── */
+.initiate-modal-lg {
+  width: 92vw !important;
+  max-width: 1060px !important;
+  max-height: 90vh !important;
+  padding: 28px 32px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.initiate-modal-title {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.3px !important;
+}
+
+.initiate-modal-body {
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.initiate-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.initiate-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}

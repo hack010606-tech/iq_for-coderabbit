@@ -17,6 +17,7 @@ export const AppDataProvider = ({ children }) => {
   const [doubts, setDoubts] = useState([]);
   const [testResults, setTestResults] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Fetch initial data based on role
   useEffect(() => {
@@ -111,8 +112,9 @@ export const AppDataProvider = ({ children }) => {
     teachers, setTeachers,
     doubts, setDoubts,
     testResults, setTestResults,
-    loading, refreshTests, refreshDoubts
-  }), [questions, tests, batches, students, teachers, doubts, testResults, loading]);
+    loading, refreshTests, refreshDoubts,
+    sidebarCollapsed, setSidebarCollapsed
+  }), [questions, tests, batches, students, teachers, doubts, testResults, loading, sidebarCollapsed]);
 
   return (
     <AppDataContext.Provider value={value}>

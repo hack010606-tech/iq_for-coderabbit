@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, ClipboardList, Trash2, X, CheckCircle, Clock, ChevronRight,
-         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar } from 'lucide-react';
+         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar, Stethoscope } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import './TestInitiation.css';
 
-/* ─── JEE preset definitions ─────────────────────────────────────────── */
+/* ─── Exam preset definitions ─────────────────────────────────────────── */
 const JEE_MAIN_PRESET = {
   label: 'JEE Main', duration_minutes: 180, totalQuestions: 75, totalMarks: 300, negativeMarking: true,
   subjects: [
@@ -18,6 +19,14 @@ const JEE_ADVANCED_PRESET = {
     { name: 'Physics',    sections: [{ label: 'Section 1 — Single MCQ', q_type: 'single_correct', count: 6, marks: 3, negative: -1 }, { label: 'Section 2 — Multi MCQ', q_type: 'multi_correct', count: 6, marks: 4, negative: -2 }, { label: 'Section 3 — Integer', q_type: 'integer', count: 6, marks: 4, negative: 0 }] },
     { name: 'Chemistry',  sections: [{ label: 'Section 1 — Single MCQ', q_type: 'single_correct', count: 6, marks: 3, negative: -1 }, { label: 'Section 2 — Multi MCQ', q_type: 'multi_correct', count: 6, marks: 4, negative: -2 }, { label: 'Section 3 — Integer', q_type: 'integer', count: 6, marks: 4, negative: 0 }] },
     { name: 'Mathematics',sections: [{ label: 'Section 1 — Single MCQ', q_type: 'single_correct', count: 6, marks: 3, negative: -1 }, { label: 'Section 2 — Multi MCQ', q_type: 'multi_correct', count: 6, marks: 4, negative: -2 }, { label: 'Section 3 — Integer', q_type: 'integer', count: 6, marks: 4, negative: 0 }] },
+  ],
+};
+const NEET_PRESET = {
+  label: 'NEET', duration_minutes: 200, totalQuestions: 180, totalMarks: 720, negativeMarking: true,
+  subjects: [
+    { name: 'Physics',   sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 35, marks: 4, negative: -1 }, { label: 'Section B — Single MCQ', q_type: 'single_correct', count: 10, marks: 4, negative: -1 }] },
+    { name: 'Chemistry', sections: [{ label: 'Section A — Single MCQ', q_type: 'single_correct', count: 35, marks: 4, negative: -1 }, { label: 'Section B — Single MCQ', q_type: 'single_correct', count: 10, marks: 4, negative: -1 }] },
+    { name: 'Biology',   sections: [{ label: 'Section A — Botany & Zoology', q_type: 'single_correct', count: 70, marks: 4, negative: -1 }, { label: 'Section B — Botany & Zoology', q_type: 'single_correct', count: 20, marks: 4, negative: -1 }] },
   ],
 };
 
@@ -161,33 +170,75 @@ const MultiTeacherPicker = ({ teachers, selected, onChange, loading }) => {
 
 /* ─── TypeCard ──────────────────────────────────────────────────────── */
 const TypeCard = ({ id, active, onClick, icon: Icon, title, subtitle, badge }) => (
-  <button id={`test-type-${id}`} onClick={onClick} style={{ flex: 1, padding: '14px 16px', borderRadius: 12, border: `2px solid ${active ? 'var(--color-admin-purple)' : 'var(--border-color)'}`, background: active ? 'var(--color-admin-purple-light)' : 'var(--bg-card)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s ease', position: 'relative', display: 'flex', flexDirection: 'column', gap: 6 }}>
-    {badge && <span style={{ position: 'absolute', top: 8, right: 10, fontSize: 10, fontWeight: 700, background: badge.bg, color: badge.color, borderRadius: 4, padding: '2px 6px' }}>{badge.text}</span>}
-    <Icon size={18} color={active ? 'var(--color-admin-purple)' : 'var(--text-secondary)'} />
-    <div style={{ fontWeight: 700, fontSize: 14, color: active ? 'var(--color-admin-purple)' : 'var(--text-primary)' }}>{title}</div>
-    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{subtitle}</div>
+  <button
+    id={`test-type-${id}`}
+    onClick={onClick}
+    style={{
+      flex: 1,
+      minHeight: 110,
+      padding: '16px 18px',
+      borderRadius: 14,
+      border: `2px solid ${active ? 'var(--color-admin-purple)' : 'var(--border-color)'}`,
+      background: active ? 'var(--color-admin-purple-light)' : 'var(--bg-card)',
+      cursor: 'pointer',
+      textAlign: 'left',
+      transition: 'all 0.18s ease',
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      gap: 8,
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Icon size={22} color={active ? 'var(--color-admin-purple)' : 'var(--text-secondary)'} />
+      {badge && (
+        <span style={{ fontSize: 10.5, fontWeight: 700, background: badge.bg, color: badge.color, borderRadius: 5, padding: '3px 8px' }}>
+          {badge.text}
+        </span>
+      )}
+    </div>
+    <div>
+      <div style={{ fontWeight: 700, fontSize: 15, color: active ? 'var(--color-admin-purple)' : 'var(--text-primary)', marginBottom: 3 }}>
+        {title}
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+        {subtitle}
+      </div>
+    </div>
   </button>
 );
 
 /* ─── Preset Preview ────────────────────────────────────────────────── */
 const PresetPanel = ({ preset }) => (
-  <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-    <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-      {[{ label: 'Duration', value: `${preset.duration_minutes} min` }, { label: 'Questions', value: preset.totalQuestions }, { label: 'Total Marks', value: preset.totalMarks }, { label: 'Negative', value: 'Yes' }].map(({ label, value }) => (
-        <div key={label} style={{ flex: 1, minWidth: 80 }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-admin-purple)', marginTop: 2 }}>{value}</div>
+  <div style={{ background: '#f8fafc', borderRadius: 12, padding: '16px 20px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      {[
+        { label: 'Duration', value: `${preset.duration_minutes} min`, color: '#6366f1' },
+        { label: 'Total Questions', value: preset.totalQuestions, color: '#0ea5e9' },
+        { label: 'Total Marks', value: preset.totalMarks, color: '#10b981' },
+        { label: 'Negative Marking', value: 'Yes (-1)', color: '#f59e0b' },
+      ].map(({ label, value, color }) => (
+        <div key={label} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 14px' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color, marginTop: 4 }}>{value}</div>
         </div>
       ))}
     </div>
-    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${preset.subjects.length}, 1fr)`, gap: 12 }}>
       {preset.subjects.map(sub => (
-        <div key={sub.name}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{sub.name}</div>
+        <div key={sub.name} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 14px' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{sub.name}</span>
+            <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+              {sub.sections.reduce((acc, s) => acc + s.count, 0)} Questions
+            </span>
+          </div>
           {sub.sections.map((s, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>
-              <ChevronRight size={11} /><span>{s.label}</span>
-              <span style={{ marginLeft: 'auto', fontWeight: 600, color: 'var(--text-primary)' }}>{s.count}Q · {s.marks}m</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', marginBottom: 5 }}>
+              <ChevronRight size={12} color="#94a3b8" />
+              <span>{s.label}</span>
+              <span style={{ marginLeft: 'auto', fontWeight: 700, color: '#0f172a' }}>{s.count}Q · {s.marks}m</span>
             </div>
           ))}
         </div>
@@ -276,7 +327,13 @@ const TestInitiation = () => {
     finally { setAssigningBatches(false); }
   };
 
-  const preset = testType === 'jee_main' ? JEE_MAIN_PRESET : testType === 'jee_advanced' ? JEE_ADVANCED_PRESET : null;
+  const preset = testType === 'jee_main'
+    ? JEE_MAIN_PRESET
+    : testType === 'jee_advanced'
+    ? JEE_ADVANCED_PRESET
+    : testType === 'neet'
+    ? NEET_PRESET
+    : null;
 
   const showToast = (msg, type = 'ok') => {
     setToast({ msg, type });
@@ -449,10 +506,16 @@ const TestInitiation = () => {
                                 // fallback for rows created before migration 007.
                                 const pattern = t.paper_pattern || t.t_type;
                                 const isCustom = pattern === 'custom';
-                                const target = pattern === 'jee_advanced' ? 18 : (isCustom ? '?' : 30);
-                                
-                                if (sub === 'Biology') return null;
+                                const isNeet = pattern === 'neet';
+
+                                if (sub === 'Biology' && !isNeet && !isCustom) return null;
+                                if (sub === 'Mathematics' && isNeet) return null;
                                 if (isCustom && count === 0) return null;
+
+                                let target = 30;
+                                if (pattern === 'jee_advanced') target = 18;
+                                else if (pattern === 'neet') target = sub === 'Biology' ? 90 : 45;
+                                else if (isCustom) target = '?';
                                 
                                 const color = count === target && target !== '?' ? '#10b981' : 'var(--text-secondary)';
                                 return (
@@ -468,22 +531,48 @@ const TestInitiation = () => {
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.created_at ? new Date(t.created_at).toLocaleDateString() : '—'}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button id={`assign-btn-${t.id}`} className="admin-btn" style={{ padding: '6px 10px', fontSize: 12, background: 'var(--color-admin-purple-light)', color: 'var(--color-admin-purple)', border: '1px solid var(--color-admin-purple)', borderRadius: 6 }} onClick={() => openAssignModal(t)} title="Assign teachers">
-                          <UserCheck size={13} />
+                      <div className="ti-actions-group">
+                        <button
+                          id={`assign-btn-${t.id}`}
+                          className="ti-action-btn ti-action-assign"
+                          onClick={() => openAssignModal(t)}
+                          title="Assign teachers to add questions"
+                        >
+                          <UserCheck size={18} className="ti-btn-icon" />
+                          <span className="ti-btn-label">Assign</span>
                         </button>
                         {t.status === 'draft' && (
-                          <button className="admin-btn" style={{ padding: '6px 10px', fontSize: 12, background: '#ecfdf5', color: '#059669', border: '1px solid #10b981', borderRadius: 6 }} onClick={() => handlePublish(t)} title="Publish Test">
-                            <Send size={13} />
+                          <button
+                            className="ti-action-btn ti-action-publish"
+                            onClick={() => handlePublish(t)}
+                            title="Publish this test for students"
+                          >
+                            <Send size={17} className="ti-btn-icon" />
+                            <span className="ti-btn-label">Publish</span>
                           </button>
                         )}
                         {t.status === 'published' && (
-                          <button className="admin-btn" style={{ padding: '6px 10px', fontSize: 12, background: '#eff6ff', color: '#2563eb', border: '1px solid #3b82f6', borderRadius: 6 }} onClick={() => { setBatchTarget(t); setBatchSelected([]); setScheduleStart(''); setScheduleEnd(''); }} title="Assign to Batches">
-                            <Calendar size={13} />
+                          <button
+                            className="ti-action-btn ti-action-schedule"
+                            onClick={() => {
+                              setBatchTarget(t);
+                              setBatchSelected([]);
+                              setScheduleStart('');
+                              setScheduleEnd('');
+                            }}
+                            title="Schedule & assign to batches"
+                          >
+                            <Calendar size={17} className="ti-btn-icon" />
+                            <span className="ti-btn-label">Batches</span>
                           </button>
                         )}
-                        <button className="admin-btn admin-btn-danger" style={{ padding: '6px 10px' }} onClick={() => handleDelete(t)}>
-                          <Trash2 size={13} />
+                        <button
+                          className="ti-action-btn ti-action-delete"
+                          onClick={() => handleDelete(t)}
+                          title="Delete test"
+                        >
+                          <Trash2 size={18} className="ti-btn-icon" />
+                          <span className="ti-btn-label">Delete</span>
                         </button>
                       </div>
                     </td>
@@ -501,74 +590,82 @@ const TestInitiation = () => {
       {/* ══════════ CREATE MODAL ══════════ */}
       {showModal && (
         <div className="admin-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="admin-modal" style={{ maxWidth: 660, maxHeight: '92vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div className="admin-modal-header">
-              <h2 className="admin-modal-title">Initiate New Test</h2>
-              <button className="admin-modal-close" onClick={() => setShowModal(false)} aria-label="Close dialog" title="Close"><X size={18} /></button>
-            </div>
-
-            <div className="admin-form-group">
-              <label className="admin-form-label">Test Format</label>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <TypeCard id="jee_main"     active={testType === 'jee_main'}     onClick={() => setTestType('jee_main')}     icon={Zap}     title="JEE Main"     subtitle="180 min · 75 Q · 300 marks" badge={{ text: 'NTA Pattern', bg: '#dbeafe', color: '#1d4ed8' }} />
-                <TypeCard id="jee_advanced" active={testType === 'jee_advanced'} onClick={() => setTestType('jee_advanced')} icon={Trophy}  title="JEE Advanced" subtitle="180 min · 54 Q · 186 marks" badge={{ text: 'IIT Pattern', bg: '#fef3c7', color: '#92400e' }} />
-                <TypeCard id="custom"       active={testType === 'custom'}       onClick={() => setTestType('custom')}       icon={Settings} title="Custom"       subtitle="Set your own subjects, types & time" />
+          <div className="admin-modal initiate-modal-lg" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header" style={{ marginBottom: 16 }}>
+              <div>
+                <h2 className="admin-modal-title initiate-modal-title">Initiate New Test</h2>
+                <p style={{ margin: '3px 0 0 0', fontSize: 13, color: '#64748b' }}>
+                  Select an examination framework or configure custom subject quotas and assign faculty.
+                </p>
               </div>
+              <button className="admin-modal-close" onClick={() => setShowModal(false)} aria-label="Close dialog" title="Close"><X size={20} /></button>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-form-label">Test Title *</label>
-              <input id="test-title-input" className="admin-form-input" placeholder={preset ? `e.g. ${preset.label} Mock Test #1` : 'e.g. Chapter 5 Practice Test'} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-            </div>
-
-            {preset && (
+            <div className="initiate-modal-body">
               <div className="admin-form-group">
-                <label className="admin-form-label">Pattern Preview</label>
-                <PresetPanel preset={preset} />
+                <label className="admin-form-label">Test Format</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                  <TypeCard id="jee_main"     active={testType === 'jee_main'}     onClick={() => setTestType('jee_main')}     icon={Zap}         title="JEE Main"     subtitle="180 min · 75 Q · 300 marks" badge={{ text: 'NTA Pattern', bg: '#dbeafe', color: '#1d4ed8' }} />
+                  <TypeCard id="jee_advanced" active={testType === 'jee_advanced'} onClick={() => setTestType('jee_advanced')} icon={Trophy}      title="JEE Advanced" subtitle="180 min · 54 Q · 186 marks" badge={{ text: 'IIT Pattern', bg: '#fef3c7', color: '#92400e' }} />
+                  <TypeCard id="neet"         active={testType === 'neet'}         onClick={() => setTestType('neet')}         icon={Stethoscope} title="NEET"         subtitle="200 min · 180 Q · 720 marks" badge={{ text: 'NTA Medical', bg: '#dcfce7', color: '#15803d' }} />
+                  <TypeCard id="custom"       active={testType === 'custom'}       onClick={() => setTestType('custom')}       icon={Settings}    title="Custom"       subtitle="Set your own subjects, types & time" />
+                </div>
               </div>
-            )}
 
-            {testType === 'custom' && (
-              <>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Duration (minutes)</label>
-                  <input id="custom-duration-input" className="admin-form-input" type="number" min={10} max={360} value={customDuration} onChange={e => setCustomDuration(e.target.value)} style={{ maxWidth: 140 }} />
-                </div>
-                <div className="admin-form-group">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <label className="admin-form-label" style={{ marginBottom: 0 }}>Sections</label>
-                    <button id="add-section-btn" onClick={addSection} style={{ fontSize: 12, color: 'var(--color-admin-purple)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={13} /> Add Section</button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {customSections.map((row, idx) => <CustomRow key={idx} row={row} idx={idx} onChange={updateSection} onRemove={removeSection} />)}
-                  </div>
-                  <div style={{ marginTop: 12, padding: '10px 14px', background: 'var(--color-admin-purple-light)', borderRadius: 8, display: 'flex', gap: 24 }}>
-                    {[{ label: 'Total Questions', value: customTotalQ }, { label: 'Total Marks', value: customTotalM }, { label: 'Duration', value: `${customDuration} min` }, { label: 'Negative Marking', value: hasNegative ? 'Yes' : 'No' }].map(({ label, value }) => (
-                      <div key={label}><div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-admin-purple)', textTransform: 'uppercase' }}>{label}</div><div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div></div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Test Title *</label>
+                <input id="test-title-input" className="admin-form-input" placeholder={preset ? `e.g. ${preset.label} Mock Test #1` : 'e.g. Chapter 5 Practice Test'} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} style={{ height: 42, fontSize: 14 }} />
+              </div>
 
-            {/* Multi teacher picker */}
-            <div className="admin-form-group">
-              <label className="admin-form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <UserCheck size={14} color="var(--color-admin-purple)" />
-                Assign Teachers to Fill Questions
-                <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: 11 }}> — select any number</span>
-              </label>
-              <MultiTeacherPicker teachers={teachers} selected={selectedTeachers} onChange={setSelectedTeachers} loading={teachersLoading} />
+              {preset && (
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Pattern Preview</label>
+                  <PresetPanel preset={preset} />
+                </div>
+              )}
+
+              {testType === 'custom' && (
+                <>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Duration (minutes)</label>
+                    <input id="custom-duration-input" className="admin-form-input" type="number" min={10} max={360} value={customDuration} onChange={e => setCustomDuration(e.target.value)} style={{ maxWidth: 140, height: 40 }} />
+                  </div>
+                  <div className="admin-form-group">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <label className="admin-form-label" style={{ marginBottom: 0 }}>Sections</label>
+                      <button id="add-section-btn" onClick={addSection} style={{ fontSize: 12, color: 'var(--color-admin-purple)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={13} /> Add Section</button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {customSections.map((row, idx) => <CustomRow key={idx} row={row} idx={idx} onChange={updateSection} onRemove={removeSection} />)}
+                    </div>
+                    <div style={{ marginTop: 12, padding: '12px 16px', background: 'var(--color-admin-purple-light)', borderRadius: 10, display: 'flex', gap: 28 }}>
+                      {[{ label: 'Total Questions', value: customTotalQ }, { label: 'Total Marks', value: customTotalM }, { label: 'Duration', value: `${customDuration} min` }, { label: 'Negative Marking', value: hasNegative ? 'Yes' : 'No' }].map(({ label, value }) => (
+                        <div key={label}><div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--color-admin-purple)', textTransform: 'uppercase' }}>{label}</div><div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>{value}</div></div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Multi teacher picker */}
+              <div className="admin-form-group">
+                <label className="admin-form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <UserCheck size={14} color="var(--color-admin-purple)" />
+                  Assign Teachers to Fill Questions
+                  <span style={{ fontWeight: 400, color: 'var(--text-secondary)', fontSize: 11 }}> — select any number</span>
+                </label>
+                <MultiTeacherPicker teachers={teachers} selected={selectedTeachers} onChange={setSelectedTeachers} loading={teachersLoading} />
+              </div>
+
+              <div className="admin-form-group">
+                <label className="admin-form-label">Instructions <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>(optional)</span></label>
+                <textarea className="admin-form-input" placeholder="Any special instructions..." value={form.instructions} onChange={e => setForm({ ...form, instructions: e.target.value })} rows={3} style={{ resize: 'vertical' }} />
+              </div>
             </div>
 
-            <div className="admin-form-group">
-              <label className="admin-form-label">Instructions <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>(optional)</span></label>
-              <textarea className="admin-form-input" placeholder="Any special instructions..." value={form.instructions} onChange={e => setForm({ ...form, instructions: e.target.value })} rows={3} style={{ resize: 'vertical' }} />
-            </div>
-
-            <div className="admin-modal-footer">
-              <button className="admin-btn admin-btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-              <button id="create-test-btn" className="admin-btn admin-btn-primary" onClick={handleCreate} disabled={saving}>
+            <div className="admin-modal-footer" style={{ marginTop: 16, paddingTop: 14 }}>
+              <button className="admin-btn admin-btn-ghost" onClick={() => setShowModal(false)} style={{ height: 42, padding: '0 20px', fontSize: 13.5 }}>Cancel</button>
+              <button id="create-test-btn" className="admin-btn admin-btn-primary" onClick={handleCreate} disabled={saving} style={{ height: 42, padding: '0 24px', fontSize: 13.5 }}>
                 {saving ? 'Creating…' : 'Create Test Shell'}
               </button>
             </div>

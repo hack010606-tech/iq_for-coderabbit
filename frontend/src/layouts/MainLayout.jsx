@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Book, FlaskConical, Calculator, Settings, LogOut, Award, Layers, Users, MessageSquare, Database, FileText, Upload, UsersRound, Video, ClipboardCheck } from 'lucide-react';
+import {
+  LayoutDashboard, Book, FlaskConical, Calculator, Settings, LogOut,
+  Award, Layers, Users, MessageSquare, Database, FileText, Upload,
+  UsersRound, Video, ClipboardCheck, ChevronLeft, ChevronRight
+} from 'lucide-react';
 import { apiClient } from '../api/client';
+import { useAppData } from '../context/AppDataContext';
 import './MainLayout.css';
 
 const MainLayout = () => {
   const location = useLocation();
+  const { sidebarCollapsed, setSidebarCollapsed } = useAppData();
 
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : { role: 'student', full_name: 'Student' };
@@ -14,6 +20,26 @@ const MainLayout = () => {
   // Revokes the session server-side before clearing local state, so a captured
   // token cannot be replayed after the user has left.
   const handleLogout = () => apiClient.logout();
+
+  // Automatically collapse sidebar into icon-only mode when on Test Constructor / Add Questions routes
+  const isConstructorRoute = location.pathname.includes('/test-constructor');
+  const [userToggledOpen, setUserToggledOpen] = useState(false);
+
+  useEffect(() => {
+    setUserToggledOpen(false);
+  }, [location.pathname]);
+
+  const isCollapsed = Boolean((isConstructorRoute && !userToggledOpen) || sidebarCollapsed);
+
+  const toggleSidebar = () => {
+    if (isCollapsed) {
+      setUserToggledOpen(true);
+      if (typeof setSidebarCollapsed === 'function') setSidebarCollapsed(false);
+    } else {
+      setUserToggledOpen(false);
+      if (typeof setSidebarCollapsed === 'function') setSidebarCollapsed(true);
+    }
+  };
 
   const studentNav = [
     { name: 'Dashboard', path: '/student', icon: LayoutDashboard },
@@ -50,16 +76,25 @@ const MainLayout = () => {
   const navItems = isTeacher ? teacherNav : studentNav;
 
   return (
-    <div className={`app-layout ${isTeacher ? 'teacher-theme' : 'student-theme'}`}>
-      <aside className="sidebar">
+    <div className={`app-layout ${isTeacher ? 'teacher-theme' : 'student-theme'} ${isCollapsed ? 'sidebar-collapsed-mode' : ''}`}>
+      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} aria-label="Main Navigation">
         <div className="sidebar-header">
-          <div className="user-profile">
+          <div className="user-profile" title={user.full_name || (isTeacher ? 'Teacher' : 'Student')}>
             <div className="avatar"></div>
             <div className="user-info">
               <h4>{user.full_name || (isTeacher ? 'Teacher' : 'Student')}</h4>
               <span>{isTeacher ? 'Teacher Portal' : 'Student Portal'}</span>
             </div>
           </div>
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={toggleSidebar}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
         
         <nav className="sidebar-nav">
@@ -81,7 +116,12 @@ const MainLayout = () => {
             }
 
             return (
-              <Link key={item.name} to={item.path} className={`nav-item ${isActive ? 'active' : ''}`}>
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                title={item.name}
+              >
                 <Icon size={20} />
                 <span>{item.name}</span>
               </Link>
@@ -90,11 +130,15 @@ const MainLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <Link to={isTeacher ? "/teacher/settings" : "/student/settings"} className={`nav-item ${location.pathname === (isTeacher ? '/teacher/settings' : '/student/settings') ? 'active' : ''}`}>
+          <Link
+            to={isTeacher ? "/teacher/settings" : "/student/settings"}
+            className={`nav-item ${location.pathname === (isTeacher ? '/teacher/settings' : '/student/settings') ? 'active' : ''}`}
+            title="Settings"
+          >
             <Settings size={20} />
             <span>Settings</span>
           </Link>
-          <button className="nav-item text-danger" onClick={handleLogout}>
+          <button className="nav-item text-danger" onClick={handleLogout} title="Logout">
             <LogOut size={20} />
             <span>Logout</span>
           </button>

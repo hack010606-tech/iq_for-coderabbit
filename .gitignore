@@ -25,3 +25,6 @@ coverage/
 *.zip
 *.7z
 *.tar.gz
+
+# Local helper scripts
+restore_debloat.*

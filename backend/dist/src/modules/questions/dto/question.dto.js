@@ -14,7 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 exports.DIFFICULTIES = ['easy', 'medium', 'hard'];
-exports.QUESTION_TYPES = ['single_correct', 'multi_correct', 'numerical', 'assertion'];
+exports.QUESTION_TYPES = ['single_correct', 'multi_correct', 'numerical', 'assertion', 'subjective'];
 const MAX_QUESTION_TEXT = 8000;
 const MAX_OPTIONS = 10;
 class CreateQuestionDto {
@@ -163,6 +163,7 @@ class QuestionQueryDto {
     topic;
     search;
     review_status;
+    exclude_subjective;
     page;
     limit;
 }
@@ -207,6 +208,12 @@ __decorate([
     __metadata("design:type", String)
 ], QuestionQueryDto.prototype, "review_status", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], QuestionQueryDto.prototype, "exclude_subjective", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ default: 1 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
@@ -225,6 +232,7 @@ __decorate([
 ], QuestionQueryDto.prototype, "limit", void 0);
 class ReviewQueueQueryDto {
     subject;
+    exclude_subjective;
     page;
     limit;
 }
@@ -236,6 +244,12 @@ __decorate([
     (0, class_validator_1.MaxLength)(100),
     __metadata("design:type", String)
 ], ReviewQueueQueryDto.prototype, "subject", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ReviewQueueQueryDto.prototype, "exclude_subjective", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ default: 1 }),
     (0, class_validator_1.IsOptional)(),

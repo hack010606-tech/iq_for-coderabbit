@@ -17,6 +17,7 @@ export declare class QuestionsService {
         review_status?: string;
         page?: number;
         limit?: number;
+        exclude_subjective?: string;
     }, user?: Requester): Promise<{
         data: {
             id: any;

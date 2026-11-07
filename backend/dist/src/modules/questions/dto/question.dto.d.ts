@@ -1,5 +1,5 @@
 export declare const DIFFICULTIES: readonly ["easy", "medium", "hard"];
-export declare const QUESTION_TYPES: readonly ["single_correct", "multi_correct", "numerical", "assertion"];
+export declare const QUESTION_TYPES: readonly ["single_correct", "multi_correct", "numerical", "assertion", "subjective"];
 export declare class CreateQuestionDto {
     subject: string;
     topic?: string;
@@ -37,11 +37,13 @@ export declare class QuestionQueryDto {
     topic?: string;
     search?: string;
     review_status?: string;
+    exclude_subjective?: string;
     page?: number;
     limit?: number;
 }
 export declare class ReviewQueueQueryDto {
     subject?: string;
+    exclude_subjective?: string;
     page?: number;
     limit?: number;
 }

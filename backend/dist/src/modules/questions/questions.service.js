@@ -86,8 +86,12 @@ let QuestionsService = class QuestionsService {
             query = query.ilike('subject', this.escapeLike(subject));
         if (filters.difficulty)
             query = query.eq('difficulty', filters.difficulty);
-        if (filters.q_type)
+        if (filters.q_type) {
             query = query.eq('q_type', filters.q_type);
+        }
+        else if (filters.exclude_subjective === 'true') {
+            query = query.neq('q_type', 'subjective');
+        }
         if (filters.topic)
             query = query.ilike('topic', `%${this.escapeLike(filters.topic)}%`);
         if (filters.search)

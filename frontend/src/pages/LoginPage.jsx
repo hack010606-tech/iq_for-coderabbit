@@ -21,6 +21,8 @@ const LoginPage = () => {
       { label: 'Dr. Alan Physics', email: 'physics_teacher@edu.com', password: 'teacher123' },
       { label: 'Dr. Marie Chem', email: 'chemistry_teacher@edu.com', password: 'teacher123' },
       { label: 'Dr. Euler Maths', email: 'maths_teacher@edu.com', password: 'teacher123' },
+      { label: 'Dr. Jane Zoology', email: 'zoology_teacher@edu.com', password: 'teacher123' },
+      { label: 'Dr. Gregor Botany', email: 'botany_teacher@edu.com', password: 'teacher123' },
     ],
     admin: [
       { label: 'Super Admin', email: 'admin@edu.com', password: 'admin123' },
