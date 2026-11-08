@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, CheckCircle, Clock, FileDown, Trophy } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, FileDown, Trophy, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import TestPDFExportModal from '../teacher/TestPDFExportModal';
 
@@ -14,6 +14,7 @@ const TestLibrary = () => {
   const [pdfTestData, setPdfTestData] = useState(null);
   const [pdfQuestions, setPdfQuestions] = useState([]);
   const [exportingPdfId, setExportingPdfId] = useState(null);
+  const [updatingResultId, setUpdatingResultId] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -47,6 +48,24 @@ const TestLibrary = () => {
     }
   };
 
+  const handleToggleResults = async (test, publish) => {
+    const action = publish ? 'approve and release' : 'withhold';
+    if (!window.confirm(`Are you sure you want to ${action} results for "${test.title}"? Students will ${publish ? 'now be able to view their scores and solutions' : 'no longer see scores until re-approved'}.`)) {
+      return;
+    }
+    setUpdatingResultId(test.id);
+    try {
+      await apiClient.patch(`/tests/${test.id}/publish-results`, { published: publish });
+      setTests((prev) =>
+        prev.map((t) => (t.id === test.id ? { ...t, results_published: publish } : t)),
+      );
+    } catch (e) {
+      alert(e.message || 'Failed to update results status');
+    } finally {
+      setUpdatingResultId(null);
+    }
+  };
+
   const filtered = filter === 'all' ? tests : tests.filter(t => t.status === filter);
 
   return (
@@ -54,7 +73,7 @@ const TestLibrary = () => {
       <div className="admin-page-header">
         <div>
           <h1>Test Library</h1>
-          <p>Overview of all tests across the platform — drafted and published.</p>
+          <p>Overview of all tests across the platform — drafted, published, and results approval.</p>
         </div>
       </div>
 
@@ -70,83 +89,135 @@ const TestLibrary = () => {
         <div className="admin-empty"><BookOpen size={40} /><p>No tests found.</p></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {filtered.map(t => (
-            <div key={t.id} className="admin-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                  background: t.status === 'published' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <BookOpen size={18} color={t.status === 'published' ? '#059669' : '#d97706'} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 3 }}>{t.title}</div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    {t.subject && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.subject}</span>}
-                    {t.duration_minutes && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.duration_minutes} min</span>}
-                    {t.created_at && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Created {new Date(t.created_at).toLocaleDateString()}</span>}
+          {filtered.map(t => {
+            const isResultsLive = t.results_published === true;
+            return (
+              <div key={t.id} className="admin-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                    background: t.status === 'published' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <BookOpen size={18} color={t.status === 'published' ? '#059669' : '#d97706'} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 3 }}>{t.title}</div>
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      {t.subject && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.subject}</span>}
+                      {t.duration_minutes && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.duration_minutes} min</span>}
+                      {t.created_at && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Created {new Date(t.created_at).toLocaleDateString()}</span>}
+                    </div>
                   </div>
                 </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className={`admin-badge admin-badge-${t.status === 'published' ? 'published' : 'draft'}`}>
+                    {t.status === 'published'
+                      ? <><CheckCircle size={10} /> Paper Published</>
+                      : <><Clock size={10} /> Draft</>
+                    }
+                  </span>
+
+                  {/* Results Visibility Badge */}
+                  <span
+                    className="admin-badge"
+                    style={{
+                      background: isResultsLive ? '#ecfdf5' : '#fef3c7',
+                      color: isResultsLive ? '#059669' : '#b45309',
+                      border: `1px solid ${isResultsLive ? '#a7f3d0' : '#fde68a'}`,
+                    }}
+                  >
+                    {isResultsLive ? (
+                      <><Eye size={10} /> Results: Released</>
+                    ) : (
+                      <><EyeOff size={10} /> Results: Withheld</>
+                    )}
+                  </span>
+
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    {t.question_count ?? (t.test_questions?.length ?? 0)} Q
+                  </span>
+
+                  {/* Admin Result Release Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleResults(t, !isResultsLive)}
+                    disabled={updatingResultId === t.id}
+                    title={isResultsLive ? 'Withhold results from students' : 'Approve & Release results to students'}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      padding: '6px 12px',
+                      borderRadius: 7,
+                      border: isResultsLive ? '1px solid #cbd5e1' : '1px solid #86efac',
+                      background: isResultsLive ? '#f8fafc' : '#f0fdf4',
+                      color: isResultsLive ? '#475569' : '#15803d',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <ShieldCheck size={13} />
+                    <span>
+                      {updatingResultId === t.id
+                        ? 'Updating...'
+                        : isResultsLive
+                        ? 'Withhold'
+                        : 'Approve Results'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/test-results/${t.id}`)}
+                    title="View candidate test results"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '6px 12px',
+                      borderRadius: 7,
+                      border: '1px solid #f0abfc',
+                      background: '#fdf4ff',
+                      color: '#9333ea',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Trophy size={14} />
+                    <span>Results</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExportPdf(t)}
+                    disabled={exportingPdfId === t.id}
+                    title="Export question paper as PDF (subject-wise)"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '6px 12px',
+                      borderRadius: 7,
+                      border: '1px solid #cbd5e1',
+                      background: '#f8fafc',
+                      color: '#4338ca',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <FileDown size={14} />
+                    <span>{exportingPdfId === t.id ? 'Loading…' : 'PDF'}</span>
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className={`admin-badge admin-badge-${t.status === 'published' ? 'published' : 'draft'}`}>
-                  {t.status === 'published'
-                    ? <><CheckCircle size={10} /> Published</>
-                    : <><Clock size={10} /> Draft</>
-                  }
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  {t.question_count ?? (t.test_questions?.length ?? 0)} Q
-                </span>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/admin/test-results/${t.id}`)}
-                  title="View candidate test results"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 12px',
-                    borderRadius: 7,
-                    border: '1px solid #f0abfc',
-                    background: '#fdf4ff',
-                    color: '#9333ea',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <Trophy size={14} />
-                  <span>Results</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleExportPdf(t)}
-                  disabled={exportingPdfId === t.id}
-                  title="Export question paper as PDF (subject-wise)"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 12px',
-                    borderRadius: 7,
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    color: '#4338ca',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <FileDown size={14} />
-                  <span>{exportingPdfId === t.id ? 'Loading…' : 'PDF'}</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

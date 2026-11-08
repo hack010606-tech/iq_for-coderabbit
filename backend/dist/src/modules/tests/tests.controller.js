@@ -41,6 +41,9 @@ let TestsController = class TestsController {
     publish(id, user) {
         return this.testsService.publish(id, user);
     }
+    publishResults(id, body, user) {
+        return this.testsService.setResultsPublished(id, body?.published !== false, user);
+    }
     addQuestions(id, body, user) {
         return this.testsService.addQuestions(id, body.question_ids, user);
     }
@@ -121,6 +124,18 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], TestsController.prototype, "publish", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: '[Admin] Approve and release (or withhold) test results for students' }),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('admin'),
+    (0, common_1.Patch)(':id/publish-results'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", void 0)
+], TestsController.prototype, "publishResults", null);
 __decorate([
     (0, swagger_1.ApiOperation)({ summary: '[Teacher] Add/replace questions on a test you own or are assigned' }),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),

@@ -64,6 +64,51 @@ const PostTestResult = () => {
   }
 
   const test = attempt.tests || {};
+
+  if (attempt.results_published === false) {
+    return (
+      <div className="result-page">
+        <button className="btn-back" onClick={() => navigate('/student/test-library')}>
+          <ArrowLeft size={16} /> Back to Test Library
+        </button>
+        <div className="result-pending-card">
+          <div className="pending-icon-wrap">
+            <Clock size={44} color="#d97706" />
+          </div>
+          <h2>Results Pending Administrator Approval</h2>
+          <p className="pending-lead">
+            The results for <strong>{test.title || 'this test'}</strong> have not been published yet.
+          </p>
+          <div className="pending-details-box">
+            <div className="pending-row">
+              <span className="pending-k">Test Paper:</span>
+              <span className="pending-v">{test.title || 'Examination'}</span>
+            </div>
+            <div className="pending-row">
+              <span className="pending-k">Submitted At:</span>
+              <span className="pending-v">
+                {attempt.submitted_at
+                  ? new Date(attempt.submitted_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+                  : '—'}
+              </span>
+            </div>
+            <div className="pending-row">
+              <span className="pending-k">Status:</span>
+              <span className="pending-v-badge">Pending Admin Approval</span>
+            </div>
+          </div>
+          <p className="pending-info">
+            Your responses were successfully recorded and secured. Detailed question solutions, your marks, and cohort rankings will become visible as soon as the administrator reviews and approves the test results.
+          </p>
+          <div className="pending-actions">
+            <button className="btn-primary-portal" onClick={() => navigate('/student')}>
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const answers = attempt.answers || [];
   const cohort = attempt.cohort;
 

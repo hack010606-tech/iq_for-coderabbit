@@ -323,9 +323,15 @@ const StudentDashboard = () => {
                     <span className="sd-muted sd-small">
                       {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : ''}
                     </span>
-                    <span className={`sd-score ${pct >= 75 ? 'good' : pct >= 40 ? 'mid' : 'bad'}`}>
-                      {a.total_score} / {max}
-                    </span>
+                    {a.results_published === false ? (
+                      <span className="sd-score" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', fontSize: '0.75rem', padding: '3px 8px' }}>
+                        Pending Approval
+                      </span>
+                    ) : (
+                      <span className={`sd-score ${pct >= 75 ? 'good' : pct >= 40 ? 'mid' : 'bad'}`}>
+                        {a.total_score} / {max}
+                      </span>
+                    )}
                     <ArrowRight size={15} className="sd-muted" />
                   </button>
                 );

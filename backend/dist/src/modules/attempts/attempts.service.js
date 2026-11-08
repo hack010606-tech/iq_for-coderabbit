@@ -16,6 +16,7 @@ const supabase_config_1 = require("../../config/supabase.config");
 const spaced_repetition_service_1 = require("../analytics/spaced-repetition.service");
 const cache_service_1 = require("../../common/cache/cache.service");
 const query_util_1 = require("../../common/db/query.util");
+const tests_service_1 = require("../tests/tests.service");
 const CLOCK_GRACE_SECONDS = 30;
 const VIOLATION_LIMIT = 3;
 const ANSWER_STATUSES = [
@@ -91,6 +92,7 @@ let AttemptsService = AttemptsService_1 = class AttemptsService {
         return {
             negativeMarking: row.negative_marking === true,
             negativeMarks: Number(row.negative_marks) || 0,
+            resultsPublished: (0, tests_service_1.isTestResultsPublished)(row),
         };
     }
     async resolveAssignmentWindow(testId, studentId) {
@@ -426,9 +428,21 @@ let AttemptsService = AttemptsService_1 = class AttemptsService {
         const unattempted = answerUpdates.filter((a) => a.is_correct === null).length;
         const total = testQuestions.length || 1;
         const maxScore = testQuestions.reduce((sum, tq) => sum + Number(tq.marks_override || tq.questions?.marks || 4), 0);
+        if (!scheme.resultsPublished) {
+            return {
+                attemptId,
+                testId: attempt.test_id,
+                submitted: true,
+                results_published: false,
+                autoSubmitted: effectiveAutoSubmit,
+                timeTakenSeconds,
+                message: 'Exam submitted successfully. Results will be released once approved by the administrator.',
+            };
+        }
         return {
             attemptId,
             testId: attempt.test_id,
+            results_published: true,
             score: totalScore,
             maxScore,
             correct,
@@ -512,20 +526,27 @@ let AttemptsService = AttemptsService_1 = class AttemptsService {
     async getMyAttempts(studentId) {
         const { data, error } = await supabase_config_1.supabase
             .from('attempts')
-            .select('id, status, total_score, started_at, submitted_at, tests(id, title, total_marks)')
+            .select('id, status, total_score, started_at, submitted_at, tests(id, title, total_marks, instructions, description)')
             .eq('student_id', studentId)
             .order('started_at', { ascending: false })
             .limit(200);
         if (error)
             throw new Error(error.message);
-        return data;
+        return (data || []).map((a) => {
+            const published = (0, tests_service_1.isTestResultsPublished)(a.tests);
+            return {
+                ...a,
+                results_published: published,
+                total_score: published ? a.total_score : null,
+            };
+        });
     }
     async getAttemptResult(attemptId, studentId) {
         const { data: attempt, error } = await supabase_config_1.supabase
             .from('attempts')
             .select(`
         id, status, total_score, started_at, submitted_at, auto_submitted,
-        tests(id, title, total_marks, duration_minutes),
+        tests(id, title, total_marks, duration_minutes, instructions, description),
         answers(
           question_id, selected_answer, is_correct, time_spent_seconds, flagged_for_doubt,
           questions(id, question_text, options, correct_answer, subject, topic, difficulty, marks)
@@ -536,6 +557,21 @@ let AttemptsService = AttemptsService_1 = class AttemptsService {
             .single();
         if (error || !attempt)
             throw new common_1.NotFoundException('Attempt not found');
+        const resultsPublished = (0, tests_service_1.isTestResultsPublished)(attempt.tests);
+        if (!resultsPublished) {
+            return {
+                id: attempt.id,
+                status: attempt.status,
+                started_at: attempt.started_at,
+                submitted_at: attempt.submitted_at,
+                auto_submitted: attempt.auto_submitted,
+                results_published: false,
+                tests: attempt.tests,
+                total_score: null,
+                cohort: null,
+                answers: [],
+            };
+        }
         if (attempt.status !== 'submitted') {
             for (const ans of attempt.answers || []) {
                 if (ans.questions)

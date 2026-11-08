@@ -323,7 +323,22 @@ let AppService = AppService_1 = class AppService {
         const late = this.isExpired(session.ends_at);
         const status = autoSubmitted || late ? 'auto_submitted' : 'submitted';
         const result = await this.finaliseSession(sessionId, session.exam_id, status);
-        return { success: true, autoSubmitted: autoSubmitted || late, ...result };
+        const { data: test } = await this.supabase
+            .from('tests')
+            .select('instructions, description')
+            .eq('id', session.exam_id)
+            .single();
+        const resultsPublished = this.isResultsPublished(test);
+        if (!resultsPublished) {
+            return {
+                success: true,
+                submitted: true,
+                results_published: false,
+                autoSubmitted: autoSubmitted || late,
+                message: 'Exam submitted successfully. Results will be released once approved by the administrator.',
+            };
+        }
+        return { success: true, autoSubmitted: autoSubmitted || late, results_published: true, ...result };
     }
     async finaliseSession(sessionId, examId, status) {
         const result = await this.gradeSession(sessionId, examId);
@@ -425,9 +440,20 @@ let AppService = AppService_1 = class AppService {
         }
         const { data: test } = await this.supabase
             .from('tests')
-            .select('title, total_marks, duration_minutes')
+            .select('title, total_marks, duration_minutes, instructions, description')
             .eq('id', session.exam_id)
             .single();
+        const resultsPublished = this.isResultsPublished(test);
+        if (!resultsPublished) {
+            return {
+                sessionId,
+                status: session.status,
+                test,
+                results_published: false,
+                violations: 0,
+                message: 'Results are pending administrator review and approval.',
+            };
+        }
         const { count: violations } = await this.supabase
             .from('exam_violations')
             .select('*', { count: 'exact', head: true })
@@ -441,6 +467,19 @@ let AppService = AppService_1 = class AppService {
             storedScore: session.score,
             ...graded,
         };
+    }
+    isResultsPublished(test) {
+        if (!test)
+            return false;
+        if (test.results_published === true)
+            return true;
+        if (typeof test.instructions === 'string' && test.instructions.includes('[RESULTS_PUBLISHED:true]')) {
+            return true;
+        }
+        if (typeof test.description === 'string' && test.description.includes('[RESULTS_PUBLISHED:true]')) {
+            return true;
+        }
+        return false;
     }
 };
 exports.AppService = AppService;

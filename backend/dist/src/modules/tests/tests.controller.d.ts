@@ -14,6 +14,13 @@ export declare class TestsController {
     create(body: CreateTestDto, user: any): Promise<any>;
     getStudentTests(user: any): Promise<any[]>;
     publish(id: string, user: any): Promise<any>;
+    publishResults(id: string, body: {
+        published?: boolean;
+    }, user: any): Promise<{
+        success: boolean;
+        testId: string;
+        results_published: boolean;
+    }>;
     addQuestions(id: string, body: TestQuestionsDto, user: any): Promise<{
         message: string;
         total_marks: number;
@@ -35,11 +42,15 @@ export declare class TestsController {
     }>;
     getResults(id: string, user: any): Promise<{
         test: {
+            results_published: boolean;
+            instructions: string;
             id: any;
             title: any;
             total_marks: any;
             duration_minutes: any;
+            description: any;
         };
+        results_published: boolean;
         summary: {
             submitted: number;
             assigned: number;

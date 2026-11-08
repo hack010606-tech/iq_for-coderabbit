@@ -8,6 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var TestsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestsService = void 0;
+exports.isTestResultsPublished = isTestResultsPublished;
+exports.stripInternalTags = stripInternalTags;
 const common_1 = require("@nestjs/common");
 const supabase_config_1 = require("../../config/supabase.config");
 const supabase_error_1 = require("../../common/db/supabase-error");
@@ -30,6 +32,24 @@ const PATTERN_TO_TYPE = {
     neet: 'mock_test',
     custom: 'quiz',
 };
+function isTestResultsPublished(test) {
+    if (!test)
+        return false;
+    if (test.results_published === true)
+        return true;
+    if (typeof test.instructions === 'string' && test.instructions.includes('[RESULTS_PUBLISHED:true]')) {
+        return true;
+    }
+    if (typeof test.description === 'string' && test.description.includes('[RESULTS_PUBLISHED:true]')) {
+        return true;
+    }
+    return false;
+}
+function stripInternalTags(text) {
+    if (!text)
+        return '';
+    return text.replace(/\[RESULTS_PUBLISHED:(true|false)\]/g, '').trim();
+}
 let TestsService = TestsService_1 = class TestsService {
     logger = new common_1.Logger(TestsService_1.name);
     hasPaperPattern = null;
@@ -168,6 +188,12 @@ let TestsService = TestsService_1 = class TestsService {
     async withPattern(columns) {
         return (await this.paperPatternAvailable()) ? `${columns}, paper_pattern` : columns;
     }
+    isTestResultsPublished(test) {
+        return isTestResultsPublished(test);
+    }
+    stripInternalTags(text) {
+        return stripInternalTags(text);
+    }
     attachInferredPattern(t) {
         if (!t)
             return t;
@@ -210,8 +236,11 @@ let TestsService = TestsService_1 = class TestsService {
         return {
             data: (data || []).map((t) => {
                 const enriched = this.attachInferredPattern(t);
+                const results_published = this.isTestResultsPublished(t);
                 return {
                     ...enriched,
+                    results_published,
+                    instructions: this.stripInternalTags(t.instructions),
                     questionCount: enriched.test_questions?.length ?? 0,
                     question_count: enriched.test_questions?.length ?? 0,
                 };
@@ -239,7 +268,13 @@ let TestsService = TestsService_1 = class TestsService {
             .single();
         if (error || !data)
             throw new common_1.NotFoundException('Test not found');
-        return this.attachInferredPattern(data);
+        const testRow = data;
+        const results_published = this.isTestResultsPublished(testRow);
+        return {
+            ...this.attachInferredPattern(testRow),
+            results_published,
+            instructions: this.stripInternalTags(testRow.instructions),
+        };
     }
     async create(body, user) {
         const data = await this.insertTest({
@@ -321,23 +356,46 @@ let TestsService = TestsService_1 = class TestsService {
     async addQuestions(testId, questionIds, user) {
         await this.assertCanContribute(testId, user);
         const ids = questionIds ?? [];
+        const scoped = user.role === 'teacher' && user.subject && user.subject !== 'All' ? user.subject : null;
         const { data: existingTestQuestions } = await supabase_config_1.supabase
             .from('test_questions')
-            .select('question_id')
-            .eq('test_id', testId);
-        const existingIds = (existingTestQuestions || []).map((tq) => tq.question_id);
-        const touched = [
-            ...ids.filter((id) => !existingIds.includes(id)),
-            ...existingIds.filter((id) => !ids.includes(id)),
-        ];
-        const isDraft = (await supabase_config_1.supabase.from('tests').select('status').eq('id', testId).single())?.data?.status === 'draft';
-        await this.assertQuestionsUsable(ids, touched, user, isDraft);
-        const rows = ids.map((qId, idx) => ({
+            .select('question_id, question_order, questions(id, subject)')
+            .eq('test_id', testId)
+            .order('question_order', { ascending: true });
+        const existingRows = existingTestQuestions || [];
+        const existingIds = existingRows.map((tq) => tq.question_id);
+        let finalIds = ids;
+        let touched = [];
+        if (scoped) {
+            const otherSubjectRows = existingRows.filter((tq) => tq.questions?.subject && String(tq.questions.subject).toLowerCase() !== scoped.toLowerCase());
+            const otherSubjectIds = otherSubjectRows.map((tq) => tq.question_id);
+            const existingScopedIds = existingRows
+                .filter((tq) => !tq.questions?.subject ||
+                String(tq.questions.subject).toLowerCase() === scoped.toLowerCase())
+                .map((tq) => tq.question_id);
+            const incomingScopedIds = ids.filter((id) => !otherSubjectIds.includes(id));
+            touched = [
+                ...incomingScopedIds.filter((id) => !existingScopedIds.includes(id)),
+                ...existingScopedIds.filter((id) => !incomingScopedIds.includes(id)),
+            ];
+            finalIds = [...otherSubjectIds, ...incomingScopedIds];
+        }
+        else {
+            touched = [
+                ...ids.filter((id) => !existingIds.includes(id)),
+                ...existingIds.filter((id) => !ids.includes(id)),
+            ];
+            finalIds = ids;
+        }
+        const isDraft = (await supabase_config_1.supabase.from('tests').select('status').eq('id', testId).single())?.data
+            ?.status === 'draft';
+        await this.assertQuestionsUsable(finalIds, touched, user, isDraft);
+        const rows = finalIds.map((qId, idx) => ({
             test_id: testId,
             question_id: qId,
             question_order: idx + 1,
         }));
-        const previousRows = (existingTestQuestions || []).map((tq, idx) => ({
+        const previousRows = existingRows.map((tq, idx) => ({
             test_id: testId,
             question_id: tq.question_id,
             question_order: idx + 1,
@@ -492,11 +550,12 @@ let TestsService = TestsService_1 = class TestsService {
         await this.assertCanContribute(testId, user);
         const { data: test } = await supabase_config_1.supabase
             .from('tests')
-            .select('id, title, total_marks, duration_minutes')
+            .select('id, title, total_marks, duration_minutes, instructions, description')
             .eq('id', testId)
             .single();
         if (!test)
             throw new common_1.NotFoundException('Test not found');
+        const results_published = this.isTestResultsPublished(test);
         const rows = await (0, query_util_1.fetchAll)(() => supabase_config_1.supabase
             .from('attempts')
             .select(`
@@ -523,7 +582,12 @@ let TestsService = TestsService_1 = class TestsService {
         let lastScore = null;
         let lastRank = 0;
         return {
-            test,
+            test: {
+                ...test,
+                results_published,
+                instructions: this.stripInternalTags(test.instructions),
+            },
+            results_published,
             summary: {
                 submitted: rows.length,
                 assigned: assignedCount ?? 0,
@@ -550,6 +614,42 @@ let TestsService = TestsService_1 = class TestsService {
             }),
             questionStats,
         };
+    }
+    async setResultsPublished(testId, published, user) {
+        if (user.role !== 'admin') {
+            throw new common_1.ForbiddenException('Only administrators can approve and publish test results.');
+        }
+        const { data: test, error: fetchErr } = await supabase_config_1.supabase
+            .from('tests')
+            .select('id, instructions')
+            .eq('id', testId)
+            .single();
+        if (fetchErr || !test)
+            throw new common_1.NotFoundException('Test not found');
+        let instructions = test.instructions || '';
+        instructions = instructions.replace(/\[RESULTS_PUBLISHED:(true|false)\]/g, '').trim();
+        if (published) {
+            instructions = instructions ? `${instructions}\n[RESULTS_PUBLISHED:true]` : '[RESULTS_PUBLISHED:true]';
+        }
+        else {
+            instructions = instructions ? `${instructions}\n[RESULTS_PUBLISHED:false]` : '[RESULTS_PUBLISHED:false]';
+        }
+        const { error: colErr } = await supabase_config_1.supabase
+            .from('tests')
+            .update({ results_published: published, instructions, updated_at: new Date().toISOString() })
+            .eq('id', testId);
+        if (colErr && this.isMissingColumn(colErr)) {
+            const { error: tagErr } = await supabase_config_1.supabase
+                .from('tests')
+                .update({ instructions, updated_at: new Date().toISOString() })
+                .eq('id', testId);
+            if (tagErr)
+                throw new Error(tagErr.message);
+        }
+        else if (colErr) {
+            throw new Error(colErr.message);
+        }
+        return { success: true, testId, results_published: published };
     }
     async buildQuestionStats(attemptIds) {
         if (!attemptIds.length)

@@ -10,6 +10,7 @@ import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
 import MathText from '../../components/MathText';
 import TestPDFExportModal from './TestPDFExportModal';
+import AutoGenerateTestModal from './AutoGenerateTestModal';
 import './TestConstructor.css';
 
 const MCQ_TYPES = ['mcq', 'single_correct', 'single', 'scq', 'multi_correct', 'multiple_correct', 'multi', 'multiple', 'assertion'];
@@ -288,6 +289,7 @@ const TestConstructor = () => {
 
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
+  const [isAutoModalOpen, setIsAutoModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [lightboxUrl, setLightboxUrl] = useState(null);
   const [expandedSolutions, setExpandedSolutions] = useState({});
@@ -299,13 +301,15 @@ const TestConstructor = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userSubject = user.subject && user.subject !== 'All' ? user.subject : null;
 
+  const [reviewSubjectTab, setReviewSubjectTab] = useState(userSubject || 'Physics');
   const [subjectFilter, setSubjectFilter] = useState(userSubject || '');
   const [topicFilter, setTopicFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [sortBy, setSortBy] = useState('default');
 
   // Topics come from the hardcoded chapter map (same source as QuestionBank)
-  const availableTopics = CHAPTERS[subjectFilter] || [];
+  const activeSubject = userSubject || (testData.subject && testData.subject !== 'Mixed' ? testData.subject : (subjectFilter || 'Physics'));
+  const availableTopics = CHAPTERS[activeSubject] || CHAPTERS[subjectFilter] || CHAPTERS['Physics'] || [];
 
   // ── Server-side paginated question bank ──────────────────────────────────
   const [bankPage, setBankPage]         = useState(1);
@@ -416,8 +420,14 @@ const TestConstructor = () => {
           negativeMarks: data.negative_marks ?? prev.negativeMarks,
         }));
         if (data.test_questions) {
-          const qs = data.test_questions.map(tq => ({ ...tq.questions, marks: tq.questions.marks || 4 }));
-          setSelectedQuestions(qs);
+          const qs = data.test_questions
+            .filter(tq => tq.questions)
+            .map(tq => ({ ...tq.questions, marks: tq.marks_override || tq.questions.marks || 4 }));
+          if (userSubject) {
+            setSelectedQuestions(qs.filter(q => q.subject?.toLowerCase() === userSubject.toLowerCase()));
+          } else {
+            setSelectedQuestions(qs);
+          }
         }
         // Collaborator teacher is entering this test to add questions for their subject!
         if (data.created_by && data.created_by !== user.id) {
@@ -717,6 +727,17 @@ const TestConstructor = () => {
             <h1>{isInitiator ? 'Test Constructor' : 'Add Questions'}</h1>
           </div>
           <div className="header-actions">
+            {step === 2 && (
+              <button
+                type="button"
+                className="btn-magic-autofill"
+                onClick={() => setIsAutoModalOpen(true)}
+                title="Auto-fill questions using JEE Advanced / Main patterns & topic weightages"
+              >
+                <Sparkles size={16} className="sparkle-icon" />
+                <span>Auto-Fill Test</span>
+              </button>
+            )}
             <button className="btn-outline" onClick={handleSaveDraft}>
               {isInitiator ? 'Save Draft' : 'Save Questions'}
             </button>
@@ -1594,55 +1615,95 @@ const TestConstructor = () => {
               </div>
 
               {/* Selected Questions Review List */}
-              <div className="tc-review-questions-section">
-                <div className="tc-review-qs-header">
-                  <div className="tc-rqs-title-group">
-                    <h3>Questions Included in Paper ({selectedQuestions.length})</h3>
-                    <p className="tc-rqs-hint">Review questions, KaTeX equations, options, and answers before publishing.</p>
-                  </div>
-                </div>
+              {(() => {
+                const paperSubjects = [...new Set(selectedQuestions.map(q => q.subject).filter(Boolean))];
+                const displayReviewQuestions = (reviewSubjectTab && reviewSubjectTab !== 'All')
+                  ? selectedQuestions.filter(q => q.subject?.toLowerCase() === reviewSubjectTab.toLowerCase())
+                  : selectedQuestions;
 
-                {selectedQuestions.length === 0 ? (
-                  <div className="tc-review-empty-state">
-                    <AlertCircle size={36} color="#94a3b8" />
-                    <h4>No Questions Selected Yet</h4>
-                    <p>Go back to Step 2 to pick questions from the question bank.</p>
-                    <button type="button" className="btn-primary" onClick={() => setStep(2)}>
-                      <Plus size={16} />
-                      <span>Add Questions</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="tc-review-questions-list">
-                    {selectedQuestions.map((q, idx) => {
-                      const ansDetails = getAnswerDetails(q);
-                      const rawOptions = Array.isArray(q.options) ? q.options : [];
-                      const hasOptions = rawOptions.length > 0;
-                      const hasCorrectTicked = hasOptions && rawOptions.some((_, oIdx) => ansDetails.isCorrectIndex(oIdx));
-                      const isExpandedSol = !!expandedSolutions[q.id];
+                return (
+                  <div className="tc-review-questions-section">
+                    <div className="tc-review-qs-header">
+                      <div className="tc-rqs-title-group">
+                        <h3>Questions Included in Paper ({displayReviewQuestions.length})</h3>
+                        <p className="tc-rqs-hint">Review questions, KaTeX equations, options, and answers before publishing.</p>
+                      </div>
 
-                      return (
-                        <div key={q.id || idx} className="tc-review-q-card">
-                          <div className="tc-rq-top">
-                            <div className="tc-rq-num-col">
-                              <span className="tc-rq-num">Q{idx + 1}</span>
-                            </div>
-                            <div className="tc-rq-meta-tags">
-                              {q.topic && <span className="tc-tag tc-tag-topic">{q.topic}</span>}
-                              <span className={`tc-tag tc-tag-diff ${q.difficulty || 'medium'}`}>
-                                {q.difficulty || 'medium'}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              className="tc-rq-remove-btn"
-                              onClick={() => toggleQuestion(q)}
-                              title="Remove question from paper"
-                            >
-                              <Trash2 size={15} />
-                              <span>Remove</span>
-                            </button>
-                          </div>
+                      {paperSubjects.length > 1 && (
+                        <div className="tc-review-subject-tabs">
+                          {paperSubjects.map(sub => {
+                            const subCount = selectedQuestions.filter(q => q.subject?.toLowerCase() === sub.toLowerCase()).length;
+                            const isAct = reviewSubjectTab.toLowerCase() === sub.toLowerCase();
+                            return (
+                              <button
+                                key={sub}
+                                type="button"
+                                className={`tc-review-sub-tab ${isAct ? 'active' : ''}`}
+                                onClick={() => setReviewSubjectTab(sub)}
+                              >
+                                <span>{sub}</span>
+                                <span className="count-badge">{subCount}</span>
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            className={`tc-review-sub-tab ${reviewSubjectTab === 'All' ? 'active' : ''}`}
+                            onClick={() => setReviewSubjectTab('All')}
+                          >
+                            <span>All Subjects</span>
+                            <span className="count-badge">{selectedQuestions.length}</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {displayReviewQuestions.length === 0 ? (
+                      <div className="tc-review-empty-state">
+                        <AlertCircle size={36} color="#94a3b8" />
+                        <h4>No {reviewSubjectTab !== 'All' ? reviewSubjectTab : ''} Questions Selected Yet</h4>
+                        <p>Go back to Step 2 to pick or auto-fill questions from the question bank.</p>
+                        <button type="button" className="btn-primary" onClick={() => setStep(2)}>
+                          <Plus size={16} />
+                          <span>Add Questions</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="tc-review-questions-list">
+                        {displayReviewQuestions.map((q, idx) => {
+                          const ansDetails = getAnswerDetails(q);
+                          const rawOptions = Array.isArray(q.options) ? q.options : [];
+                          const hasOptions = rawOptions.length > 0;
+                          const hasCorrectTicked = hasOptions && rawOptions.some((_, oIdx) => ansDetails.isCorrectIndex(oIdx));
+                          const isExpandedSol = !!expandedSolutions[q.id];
+
+                          return (
+                            <div key={q.id || idx} className="tc-review-q-card">
+                              <div className="tc-rq-top">
+                                <div className="tc-rq-num-col">
+                                  <span className="tc-rq-num">Q{idx + 1}</span>
+                                </div>
+                                <div className="tc-rq-meta-tags">
+                                  {q.subject && (
+                                    <span className={`tc-tag tc-tag-sub-badge ${q.subject.toLowerCase()}`}>
+                                      {q.subject}
+                                    </span>
+                                  )}
+                                  {q.topic && <span className="tc-tag tc-tag-topic">{q.topic}</span>}
+                                  <span className={`tc-tag tc-tag-diff ${q.difficulty || 'medium'}`}>
+                                    {q.difficulty || 'medium'}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="tc-rq-remove-btn"
+                                  onClick={() => toggleQuestion(q)}
+                                  title="Remove question from paper"
+                                >
+                                  <Trash2 size={15} />
+                                  <span>Remove</span>
+                                </button>
+                              </div>
 
                           <div className="tc-rq-body">
                             <MathText text={q.question_text || q.text || ''} />
@@ -1735,8 +1796,10 @@ const TestConstructor = () => {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            );
+          })()}
+        </div>
+      )}
 
           <div className="step-navigation">
             {step > 1 ? (
@@ -1753,6 +1816,27 @@ const TestConstructor = () => {
       onClose={() => setIsPdfExportOpen(false)}
       testData={testData}
       selectedQuestions={selectedQuestions}
+    />
+
+    {/* Smart Auto-Generate Test Modal */}
+    <AutoGenerateTestModal
+      isOpen={isAutoModalOpen}
+      onClose={() => setIsAutoModalOpen(false)}
+      subject={activeSubject}
+      userSubject={userSubject}
+      availableTopics={availableTopics}
+      currentSelected={selectedQuestions}
+      targetTotal={targetTotal}
+      targetMcq={targetMcq}
+      targetNat={targetNat}
+      patternName={quotaPatternName}
+      onApply={(newQuestions, proceedToReview = false) => {
+        setSelectedQuestions(newQuestions);
+        if (proceedToReview) {
+          setStep(3);
+        }
+      }}
+      showToast={showToast}
     />
 
     {/* Image Lightbox */}

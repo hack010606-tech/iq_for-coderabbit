@@ -44,6 +44,36 @@ const ExamShell = () => {
   const [activeSection, setActiveSection] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [redirectCount, setRedirectCount] = useState(4);
+
+  const PORTAL_URL = import.meta.env.VITE_PORTAL_URL || 'http://localhost:5173/student';
+
+  const handleReturnToDashboard = () => {
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch {}
+    try {
+      window.close();
+    } catch {}
+    window.location.href = PORTAL_URL;
+  };
+
+  useEffect(() => {
+    if (!isSubmitted) return;
+    const timer = setInterval(() => {
+      setRedirectCount((c) => {
+        if (c <= 1) {
+          clearInterval(timer);
+          handleReturnToDashboard();
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isSubmitted]);
 
   // Lift the access token out of the URL fragment before anything else runs.
   useEffect(() => {
@@ -342,26 +372,74 @@ const ExamShell = () => {
     );
   }
   if (loading) return <div className="exam-loading">Loading secure environment...</div>;
-  if (isTerminated) return <div className="exam-terminated error"><h2>Exam Terminated</h2><p>Rule violations exceeded limit.</p><button onClick={() => window.close()}>Close Tab</button></div>;
+  if (isTerminated) return <div className="exam-terminated error"><h2>Exam Terminated</h2><p>Rule violations exceeded limit.</p><button onClick={handleReturnToDashboard}>Return to Dashboard</button></div>;
   if (isSubmitted) {
+    const isApproved = result?.results_published === true && result?.score !== undefined;
     return (
-      <div className="exam-terminated">
-        <h2>Exam Submitted</h2>
-        {result ? (
-          <div className="exam-result-summary">
-            <p className="exam-result-score">
-              <strong>{result.score}</strong> / {result.maxScore}
-            </p>
-            <p>
-              {result.correct} correct · {result.incorrect} incorrect · {result.unattempted} unattempted
-            </p>
-            <p>Accuracy: {result.accuracy}%</p>
-            {result.autoSubmitted && <p className="exam-result-note">Submitted automatically — time expired.</p>}
+      <div className="exam-terminated exam-submitted-view">
+        <div className="exam-submitted-card">
+          <div className="exam-submitted-icon-wrap">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
           </div>
-        ) : (
-          <p>Your responses have been recorded.</p>
-        )}
-        <button onClick={() => window.close()}>Close Tab</button>
+          <h2>Exam Submitted Successfully</h2>
+          <p className="exam-submitted-message">
+            Your responses have been securely recorded and verified.
+          </p>
+
+          {isApproved ? (
+            <div className="exam-result-summary">
+              <p className="exam-result-score">
+                <strong>{result.score}</strong> / {result.maxScore}
+              </p>
+              <p>
+                {result.correct} correct · {result.incorrect} incorrect · {result.unattempted} unattempted
+              </p>
+              <p>Accuracy: {result.accuracy}%</p>
+              {result.autoSubmitted && <p className="exam-result-note">Submitted automatically — time expired.</p>}
+            </div>
+          ) : (
+            <div className="exam-pending-box">
+              <div className="exam-pending-pill">
+                <span className="exam-pending-dot"></span>
+                Results Pending Administrator Approval
+              </div>
+              <p className="exam-pending-desc">
+                Scores and question solutions are withheld until reviewed and officially approved by the examination administrator.
+              </p>
+              <div className="exam-meta-grid">
+                <div className="exam-meta-row">
+                  <span className="meta-k">Paper</span>
+                  <span className="meta-v">{examData?.title || 'JEE Test'}</span>
+                </div>
+                <div className="exam-meta-row">
+                  <span className="meta-k">Submission Status</span>
+                  <span className="meta-v meta-v-success">Recorded & Secured ✓</span>
+                </div>
+                <div className="exam-meta-row">
+                  <span className="meta-k">Mode</span>
+                  <span className="meta-v">{result?.autoSubmitted ? 'Auto-submitted (Time limit reached)' : 'Normal Submission'}</span>
+                </div>
+                <div className="exam-meta-row">
+                  <span className="meta-k">Results</span>
+                  <span className="meta-v meta-v-amber">Awaiting Admin Release</span>
+                </div>
+              </div>
+              <p className="exam-pending-portal-hint">
+                Once the administrator approves the results, your detailed scorecard, percentile, and solutions will be available in the <strong>Student Portal</strong>.
+              </p>
+            </div>
+          )}
+
+          <button className="btn-close-exam" onClick={handleReturnToDashboard}>
+            Go to Student Home Screen ({redirectCount}s)
+          </button>
+          <span className="exam-close-sub">
+            Redirecting automatically in {redirectCount}s…
+          </span>
+        </div>
       </div>
     );
   }
@@ -389,9 +467,9 @@ const ExamShell = () => {
 
       {saveError && <div className="exam-save-error">{saveError}</div>}
 
-      {/* Subject tabs, built from the paper itself. */}
-      {subjects.length > 1 && (
-        <div className="subject-tabs">
+      {/* Subject tabs, built from the paper itself, with Submit Exam button on the right */}
+      <div className="subject-tabs">
+        <div className="subj-tabs-group">
           {subjects.map(subj => (
             <button
               key={subj}
@@ -409,7 +487,15 @@ const ExamShell = () => {
             </button>
           ))}
         </div>
-      )}
+        <button
+          type="button"
+          className="btn-action submit-final btn-top-submit"
+          onClick={() => setShowSubmitModal(true)}
+          title="Submit your exam"
+        >
+          Submit Exam
+        </button>
+      </div>
 
       {/* Section tabs only when this subject actually has more than one. */}
       {sections.length > 1 && (

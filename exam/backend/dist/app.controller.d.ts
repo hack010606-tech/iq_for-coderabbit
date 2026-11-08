@@ -60,6 +60,18 @@ export declare class AppController {
         success: boolean;
         alreadySubmitted: boolean;
         score: any;
+        submitted?: undefined;
+        results_published?: undefined;
+        autoSubmitted?: undefined;
+        message?: undefined;
+    } | {
+        success: boolean;
+        submitted: boolean;
+        results_published: boolean;
+        autoSubmitted: boolean;
+        message: string;
+        alreadySubmitted?: undefined;
+        score?: undefined;
     } | {
         score: number;
         maxScore: number;
@@ -69,9 +81,25 @@ export declare class AppController {
         accuracy: number;
         success: boolean;
         autoSubmitted: boolean;
+        results_published: boolean;
         alreadySubmitted?: undefined;
+        submitted?: undefined;
+        message?: undefined;
     }>;
     getResult(sessionId: string, user: Caller): Promise<{
+        sessionId: string;
+        status: any;
+        test: {
+            title: any;
+            total_marks: any;
+            duration_minutes: any;
+            instructions: any;
+            description: any;
+        } | null;
+        results_published: boolean;
+        violations: number;
+        message: string;
+    } | {
         score: number;
         maxScore: number;
         correct: number;
@@ -84,9 +112,13 @@ export declare class AppController {
             title: any;
             total_marks: any;
             duration_minutes: any;
+            instructions: any;
+            description: any;
         } | null;
         violations: number;
         storedScore: any;
+        results_published?: undefined;
+        message?: undefined;
     }>;
 }
 export {};

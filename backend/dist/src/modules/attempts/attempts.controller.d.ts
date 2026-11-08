@@ -21,15 +21,18 @@ export declare class AttemptsController {
         savedAnswers: never[];
     }>;
     getMyAttempts(user: any): Promise<{
+        results_published: boolean;
+        total_score: any;
         id: any;
         status: any;
-        total_score: any;
         started_at: any;
         submitted_at: any;
         tests: {
             id: any;
             title: any;
             total_marks: any;
+            instructions: any;
+            description: any;
         }[];
     }[]>;
     saveAnswer(id: string, user: any, body: SaveAnswerDto): any;
@@ -50,6 +53,23 @@ export declare class AttemptsController {
     submit(id: string, user: any, body: SubmitAttemptDto): Promise<{
         attemptId: string;
         testId: string;
+        submitted: boolean;
+        results_published: boolean;
+        autoSubmitted: boolean;
+        timeTakenSeconds: number;
+        message: string;
+        score?: undefined;
+        maxScore?: undefined;
+        correct?: undefined;
+        incorrect?: undefined;
+        unattempted?: undefined;
+        accuracy?: undefined;
+        negativeMarking?: undefined;
+        negativeMarks?: undefined;
+    } | {
+        attemptId: string;
+        testId: string;
+        results_published: boolean;
         score: number;
         maxScore: any;
         correct: number;
@@ -60,8 +80,28 @@ export declare class AttemptsController {
         autoSubmitted: boolean;
         negativeMarking: boolean;
         negativeMarks: number;
+        submitted?: undefined;
+        message?: undefined;
     }>;
     getResult(id: string, user: any): Promise<{
+        id: any;
+        status: any;
+        started_at: any;
+        submitted_at: any;
+        auto_submitted: any;
+        results_published: boolean;
+        tests: {
+            id: any;
+            title: any;
+            total_marks: any;
+            duration_minutes: any;
+            instructions: any;
+            description: any;
+        }[];
+        total_score: null;
+        cohort: null;
+        answers: never[];
+    } | {
         cohort: {
             rank: number;
             totalStudents: number;
@@ -80,6 +120,8 @@ export declare class AttemptsController {
             title: any;
             total_marks: any;
             duration_minutes: any;
+            instructions: any;
+            description: any;
         }[];
         answers: {
             question_id: any;
@@ -98,5 +140,6 @@ export declare class AttemptsController {
                 marks: any;
             }[];
         }[];
+        results_published?: undefined;
     }>;
 }

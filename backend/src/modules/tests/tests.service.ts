@@ -64,6 +64,28 @@ const PATTERN_TO_TYPE: Record<string, (typeof TEST_TYPE_VALUES)[number]> = {
   custom: 'quiz',
 };
 
+/**
+ * Checks whether test results have been approved and published by the administrator.
+ * Supports both native `results_published` boolean column (migration 009) and
+ * metadata tag fallback in `instructions`/`description`.
+ */
+export function isTestResultsPublished(test: any): boolean {
+  if (!test) return false;
+  if (test.results_published === true) return true;
+  if (typeof test.instructions === 'string' && test.instructions.includes('[RESULTS_PUBLISHED:true]')) {
+    return true;
+  }
+  if (typeof test.description === 'string' && test.description.includes('[RESULTS_PUBLISHED:true]')) {
+    return true;
+  }
+  return false;
+}
+
+export function stripInternalTags(text?: string): string {
+  if (!text) return '';
+  return text.replace(/\[RESULTS_PUBLISHED:(true|false)\]/g, '').trim();
+}
+
 @Injectable()
 export class TestsService {
   private readonly logger = new Logger(TestsService.name);
@@ -300,6 +322,14 @@ export class TestsService {
     return (await this.paperPatternAvailable()) ? `${columns}, paper_pattern` : columns;
   }
 
+  isTestResultsPublished(test: any): boolean {
+    return isTestResultsPublished(test);
+  }
+
+  stripInternalTags(text?: string): string {
+    return stripInternalTags(text);
+  }
+
   /**
    * If `paper_pattern` is not populated (e.g. before migration 007),
    * infer the assessment pattern from the title, instructions, or description.
@@ -362,8 +392,11 @@ export class TestsService {
     return {
       data: (data || []).map((t: any) => {
         const enriched = this.attachInferredPattern(t);
+        const results_published = this.isTestResultsPublished(t);
         return {
           ...enriched,
+          results_published,
+          instructions: this.stripInternalTags(t.instructions),
           questionCount: enriched.test_questions?.length ?? 0,
           // Kept for the older callers that read snake_case.
           question_count: enriched.test_questions?.length ?? 0,
@@ -403,7 +436,13 @@ export class TestsService {
       .eq('id', id)
       .single();
     if (error || !data) throw new NotFoundException('Test not found');
-    return this.attachInferredPattern(data);
+    const testRow: any = data;
+    const results_published = this.isTestResultsPublished(testRow);
+    return {
+      ...this.attachInferredPattern(testRow),
+      results_published,
+      instructions: this.stripInternalTags(testRow.instructions),
+    };
   }
 
   // ── Teacher writes ──────────────────────────────────────────────────────────
@@ -519,30 +558,68 @@ export class TestsService {
     await this.assertCanContribute(testId, user);
     const ids = questionIds ?? []; // Allow empty array to clear questions
 
+    const scoped =
+      user.role === 'teacher' && user.subject && user.subject !== 'All' ? user.subject : null;
+
     const { data: existingTestQuestions } = await supabase
       .from('test_questions')
-      .select('question_id')
-      .eq('test_id', testId);
+      .select('question_id, question_order, questions(id, subject)')
+      .eq('test_id', testId)
+      .order('question_order', { ascending: true });
 
-    const existingIds = (existingTestQuestions || []).map((tq) => tq.question_id);
+    const existingRows = (existingTestQuestions as any[]) || [];
+    const existingIds = existingRows.map((tq) => tq.question_id);
 
-    // Only approved questions may enter a published paper — for drafts,
-    // allow unapproved questions so teachers can build papers before
-    // the review queue has been processed.
-    const touched = [
-      ...ids.filter((id) => !existingIds.includes(id)),
-      ...existingIds.filter((id) => !ids.includes(id)),
-    ];
-    const isDraft = (await supabase.from('tests').select('status').eq('id', testId).single())?.data?.status === 'draft';
-    await this.assertQuestionsUsable(ids, touched, user, isDraft);
+    let finalIds = ids;
+    let touched: string[] = [];
 
-    const rows = ids.map((qId, idx) => ({
+    if (scoped) {
+      // Questions on the test that belong to other subjects (e.g. Chemistry when user is Physics)
+      const otherSubjectRows = existingRows.filter(
+        (tq) => tq.questions?.subject && String(tq.questions.subject).toLowerCase() !== scoped.toLowerCase(),
+      );
+      const otherSubjectIds = otherSubjectRows.map((tq) => tq.question_id);
+
+      // Questions on the test that belong to this teacher's subject
+      const existingScopedIds = existingRows
+        .filter(
+          (tq) =>
+            !tq.questions?.subject ||
+            String(tq.questions.subject).toLowerCase() === scoped.toLowerCase(),
+        )
+        .map((tq) => tq.question_id);
+
+      // Incoming questions for this teacher's subject (strip other subjects if sent)
+      const incomingScopedIds = ids.filter((id) => !otherSubjectIds.includes(id));
+
+      // Touched only tracks additions/removals within this teacher's scoped subject
+      touched = [
+        ...incomingScopedIds.filter((id) => !existingScopedIds.includes(id)),
+        ...existingScopedIds.filter((id) => !incomingScopedIds.includes(id)),
+      ];
+
+      // Merge: preserve other subjects + incoming scoped questions
+      finalIds = [...otherSubjectIds, ...incomingScopedIds];
+    } else {
+      touched = [
+        ...ids.filter((id) => !existingIds.includes(id)),
+        ...existingIds.filter((id) => !ids.includes(id)),
+      ];
+      finalIds = ids;
+    }
+
+    const isDraft =
+      (await supabase.from('tests').select('status').eq('id', testId).single())?.data
+        ?.status === 'draft';
+    await this.assertQuestionsUsable(finalIds, touched, user, isDraft);
+
+    const rows = finalIds.map((qId, idx) => ({
       test_id: testId,
       question_id: qId,
       question_order: idx + 1,
     }));
 
-    const previousRows = (existingTestQuestions || []).map((tq, idx) => ({
+    const previousRows = existingRows.map((tq, idx) => ({
       test_id: testId,
       question_id: tq.question_id,
       question_order: idx + 1,
@@ -811,11 +888,13 @@ export class TestsService {
 
     const { data: test } = await supabase
       .from('tests')
-      .select('id, title, total_marks, duration_minutes')
+      .select('id, title, total_marks, duration_minutes, instructions, description')
       .eq('id', testId)
       .single();
 
     if (!test) throw new NotFoundException('Test not found');
+
+    const results_published = this.isTestResultsPublished(test);
 
     // Paged: a 1000-student cohort exceeds PostgREST's single-response cap, and
     // a truncated read here silently produced wrong ranks and averages.
@@ -852,7 +931,12 @@ export class TestsService {
     let lastScore: number | null = null;
     let lastRank = 0;
     return {
-      test,
+      test: {
+        ...test,
+        results_published,
+        instructions: this.stripInternalTags(test.instructions),
+      },
+      results_published,
       summary: {
         submitted: rows.length,
         assigned: assignedCount ?? 0,
@@ -879,6 +963,48 @@ export class TestsService {
       }),
       questionStats,
     };
+  }
+
+  /** [Admin] Approve and release (or withhold) test results for students */
+  async setResultsPublished(testId: string, published: boolean, user: Requester) {
+    if (user.role !== 'admin') {
+      throw new ForbiddenException('Only administrators can approve and publish test results.');
+    }
+
+    const { data: test, error: fetchErr } = await supabase
+      .from('tests')
+      .select('id, instructions')
+      .eq('id', testId)
+      .single();
+    if (fetchErr || !test) throw new NotFoundException('Test not found');
+
+    // Persist status tag in instructions for compatibility with all environments
+    let instructions = test.instructions || '';
+    instructions = instructions.replace(/\[RESULTS_PUBLISHED:(true|false)\]/g, '').trim();
+    if (published) {
+      instructions = instructions ? `${instructions}\n[RESULTS_PUBLISHED:true]` : '[RESULTS_PUBLISHED:true]';
+    } else {
+      instructions = instructions ? `${instructions}\n[RESULTS_PUBLISHED:false]` : '[RESULTS_PUBLISHED:false]';
+    }
+
+    // Try updating both results_published column and instructions
+    const { error: colErr } = await supabase
+      .from('tests')
+      .update({ results_published: published, instructions, updated_at: new Date().toISOString() })
+      .eq('id', testId);
+
+    if (colErr && this.isMissingColumn(colErr)) {
+      // Column doesn't exist yet, update instructions only
+      const { error: tagErr } = await supabase
+        .from('tests')
+        .update({ instructions, updated_at: new Date().toISOString() })
+        .eq('id', testId);
+      if (tagErr) throw new Error(tagErr.message);
+    } else if (colErr) {
+      throw new Error(colErr.message);
+    }
+
+    return { success: true, testId, results_published: published };
   }
 
   /** Per-question difficulty across everyone who sat the test. */

@@ -38,7 +38,10 @@ const fmtDate = (iso) => {
   });
 };
 
-const ScoreBadge = ({ pct }) => {
+const ScoreBadge = ({ pct, pending }) => {
+  if (pending) {
+    return <span className="tl-badge" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}>Pending Approval</span>;
+  }
   const cls = pct >= 75 ? 'tl-badge-good' : pct >= 40 ? 'tl-badge-mid' : 'tl-badge-bad';
   return <span className={`tl-badge ${cls}`}>{pct}%</span>;
 };
@@ -80,7 +83,8 @@ const StudentTestLibrary = () => {
   /* ── Aggregate stats ──────────────────────────────────────────────────── */
   const stats = useMemo(() => {
     if (!submitted.length) return null;
-    const pcts = submitted.map((a) => {
+    const publishedSub = submitted.filter((a) => a.results_published !== false);
+    const pcts = publishedSub.map((a) => {
       const max = a.tests?.total_marks || 0;
       return max > 0 ? Math.round(((a.total_score || 0) / max) * 100) : 0;
     });
@@ -90,7 +94,7 @@ const StudentTestLibrary = () => {
     }, 0);
     return {
       total:   submitted.length,
-      avgPct:  Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length),
+      avgPct:  pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0,
       bestPct: Math.max(...pcts),
       totalTime: totalSeconds,
     };
@@ -304,7 +308,8 @@ const StudentTestLibrary = () => {
             ? Math.max(0, Math.floor((new Date(attempt.submitted_at) - new Date(attempt.started_at)) / 1000))
             : null;
 
-          const barColor = pct >= 75 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#f43f5e';
+          const isPending = attempt.results_published === false;
+          const barColor = isPending ? '#f59e0b' : (pct >= 75 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#f43f5e');
 
           return (
             <div
@@ -321,7 +326,7 @@ const StudentTestLibrary = () => {
                 <div className="tl-card-top">
                   <div className="tl-card-title-group">
                     <h3 className="tl-card-title">{test.title || 'Test'}</h3>
-                    <ScoreBadge pct={pct} />
+                    <ScoreBadge pct={pct} pending={isPending} />
                   </div>
                   <div className="tl-card-meta">
                     <span className="tl-meta-item">
@@ -338,37 +343,59 @@ const StudentTestLibrary = () => {
                 </div>
 
                 {/* Score progress bar */}
-                <div className="tl-progress-wrap">
-                  <div className="tl-progress-bar">
-                    <div
-                      className="tl-progress-fill"
-                      style={{ width: `${pct}%`, background: barColor }}
-                    />
-                  </div>
-                  <span className="tl-progress-label">
-                    {score} / {max} marks
-                  </span>
-                </div>
-
-                {/* Stats row */}
-                <div className="tl-card-stats">
-                  <div className="tl-card-stat">
-                    <Trophy size={14} className="tl-stat-ico" />
-                    <span>{score}</span>
-                    <span className="tl-stat-sub"> marks scored</span>
-                  </div>
-                  <div className="tl-card-stat">
-                    <Target size={14} className="tl-stat-ico" />
-                    <span>{pct}%</span>
-                    <span className="tl-stat-sub"> of total</span>
-                  </div>
-                  <div className="tl-card-stat">
-                    <CheckCircle2 size={14} className="tl-stat-ico" style={{ color: '#10b981' }} />
-                    <span className={pct >= 40 ? 'tl-pass' : 'tl-fail'}>
-                      {pct >= 40 ? 'Passed' : 'Failed'}
+                {isPending ? (
+                  <div className="tl-progress-wrap">
+                    <span className="tl-progress-label" style={{ color: '#b45309', fontWeight: 600 }}>
+                      ⏳ Results Awaiting Administrator Approval
                     </span>
                   </div>
-                </div>
+                ) : (
+                  <div className="tl-progress-wrap">
+                    <div className="tl-progress-bar">
+                      <div
+                        className="tl-progress-fill"
+                        style={{ width: `${pct}%`, background: barColor }}
+                      />
+                    </div>
+                    <span className="tl-progress-label">
+                      {score} / {max} marks
+                    </span>
+                  </div>
+                )}
+
+                {/* Stats row */}
+                {isPending ? (
+                  <div className="tl-card-stats">
+                    <div className="tl-card-stat">
+                      <Clock size={14} className="tl-stat-ico" style={{ color: '#d97706' }} />
+                      <span style={{ color: '#b45309', fontWeight: 600 }}>Responses Recorded</span>
+                    </div>
+                    <div className="tl-card-stat">
+                      <span className="tl-stat-sub">Scores released upon admin approval</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="tl-card-stats">
+                    <div className="tl-card-stat">
+                      <Trophy size={14} className="tl-stat-ico" />
+                      <span>{score}</span>
+                      <span className="tl-stat-sub"> marks scored</span>
+                    </div>
+                    <div className="tl-card-stat">
+                      <Target size={14} className="tl-stat-ico" />
+                      <span>{pct}%</span>
+                      <span className="tl-stat-sub"> of total</span>
+                    </div>
+                    <div className="tl-card-stat">
+                      <CheckCircle2 size={14} className="tl-stat-ico" style={{ color: '#10b981' }} />
+                      <span className={pct >= 40 ? 'tl-pass' : 'tl-fail'}>
+                        {pct >= 40 ? 'Passed' : 'Failed'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+
               </div>
 
               {/* Action */}

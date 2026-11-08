@@ -1,1 +1,0 @@
-import"./rolldown-runtime-QTnfLwEv.js";import{C as e,j as t}from"./index-D5H5ePUq.js";import n from"./QuestionBank-mt_D4xUB.js";t();var r=e(),i=()=>(0,r.jsx)(n,{});export{i as default};

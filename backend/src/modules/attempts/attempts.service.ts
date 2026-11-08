@@ -9,6 +9,7 @@ import { supabase } from '../../config/supabase.config';
 import { SpacedRepetitionService } from '../analytics/spaced-repetition.service';
 import { CacheService } from '../../common/cache/cache.service';
 import { chunk, fetchAll } from '../../common/db/query.util';
+import { isTestResultsPublished } from '../tests/tests.service';
 
 /** Clock skew allowance so a student whose machine is a few seconds fast is not punished. */
 const CLOCK_GRACE_SECONDS = 30;
@@ -47,6 +48,7 @@ interface AttemptWindow {
 interface MarkingScheme {
   negativeMarking: boolean;
   negativeMarks: number;
+  resultsPublished: boolean;
 }
 
 @Injectable()
@@ -139,6 +141,7 @@ export class AttemptsService {
     return {
       negativeMarking: row.negative_marking === true,
       negativeMarks: Number(row.negative_marks) || 0,
+      resultsPublished: isTestResultsPublished(row),
     };
   }
 
@@ -653,9 +656,22 @@ export class AttemptsService {
       0,
     );
 
+    if (!scheme.resultsPublished) {
+      return {
+        attemptId,
+        testId: attempt.test_id,
+        submitted: true,
+        results_published: false,
+        autoSubmitted: effectiveAutoSubmit,
+        timeTakenSeconds,
+        message: 'Exam submitted successfully. Results will be released once approved by the administrator.',
+      };
+    }
+
     return {
       attemptId,
       testId: attempt.test_id,
+      results_published: true,
       score: totalScore,
       maxScore,
       correct,
@@ -765,13 +781,20 @@ export class AttemptsService {
   async getMyAttempts(studentId: string) {
     const { data, error } = await supabase
       .from('attempts')
-      .select('id, status, total_score, started_at, submitted_at, tests(id, title, total_marks)')
+      .select('id, status, total_score, started_at, submitted_at, tests(id, title, total_marks, instructions, description)')
       .eq('student_id', studentId)
       .order('started_at', { ascending: false })
       .limit(200);
 
     if (error) throw new Error(error.message);
-    return data;
+    return (data || []).map((a) => {
+      const published = isTestResultsPublished(a.tests);
+      return {
+        ...a,
+        results_published: published,
+        total_score: published ? a.total_score : null,
+      };
+    });
   }
 
   /** Get one attempt result — for the PostTestResult page */
@@ -780,7 +803,7 @@ export class AttemptsService {
       .from('attempts')
       .select(`
         id, status, total_score, started_at, submitted_at, auto_submitted,
-        tests(id, title, total_marks, duration_minutes),
+        tests(id, title, total_marks, duration_minutes, instructions, description),
         answers(
           question_id, selected_answer, is_correct, time_spent_seconds, flagged_for_doubt,
           questions(id, question_text, options, correct_answer, subject, topic, difficulty, marks)
@@ -791,6 +814,23 @@ export class AttemptsService {
       .single();
 
     if (error || !attempt) throw new NotFoundException('Attempt not found');
+
+    const resultsPublished = isTestResultsPublished(attempt.tests);
+
+    if (!resultsPublished) {
+      return {
+        id: attempt.id,
+        status: attempt.status,
+        started_at: attempt.started_at,
+        submitted_at: attempt.submitted_at,
+        auto_submitted: attempt.auto_submitted,
+        results_published: false,
+        tests: attempt.tests,
+        total_score: null,
+        cohort: null,
+        answers: [],
+      };
+    }
 
     // Only reveal the answer key once the attempt is finished.
     if (attempt.status !== 'submitted') {

@@ -1898,6 +1898,83 @@
   gap: 14px;
 }
 
+.tc-review-subject-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.tc-review-sub-tab {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tc-review-sub-tab:hover {
+  color: #1e293b;
+}
+
+.tc-review-sub-tab.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tc-review-sub-tab .count-badge {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #6366f1;
+  font-weight: 700;
+}
+
+.tc-review-sub-tab.active .count-badge {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+.tc-tag-sub-badge {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+}
+
+.tc-tag-sub-badge.physics {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.tc-tag-sub-badge.chemistry {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.tc-tag-sub-badge.mathematics,
+.tc-tag-sub-badge.maths {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
 .tc-rqs-title-group h3 {
   margin: 0 0 4px 0;
   font-size: 18px;

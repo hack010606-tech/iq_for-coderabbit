@@ -92,6 +92,34 @@ const TestResults = () => {
     }
   }, [selectedTestId, loadResults]);
 
+  const [releasingResults, setReleasingResults] = useState(false);
+
+  const handleToggleResultsRelease = async () => {
+    if (!selectedTestId || !data) return;
+    const targetStatus = !data.results_published;
+    const msg = targetStatus
+      ? 'Approve and release results to all candidates who took this test? Students will be able to see their scores immediately.'
+      : 'Withhold results from students? Scores and solutions will be hidden from their view until re-approved.';
+    if (!window.confirm(msg)) return;
+
+    setReleasingResults(true);
+    try {
+      await apiClient.patch(`/tests/${selectedTestId}/publish-results`, { published: targetStatus });
+      setData((prev) => ({
+        ...prev,
+        results_published: targetStatus,
+        test: {
+          ...(prev.test || {}),
+          results_published: targetStatus,
+        },
+      }));
+    } catch (e) {
+      alert(e.message || 'Failed to update results release status');
+    } finally {
+      setReleasingResults(false);
+    }
+  };
+
   // Handle switching tests
   const handleTestChange = (newId) => {
     setSelectedTestId(newId);
@@ -258,6 +286,71 @@ const TestResults = () => {
       {/* Results Content */}
       {!loading && data && (
         <>
+          {isAdmin && (
+            <div
+              className="results-card"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 16,
+                padding: '16px 20px',
+                marginBottom: 20,
+                border: data.results_published ? '1px solid #86efac' : '1px solid #fde68a',
+                background: data.results_published ? '#f0fdf4' : '#fffbeb',
+                borderRadius: 12,
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span
+                    style={{
+                      width: 9,
+                      height: 9,
+                      borderRadius: '50%',
+                      background: data.results_published ? '#16a34a' : '#d97706',
+                    }}
+                  />
+                  <strong style={{ fontSize: 14, color: data.results_published ? '#15803d' : '#b45309' }}>
+                    {data.results_published
+                      ? 'Student Visibility: Live & Released'
+                      : 'Student Visibility: Withheld (Pending Admin Approval)'}
+                  </strong>
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: '#475569' }}>
+                  {data.results_published
+                    ? 'Students who submitted this test can now see their score, accuracy, and detailed solutions in their portal.'
+                    : 'Candidates who took this exam see a confirmation screen that results are pending approval. Scores are hidden until you release them.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleResultsRelease}
+                disabled={releasingResults}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: 8,
+                  border: data.results_published ? '1px solid #cbd5e1' : 'none',
+                  background: data.results_published ? '#ffffff' : '#059669',
+                  color: data.results_published ? '#475569' : '#ffffff',
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: data.results_published ? 'none' : '0 2px 8px rgba(5, 150, 105, 0.25)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {releasingResults
+                  ? 'Updating...'
+                  : data.results_published
+                  ? 'Withhold Results from Students'
+                  : '✓ Approve & Release Results to Students'}
+              </button>
+            </div>
+          )}
+
           {/* ── KPI Summary Cards ── */}
           <div className="results-kpi-grid">
             {kpis.map((k) => {

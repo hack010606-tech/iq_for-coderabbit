@@ -44,7 +44,7 @@ const ActionBar = ({ currentQ, totalQ, onNavigate, currentResponse, questionId, 
         <button className="btn-action save-next" onClick={handleSaveAndNext}>
           {currentQ === totalQ - 1 ? 'Save' : 'Save & Next'}
         </button>
-        <button className="btn-action submit-final" onClick={onSubmitClick}>Submit Exam</button>
+
       </div>
     </div>
   );

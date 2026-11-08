@@ -84,6 +84,17 @@ export class TestsController {
     return this.testsService.publish(id, user);
   }
 
+  @ApiOperation({ summary: '[Admin] Approve and release (or withhold) test results for students' })
+  @UseGuards(RolesGuard) @Roles('admin')
+  @Patch(':id/publish-results')
+  publishResults(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { published?: boolean },
+    @CurrentUser() user: any,
+  ) {
+    return this.testsService.setResultsPublished(id, body?.published !== false, user);
+  }
+
   /** Stays open to teachers: filling in a paper's questions is their job. */
   @ApiOperation({ summary: '[Teacher] Add/replace questions on a test you own or are assigned' })
   @UseGuards(RolesGuard) @Roles('teacher', 'admin')

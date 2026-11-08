@@ -4,6 +4,8 @@ import { apiClient, captureTokenFromUrl, getRefreshToken, getToken } from '../ap
 import { normalisePaper, subjectsInPaper } from '../lib/questionFormat';
 import '../index.css';
 
+const PORTAL_URL = import.meta.env.VITE_PORTAL_URL || 'http://localhost:5173/student';
+
 /**
  * Offline demo papers. These two ids are not real tests — they exist so the
  * proctoring UI can be demonstrated without a live assessment.
@@ -43,10 +45,6 @@ const TYPE_LABELS = {
 /**
  * Turns the real test + its paper into the same shape the preview configs use,
  * so the instructions page describes the test the admin actually created.
- *
- * This page used to fall back to a generic "Secure Assessment / 60 Minutes / —
- * questions" card for every real test, because it only ever looked its testId up
- * in a hardcoded table and never called the API.
  */
 function buildConfig(test, paper) {
   const negative = test.negative_marking
@@ -97,7 +95,6 @@ const ExamLauncher = () => {
     if (isPreview) return;
 
     let cancelled = false;
-
     (async () => {
       // captureTokenFromUrl has already run in the effect above.
       if (!getToken()) {
@@ -109,11 +106,22 @@ const ExamLauncher = () => {
       }
 
       try {
-        const [test, rawPaper] = await Promise.all([
+        const [test, rawPaper, myAttempts] = await Promise.all([
           apiClient.get(`/tests/${testId}`),
           apiClient.get(`/tests/${testId}/questions`),
+          apiClient.get('/attempts/my').catch(() => []),
         ]);
         if (cancelled) return;
+
+        // If the student already completed/submitted this test, redirect to student homescreen
+        const alreadySubmitted = (myAttempts || []).find(
+          (a) => (a.test_id === testId || a.tests?.id === testId) && a.status === 'submitted'
+        );
+        if (alreadySubmitted) {
+          window.location.replace(PORTAL_URL);
+          return;
+        }
+
         setConfig(buildConfig(test, normalisePaper(rawPaper)));
       } catch (e) {
         if (!cancelled) setError(e.message || 'Could not load this test.');
@@ -133,12 +141,15 @@ const ExamLauncher = () => {
     if (refresh) fragment.set('refresh', refresh);
     const query = fragment.toString();
     const url = `/exam/session/${testId}${query ? `#${query}` : ''}`;
-    const examWin = window.open('', '_blank');
-    if (!examWin) {
-      window.location.href = url;
-      return;
-    }
-    examWin.location.replace(url);
+    // Replace in current window so no duplicate/orphaned instructions tab remains behind
+    window.location.replace(url);
+  };
+
+  const handleCancel = () => {
+    try {
+      window.close();
+    } catch {}
+    window.location.href = PORTAL_URL;
   };
 
   if (loading) {
@@ -156,7 +167,7 @@ const ExamLauncher = () => {
           <h2>Cannot open this test</h2>
           <p>{error || 'Test not found.'}</p>
           <div className="launcher-actions">
-            <button className="btn-cancel" onClick={() => window.close()}>Close</button>
+            <button className="btn-cancel" onClick={handleCancel}>Back to Dashboard</button>
           </div>
         </div>
       </div>
@@ -196,7 +207,7 @@ const ExamLauncher = () => {
           <p className="consent-text">By clicking below, you agree to these terms.</p>
         </div>
         <div className="launcher-actions">
-          <button className="btn-cancel" onClick={() => window.close()}>Cancel</button>
+          <button className="btn-cancel" onClick={handleCancel}>Cancel</button>
           <button className="btn-start" onClick={handleStartExam}>I agree, begin test</button>
         </div>
       </div>

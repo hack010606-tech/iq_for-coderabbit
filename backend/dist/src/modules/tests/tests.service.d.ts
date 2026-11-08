@@ -4,6 +4,8 @@ export interface Requester {
     role?: string;
     subject?: string;
 }
+export declare function isTestResultsPublished(test: any): boolean;
+export declare function stripInternalTags(text?: string): string;
 export declare class TestsService {
     private readonly logger;
     private hasPaperPattern;
@@ -17,6 +19,8 @@ export declare class TestsService {
     private isMissingColumn;
     private paperPatternAvailable;
     private withPattern;
+    isTestResultsPublished(test: any): boolean;
+    stripInternalTags(text?: string): string;
     private attachInferredPattern;
     findAll(user: Requester, filters?: {
         status?: string;
@@ -64,11 +68,15 @@ export declare class TestsService {
     getTestQuestionsForStudent(testId: string, studentId: string): Promise<any[]>;
     getResults(testId: string, user: Requester): Promise<{
         test: {
+            results_published: boolean;
+            instructions: string;
             id: any;
             title: any;
             total_marks: any;
             duration_minutes: any;
+            description: any;
         };
+        results_published: boolean;
         summary: {
             submitted: number;
             assigned: number;
@@ -82,6 +90,11 @@ export declare class TestsService {
         };
         results: any[];
         questionStats: any[];
+    }>;
+    setResultsPublished(testId: string, published: boolean, user: Requester): Promise<{
+        success: boolean;
+        testId: string;
+        results_published: boolean;
     }>;
     private buildQuestionStats;
     saveFullTest(body: SaveFullTestDto, user: Requester): Promise<any>;

@@ -246,7 +246,7 @@ describe('AttemptsService', () => {
       queueStrike(3);
       // gradeAndFinalise reads the duration, marking scheme, paper and answers.
       supabaseMock.queueResult('tests', { data: { duration_minutes: 60 } });
-      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0 } });
+      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0, results_published: true } });
       supabaseMock.queueResult('test_questions', { data: [] });
       supabaseMock.queueResult('answers', { data: [] });
       supabaseMock.queueResult('attempts', { data: { id: ATTEMPT_ID } });
@@ -283,6 +283,7 @@ describe('AttemptsService', () => {
     const queueGrading = (opts: {
       negativeMarking?: boolean;
       negativeMarks?: number;
+      resultsPublished?: boolean;
       testQuestions: any[];
       studentAnswers: any[];
     }) => {
@@ -292,6 +293,7 @@ describe('AttemptsService', () => {
         data: {
           negative_marking: opts.negativeMarking ?? false,
           negative_marks: opts.negativeMarks ?? 0,
+          results_published: opts.resultsPublished ?? true,
         },
       });
       supabaseMock.queueResult('test_questions', { data: opts.testQuestions });
@@ -352,7 +354,7 @@ describe('AttemptsService', () => {
     it('marks a late submission as auto-submitted and clamps the reported time', async () => {
       supabaseMock.queueResult('attempts', { data: openAttempt(120) }); // 2h into a 1h test
       supabaseMock.queueResult('tests', { data: { duration_minutes: 60 } });
-      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0 } });
+      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0, results_published: true } });
       supabaseMock.queueResult('test_questions', { data: [] });
       supabaseMock.queueResult('answers', { data: [] });
       supabaseMock.queueResult('attempts', { data: { id: ATTEMPT_ID } });
@@ -385,6 +387,24 @@ describe('AttemptsService', () => {
 
       const result = await service.submitAttempt(ATTEMPT_ID, STUDENT);
       expect(result.correct).toBe(1);
+    });
+
+    it('withholds score breakdown when results are not yet published by admin', async () => {
+      queueGrading({
+        resultsPublished: false,
+        testQuestions: [
+          { question_id: 'q1', marks_override: null, questions: { correct_answer: { index: 0 }, marks: 4 } },
+        ],
+        studentAnswers: [
+          { question_id: 'q1', selected_answer: { index: 0 } },
+        ],
+      });
+
+      const result = await service.submitAttempt(ATTEMPT_ID, STUDENT);
+
+      expect(result.results_published).toBe(false);
+      expect((result as any).score).toBeUndefined();
+      expect(result.message).toContain('Results will be released once approved by the administrator');
     });
 
     it('refuses to submit an attempt twice', async () => {
@@ -465,7 +485,7 @@ describe('AttemptsService', () => {
     it('does not re-run post-submit work when another submit won the race', async () => {
       supabaseMock.queueResult('attempts', { data: openAttempt(10) });
       supabaseMock.queueResult('tests', { data: { duration_minutes: 60 } });
-      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0 } });
+      supabaseMock.queueResult('tests', { data: { negative_marking: false, negative_marks: 0, results_published: true } });
       supabaseMock.queueResult('test_questions', {
         data: [
           { question_id: 'q1', marks_override: null, questions: { correct_answer: { index: 0 }, marks: 4 } },
