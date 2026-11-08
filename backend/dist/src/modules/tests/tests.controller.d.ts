@@ -59,8 +59,5 @@ export declare class TestsController {
     remove(id: string, user: any): Promise<{
         message: string;
     }>;
-    findOne(id: string, user: any): Promise<{
-        error: true;
-    } & `Expected identifier at \`${string},
-        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, correct_answer, difficulty, q_type, marks, image_url))\``>;
+    findOne(id: string, user: any): Promise<any>;
 }

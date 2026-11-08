@@ -390,12 +390,24 @@ const TestConstructor = () => {
   useEffect(() => {
     if (testId) {
       apiClient.get(`/tests/${testId}`).then(data => {
+        const text = `${data.title || ''} ${data.description || ''} ${data.instructions || ''} ${data.paper_pattern || ''} ${data.t_type || ''}`.toLowerCase();
+        let inferredPattern = data.paper_pattern || data.t_type;
+        if (text.includes('jee main') || text.includes('jee_main')) {
+          inferredPattern = 'jee_main';
+        } else if (text.includes('jee advanced') || text.includes('jee_advanced') || text.includes('jee adv')) {
+          inferredPattern = 'jee_advanced';
+        } else if (text.includes('neet')) {
+          inferredPattern = 'neet';
+        }
+
         setExistingTest(data);
         setTestData(prev => ({
           ...prev,
           title: data.title,
           subject: data.subject || prev.subject,
-          t_type: data.paper_pattern || data.t_type || 'quiz',
+          paper_pattern: inferredPattern,
+          t_type: inferredPattern,
+          instructions: data.instructions || prev.instructions,
           duration: data.duration_minutes,
           totalMarks: data.total_marks,
           // Read from the real columns, falling back to the old description
@@ -540,11 +552,11 @@ const TestConstructor = () => {
   const handlePublish = () => saveToBackend('published');
 
   // Quota & Target calculations for assigned test / step 2
-  const paperPattern = String(testData.paper_pattern || testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
-  const testTitle = String(testData.title || existingTest?.title || '').toLowerCase();
-  const isJeeMain = paperPattern.includes('jee_main') || testTitle.includes('jee main') || testTitle.includes('jee mains');
-  const isJeeAdv  = paperPattern.includes('jee_advanced') || testTitle.includes('jee adv');
-  const isNeet    = paperPattern.includes('neet') || testTitle.includes('neet');
+  const combinedContext = `${testData.paper_pattern || ''} ${testData.t_type || ''} ${existingTest?.paper_pattern || ''} ${existingTest?.t_type || ''} ${testData.title || ''} ${existingTest?.title || ''} ${testData.instructions || ''} ${existingTest?.instructions || ''} ${testData.description || ''} ${existingTest?.description || ''}`.toLowerCase();
+
+  const isJeeMain = combinedContext.includes('jee_main') || combinedContext.includes('jee main') || combinedContext.includes('jee mains');
+  const isJeeAdv  = combinedContext.includes('jee_advanced') || combinedContext.includes('jee adv');
+  const isNeet    = combinedContext.includes('neet');
 
   let targetTotal = 25;
   let targetMcq   = 20;

@@ -17,6 +17,7 @@ export declare class TestsService {
     private isMissingColumn;
     private paperPatternAvailable;
     private withPattern;
+    private attachInferredPattern;
     findAll(user: Requester, filters?: {
         status?: string;
         page?: number;
@@ -28,10 +29,7 @@ export declare class TestsService {
         limit: number;
         totalPages: number;
     }>;
-    findOne(id: string, user: Requester): Promise<{
-        error: true;
-    } & `Expected identifier at \`${string},
-        test_questions(question_order, marks_override, questions(id, subject, topic, question_text, options, correct_answer, difficulty, q_type, marks, image_url))\``>;
+    findOne(id: string, user: Requester): Promise<any>;
     create(body: CreateTestDto, user: Requester): Promise<any>;
     assignTeachers(testId: string, teacherIds: string[]): Promise<{
         id: any;

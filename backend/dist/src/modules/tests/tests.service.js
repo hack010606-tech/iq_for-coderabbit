@@ -168,11 +168,31 @@ let TestsService = TestsService_1 = class TestsService {
     async withPattern(columns) {
         return (await this.paperPatternAvailable()) ? `${columns}, paper_pattern` : columns;
     }
+    attachInferredPattern(t) {
+        if (!t)
+            return t;
+        if (!t.paper_pattern) {
+            const text = `${t.title || ''} ${t.description || ''} ${t.instructions || ''} ${t.t_type || ''}`.toLowerCase();
+            if (text.includes('jee main') || text.includes('jee_main')) {
+                t.paper_pattern = 'jee_main';
+            }
+            else if (text.includes('jee advanced') || text.includes('jee_advanced') || text.includes('jee adv')) {
+                t.paper_pattern = 'jee_advanced';
+            }
+            else if (text.includes('neet')) {
+                t.paper_pattern = 'neet';
+            }
+            else if (t.t_type && t.t_type !== 'mock_test') {
+                t.paper_pattern = t.t_type;
+            }
+        }
+        return t;
+    }
     async findAll(user, filters = {}) {
         const page = Math.max(Number(filters.page) || 1, 1);
         const limit = Math.min(Math.max(Number(filters.limit) || 50, 1), 200);
         const from = (page - 1) * limit;
-        const base = await this.withPattern(`id, title, description, subject, t_type, status, duration_minutes,
+        const base = await this.withPattern(`id, title, description, instructions, subject, t_type, status, duration_minutes,
        total_marks, negative_marking, negative_marks, created_at, created_by`);
         let query = supabase_config_1.supabase
             .from('tests')
@@ -188,11 +208,14 @@ let TestsService = TestsService_1 = class TestsService {
             throw new Error(error.message);
         const total = count ?? 0;
         return {
-            data: (data || []).map((t) => ({
-                ...t,
-                questionCount: t.test_questions?.length ?? 0,
-                question_count: t.test_questions?.length ?? 0,
-            })),
+            data: (data || []).map((t) => {
+                const enriched = this.attachInferredPattern(t);
+                return {
+                    ...enriched,
+                    questionCount: enriched.test_questions?.length ?? 0,
+                    question_count: enriched.test_questions?.length ?? 0,
+                };
+            }),
             total,
             page,
             limit,
@@ -206,7 +229,7 @@ let TestsService = TestsService_1 = class TestsService {
         else {
             await this.assertCanContribute(id, user);
         }
-        const base = await this.withPattern(`id, title, description, subject, t_type, status, duration_minutes, total_marks,
+        const base = await this.withPattern(`id, title, description, instructions, subject, t_type, status, duration_minutes, total_marks,
        negative_marking, negative_marks, created_at, created_by`);
         const { data, error } = await supabase_config_1.supabase
             .from('tests')
@@ -216,7 +239,7 @@ let TestsService = TestsService_1 = class TestsService {
             .single();
         if (error || !data)
             throw new common_1.NotFoundException('Test not found');
-        return data;
+        return this.attachInferredPattern(data);
     }
     async create(body, user) {
         const data = await this.insertTest({

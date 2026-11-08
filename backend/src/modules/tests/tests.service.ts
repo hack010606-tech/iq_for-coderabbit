@@ -300,6 +300,27 @@ export class TestsService {
     return (await this.paperPatternAvailable()) ? `${columns}, paper_pattern` : columns;
   }
 
+  /**
+   * If `paper_pattern` is not populated (e.g. before migration 007),
+   * infer the assessment pattern from the title, instructions, or description.
+   */
+  private attachInferredPattern(t: any): any {
+    if (!t) return t;
+    if (!t.paper_pattern) {
+      const text = `${t.title || ''} ${t.description || ''} ${t.instructions || ''} ${t.t_type || ''}`.toLowerCase();
+      if (text.includes('jee main') || text.includes('jee_main')) {
+        t.paper_pattern = 'jee_main';
+      } else if (text.includes('jee advanced') || text.includes('jee_advanced') || text.includes('jee adv')) {
+        t.paper_pattern = 'jee_advanced';
+      } else if (text.includes('neet')) {
+        t.paper_pattern = 'neet';
+      } else if (t.t_type && t.t_type !== 'mock_test') {
+        t.paper_pattern = t.t_type;
+      }
+    }
+    return t;
+  }
+
   // ── Teacher reads ───────────────────────────────────────────────────────────
 
   /**
@@ -317,7 +338,7 @@ export class TestsService {
     const from = (page - 1) * limit;
 
     const base = await this.withPattern(
-      `id, title, description, subject, t_type, status, duration_minutes,
+      `id, title, description, instructions, subject, t_type, status, duration_minutes,
        total_marks, negative_marking, negative_marks, created_at, created_by`,
     );
 
@@ -339,12 +360,15 @@ export class TestsService {
 
     const total = count ?? 0;
     return {
-      data: (data || []).map((t: any) => ({
-        ...t,
-        questionCount: t.test_questions?.length ?? 0,
-        // Kept for the older callers that read snake_case.
-        question_count: t.test_questions?.length ?? 0,
-      })),
+      data: (data || []).map((t: any) => {
+        const enriched = this.attachInferredPattern(t);
+        return {
+          ...enriched,
+          questionCount: enriched.test_questions?.length ?? 0,
+          // Kept for the older callers that read snake_case.
+          question_count: enriched.test_questions?.length ?? 0,
+        };
+      }),
       total,
       page,
       limit,
@@ -366,7 +390,7 @@ export class TestsService {
     }
 
     const base = await this.withPattern(
-      `id, title, description, subject, t_type, status, duration_minutes, total_marks,
+      `id, title, description, instructions, subject, t_type, status, duration_minutes, total_marks,
        negative_marking, negative_marks, created_at, created_by`,
     );
 
@@ -379,7 +403,7 @@ export class TestsService {
       .eq('id', id)
       .single();
     if (error || !data) throw new NotFoundException('Test not found');
-    return data;
+    return this.attachInferredPattern(data);
   }
 
   // ── Teacher writes ──────────────────────────────────────────────────────────
