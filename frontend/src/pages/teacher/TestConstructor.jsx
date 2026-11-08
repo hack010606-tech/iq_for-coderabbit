@@ -4,7 +4,7 @@ import {
   Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
   Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
   Layers, ChevronDown, ChevronUp, FileDown,
-  Calendar, Users, Award, Info, ShieldAlert
+  Calendar, Users, Award, Info, ShieldAlert, Lock
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
@@ -460,15 +460,41 @@ const TestConstructor = () => {
         scheduled_end: scheduledEnd
       };
 
-      if (testData.t_type === 'jee_main' && status === 'published') {
+      if (status === 'published') {
+        const effPattern = String(testData.paper_pattern || testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
+        const effTitle = String(testData.title || existingTest?.title || '').toLowerCase();
+        const checkJeeMain = effPattern.includes('jee_main') || effTitle.includes('jee main') || effTitle.includes('jee mains');
+        const checkJeeAdv  = effPattern.includes('jee_advanced') || effTitle.includes('jee adv');
+        const checkNeet    = effPattern.includes('neet') || effTitle.includes('neet');
+
         const subjects = [...new Set(selectedQuestions.map(q => q.subject))];
-        for (const sub of subjects) {
-          const subQs = selectedQuestions.filter(q => q.subject === sub);
-          const mcqCount = subQs.filter(q => getQuestionType(q) === 'mcq').length;
-          const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
-          if (mcqCount !== 20 || natCount !== 5) {
-            showToast(`Cannot publish: ${sub} has ${mcqCount}/20 MCQs and ${natCount}/5 Numericals.`);
-            return;
+        if (checkJeeMain) {
+          for (const sub of subjects) {
+            const subQs = selectedQuestions.filter(q => q.subject === sub);
+            const mcqCount = subQs.filter(q => getQuestionType(q) === 'mcq').length;
+            const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
+            if (mcqCount !== 20 || natCount !== 5) {
+              showToast(`Cannot publish: ${sub} must have exactly 20 MCQs and 5 Numericals under JEE Main NTA norms (currently ${mcqCount}/20 MCQs and ${natCount}/5 Numericals).`);
+              return;
+            }
+          }
+        } else if (checkJeeAdv) {
+          for (const sub of subjects) {
+            const subQs = selectedQuestions.filter(q => q.subject === sub);
+            const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
+            if (subQs.length !== 18 || natCount !== 6) {
+              showToast(`Cannot publish: ${sub} must have exactly 18 questions (12 MCQs and 6 Numericals) for JEE Advanced. Currently ${subQs.length}/18.`);
+              return;
+            }
+          }
+        } else if (checkNeet) {
+          for (const sub of subjects) {
+            const subQs = selectedQuestions.filter(q => q.subject === sub);
+            const req = sub === 'Biology' ? 90 : 45;
+            if (subQs.length !== req) {
+              showToast(`Cannot publish: ${sub} must have exactly ${req} MCQs for NEET (currently ${subQs.length}/${req}).`);
+              return;
+            }
           }
         }
       }
@@ -513,52 +539,8 @@ const TestConstructor = () => {
   const handleSaveDraft = () => saveToBackend('draft');
   const handlePublish = () => saveToBackend('published');
 
-  const toggleQuestion = (q) => {
-    if (userSubject && userSubject !== q.subject) {
-      showToast(`You can only modify ${userSubject} questions.`);
-      return;
-    }
-
-    const isJeeMain = testData.t_type === 'jee_main';
-    const isSelected = selectedQuestions.find(sq => sq.id === q.id);
-
-    if (isSelected) {
-      setSelectedQuestions(selectedQuestions.filter(sq => sq.id !== q.id));
-    } else {
-      if (isJeeMain) {
-        const qType = getQuestionType(q);
-        if (qType === 'subjective') {
-          showToast('JEE Main paper only accepts MCQ and Numerical (integer answer) questions.');
-          return;
-        }
-        const subjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
-        const currentCount = subjectQuestions.filter(sq => getQuestionType(sq) === qType).length;
-        const limit = qType === 'mcq' ? 20 : 5;
-
-        if (currentCount >= limit) {
-          showToast(`Cannot add more than ${limit} ${qType === 'mcq' ? 'MCQ' : 'Numerical'} questions for ${q.subject} in JEE Main pattern.`);
-          return;
-        }
-      }
-      setSelectedQuestions([...selectedQuestions, q]);
-    }
-  };
-
-  const StepIndicator = () => (
-    <div className="step-indicator">
-      {[1, 2, 3].map(s => (
-        <React.Fragment key={s}>
-          <div className={`step-circle ${step >= s ? 'active' : ''} ${step > s ? 'completed' : ''}`}>
-            {step > s ? <Check size={16} /> : s}
-          </div>
-          {s < 3 && <div className={`step-line ${step > s ? 'active' : ''}`}></div>}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-
   // Quota & Target calculations for assigned test / step 2
-  const paperPattern = String(testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
+  const paperPattern = String(testData.paper_pattern || testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
   const testTitle = String(testData.title || existingTest?.title || '').toLowerCase();
   const isJeeMain = paperPattern.includes('jee_main') || testTitle.includes('jee main') || testTitle.includes('jee mains');
   const isJeeAdv  = paperPattern.includes('jee_advanced') || testTitle.includes('jee adv');
@@ -618,6 +600,86 @@ const TestConstructor = () => {
     targetNat = targetTotal - targetMcq;
     quotaPatternName = 'Custom Paper';
   }
+
+  const toggleQuestion = (q) => {
+    if (userSubject && userSubject !== q.subject) {
+      showToast(`You can only modify ${userSubject} questions.`);
+      return;
+    }
+
+    const isSelected = selectedQuestions.find(sq => sq.id === q.id);
+
+    if (isSelected) {
+      setSelectedQuestions(selectedQuestions.filter(sq => sq.id !== q.id));
+    } else {
+      const qType = getQuestionType(q);
+      const subjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
+      const currentMcqs = subjectQuestions.filter(sq => getQuestionType(sq) === 'mcq').length;
+      const currentNats = subjectQuestions.filter(sq => getQuestionType(sq) === 'nat').length;
+
+      if (isJeeMain) {
+        if (qType === 'subjective') {
+          showToast('JEE Main paper only accepts MCQ and Numerical (integer answer) questions.');
+          return;
+        }
+        // Strict ceiling: Cannot exceed 5 numericals or 20 MCQs per subject
+        if (qType === 'nat' && currentNats >= 5) {
+          showToast(`Cannot add more than 5 Numerical questions for ${q.subject}. JEE Main strictly caps Section B at 5 numerical questions.`);
+          return;
+        }
+        if (qType === 'mcq' && currentMcqs >= 20) {
+          showToast(`Cannot add more than 20 MCQ questions for ${q.subject}. JEE Main strictly caps Section A at 20 MCQs.`);
+          return;
+        }
+        if (subjectQuestions.length >= 25) {
+          showToast(`Cannot add more than 25 questions total for ${q.subject} in JEE Main.`);
+          return;
+        }
+      } else if (isJeeAdv) {
+        if (qType === 'subjective') {
+          showToast('JEE Advanced paper accepts Single/Multiple Choice MCQs and Numerical questions.');
+          return;
+        }
+        if (qType === 'nat' && currentNats >= 6) {
+          showToast(`Cannot add more than 6 Numerical questions for ${q.subject} in JEE Advanced.`);
+          return;
+        }
+        if (qType === 'mcq' && currentMcqs >= 12) {
+          showToast(`Cannot add more than 12 MCQ questions for ${q.subject} in JEE Advanced.`);
+          return;
+        }
+        if (subjectQuestions.length >= 18) {
+          showToast(`Cannot add more than 18 questions total for ${q.subject} in JEE Advanced.`);
+          return;
+        }
+      } else if (isNeet) {
+        if (qType !== 'mcq') {
+          showToast('NEET examination only accepts Single-Choice MCQs.');
+          return;
+        }
+        const neetLimit = q.subject === 'Biology' ? 90 : 45;
+        if (subjectQuestions.length >= neetLimit) {
+          showToast(`Cannot add more than ${neetLimit} questions for ${q.subject} in NEET.`);
+          return;
+        }
+      }
+
+      setSelectedQuestions([...selectedQuestions, q]);
+    }
+  };
+
+  const StepIndicator = () => (
+    <div className="step-indicator">
+      {[1, 2, 3].map(s => (
+        <React.Fragment key={s}>
+          <div className={`step-circle ${step >= s ? 'active' : ''} ${step > s ? 'completed' : ''}`}>
+            {step > s ? <Check size={16} /> : s}
+          </div>
+          {s < 3 && <div className={`step-line ${step > s ? 'active' : ''}`}></div>}
+        </React.Fragment>
+      ))}
+    </div>
+  );
 
   // Count relevant selected questions
   const relevantSelected = userSubject
@@ -802,21 +864,39 @@ const TestConstructor = () => {
                     <div className="tc-pattern-tabs">
                       <button
                         type="button"
-                        className={`tc-pattern-tab ${testData.t_type !== 'jee_main' ? 'active' : ''}`}
+                        className={`tc-pattern-tab ${testData.t_type === 'jee_main' ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_main', duration: 180, totalMarks: 300 })}
+                        disabled={!isInitiator}
+                      >
+                        <span className="tc-pt-title">JEE Main</span>
+                        <span className="tc-pt-desc">25 Q/sub · 20 MCQs + 5 Numericals (300 marks)</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`tc-pattern-tab ${testData.t_type === 'jee_advanced' ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_advanced', duration: 180, totalMarks: 186 })}
+                        disabled={!isInitiator}
+                      >
+                        <span className="tc-pt-title">JEE Advanced</span>
+                        <span className="tc-pt-desc">18 Q/sub · 12 MCQs + 6 Numericals (186 marks)</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`tc-pattern-tab ${testData.t_type === 'neet' ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'neet', duration: 200, totalMarks: 720 })}
+                        disabled={!isInitiator}
+                      >
+                        <span className="tc-pt-title">NEET</span>
+                        <span className="tc-pt-desc">180 MCQs (45 Phys, 45 Chem, 90 Bio · 720 marks)</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`tc-pattern-tab ${testData.t_type === 'quiz' || (!['jee_main', 'jee_advanced', 'neet'].includes(testData.t_type)) ? 'active' : ''}`}
                         onClick={() => isInitiator && setTestData({ ...testData, t_type: 'quiz' })}
                         disabled={!isInitiator}
                       >
                         <span className="tc-pt-title">Standard Quiz</span>
-                        <span className="tc-pt-desc">Flexible question mix & custom marks</span>
-                      </button>
-                      <button
-                        type="button"
-                        className={`tc-pattern-tab ${testData.t_type === 'jee_main' ? 'active' : ''}`}
-                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_main' })}
-                        disabled={!isInitiator}
-                      >
-                        <span className="tc-pt-title">JEE Main</span>
-                        <span className="tc-pt-desc">20 MCQs + 5 Mandatory Numericals per subject</span>
+                        <span className="tc-pt-desc">Flexible question mix & custom quotas</span>
                       </button>
                     </div>
                   </div>
@@ -1153,6 +1233,48 @@ const TestConstructor = () => {
                       const hasCorrectTicked = hasOptions && rawOptions.some((_, idx) => ansDetails.isCorrectIndex(idx));
                       const isExpandedSol = !!expandedSolutions[q.id];
 
+                      const qSubjectQuestions = selectedQuestions.filter(sq => sq.subject === q.subject);
+                      const currentSubjectMcqs = qSubjectQuestions.filter(sq => getQuestionType(sq) === 'mcq').length;
+                      const currentSubjectNats = qSubjectQuestions.filter(sq => getQuestionType(sq) === 'nat').length;
+
+                      let isQuotaFull = false;
+                      let quotaReason = '';
+
+                      if (!isSelected) {
+                        if (isJeeMain) {
+                          if (qType === 'nat' && currentSubjectNats >= 5) {
+                            isQuotaFull = true;
+                            quotaReason = 'Sec B Full (5/5)';
+                          } else if (qType === 'mcq' && currentSubjectMcqs >= 20) {
+                            isQuotaFull = true;
+                            quotaReason = 'Sec A Full (20/20)';
+                          } else if (qSubjectQuestions.length >= 25) {
+                            isQuotaFull = true;
+                            quotaReason = 'Subject Full (25/25)';
+                          }
+                        } else if (isJeeAdv) {
+                          if (qType === 'nat' && currentSubjectNats >= 6) {
+                            isQuotaFull = true;
+                            quotaReason = 'Numerical Full (6/6)';
+                          } else if (qType === 'mcq' && currentSubjectMcqs >= 12) {
+                            isQuotaFull = true;
+                            quotaReason = 'MCQ Full (12/12)';
+                          } else if (qSubjectQuestions.length >= 18) {
+                            isQuotaFull = true;
+                            quotaReason = 'Subject Full (18/18)';
+                          }
+                        } else if (isNeet) {
+                          const limit = q.subject === 'Biology' ? 90 : 45;
+                          if (qType !== 'mcq') {
+                            isQuotaFull = true;
+                            quotaReason = 'MCQ Only';
+                          } else if (qSubjectQuestions.length >= limit) {
+                            isQuotaFull = true;
+                            quotaReason = `Quota Full (${limit}/${limit})`;
+                          }
+                        }
+                      }
+
                       return (
                         <div key={q.id} className={`tc-q-card ${isSelected ? 'selected' : ''}`}>
                           {/* ── Card Header ── */}
@@ -1167,12 +1289,17 @@ const TestConstructor = () => {
                             <div className="tc-q-header-actions">
                               <button
                                 type="button"
-                                className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : 'tc-btn-add'}`}
+                                className={`tc-btn-action ${isSelected ? 'tc-btn-remove' : isQuotaFull ? 'tc-btn-quota-full' : 'tc-btn-add'}`}
                                 onClick={() => toggleQuestion(q)}
+                                title={isQuotaFull ? quotaReason : isSelected ? 'Remove question' : 'Add question'}
                               >
                                 {isSelected ? (
                                   <>
                                     <Check size={14} /> Added
+                                  </>
+                                ) : isQuotaFull ? (
+                                  <>
+                                    <Lock size={12} /> {quotaReason}
                                   </>
                                 ) : (
                                   <>

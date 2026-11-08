@@ -768,6 +768,20 @@
   color: #b91c1c;
 }
 
+.tc-btn-quota-full {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px dashed #cbd5e1 !important;
+  cursor: not-allowed !important;
+  font-size: 11px !important;
+  padding: 6px 10px !important;
+}
+
+.tc-btn-quota-full:hover {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
 /* ── Pagination Bar ── */
 .tc-pagination-bar {
   flex: 0 0 auto !important;
