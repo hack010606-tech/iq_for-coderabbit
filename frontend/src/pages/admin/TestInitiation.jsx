@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, ClipboardList, Trash2, X, CheckCircle, Clock, ChevronRight,
-         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar, Stethoscope } from 'lucide-react';
+         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar, Stethoscope, FileDown } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import TestPDFExportModal from '../teacher/TestPDFExportModal';
 import './TestInitiation.css';
 
 /* ─── Exam preset definitions ─────────────────────────────────────────── */
@@ -300,6 +301,34 @@ const TestInitiation = () => {
   const [scheduleEnd, setScheduleEnd] = useState('');
   const [assigningBatches, setAssigningBatches] = useState(false);
 
+  /* PDF Export */
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfTestData, setPdfTestData] = useState(null);
+  const [pdfQuestions, setPdfQuestions] = useState([]);
+  const [exportingPdfId, setExportingPdfId] = useState(null);
+
+  const handleExportPdf = async (test) => {
+    setExportingPdfId(test.id);
+    try {
+      const fullTest = await apiClient.get(`/tests/${test.id}`);
+      const qs = (fullTest.test_questions || [])
+        .map(tq => ({
+          ...(tq.questions || {}),
+          marks: tq.marks_override || tq.questions?.marks || 4,
+          question_order: tq.question_order,
+        }))
+        .sort((a, b) => (a.question_order || 0) - (b.question_order || 0));
+
+      setPdfTestData(fullTest);
+      setPdfQuestions(qs);
+      setPdfModalOpen(true);
+    } catch (e) {
+      showToast(e.message || 'Failed to fetch test questions for PDF export', 'error');
+    } finally {
+      setExportingPdfId(null);
+    }
+  };
+
   const handlePublish = async (test) => {
     if (!window.confirm(`Publish "${test.title}"? Students won't see it until you assign it to a batch.`)) return;
     try {
@@ -504,22 +533,29 @@ const TestInitiation = () => {
                                 const count = (t.test_questions || []).filter(tq => tq.questions?.subject === sub).length;
                                 // `paper_pattern` is the real home for this; `t_type` is the
                                 // fallback for rows created before migration 007.
-                                const pattern = t.paper_pattern || t.t_type;
+                                const pattern = String(t.paper_pattern || t.t_type || '').toLowerCase();
+                                const titleLower = String(t.title || '').toLowerCase();
+                                const isNeet = pattern.includes('neet') || titleLower.includes('neet');
+                                const isAdv = pattern.includes('jee_advanced') || pattern.includes('jee adv') || titleLower.includes('jee adv');
                                 const isCustom = pattern === 'custom';
-                                const isNeet = pattern === 'neet';
 
                                 if (sub === 'Biology' && !isNeet && !isCustom) return null;
                                 if (sub === 'Mathematics' && isNeet) return null;
                                 if (isCustom && count === 0) return null;
 
-                                let target = 30;
-                                if (pattern === 'jee_advanced') target = 18;
-                                else if (pattern === 'neet') target = sub === 'Biology' ? 90 : 45;
+                                // Present NTA exam norms:
+                                // JEE Main: 25 Qs per subject (20 MCQ + 5 Numerical, no optional questions) = 75 total
+                                // JEE Advanced: 18 Qs per subject = 54 total
+                                // NEET: Biology 90 Qs, Physics/Chemistry 45 Qs = 180 total
+                                let target = 25;
+                                if (isAdv) target = 18;
+                                else if (isNeet) target = sub === 'Biology' ? 90 : 45;
                                 else if (isCustom) target = '?';
                                 
-                                const color = count === target && target !== '?' ? '#10b981' : 'var(--text-secondary)';
+                                const isComplete = typeof target === 'number' && count >= target;
+                                const color = isComplete ? '#10b981' : 'var(--text-secondary)';
                                 return (
-                                   <div key={sub} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 40, padding: '4px', borderRadius: 4, background: count === target && target !== '?' ? '#ecfdf5' : '#ffffff', border: `1px solid ${count === target && target !== '?' ? '#a7f3d0' : '#e2e8f0'}`, color }}>
+                                   <div key={sub} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 40, padding: '4px', borderRadius: 4, background: isComplete ? '#ecfdf5' : '#ffffff', border: `1px solid ${isComplete ? '#a7f3d0' : '#e2e8f0'}`, color }}>
                                      <span style={{ fontSize: 9, fontWeight: 600 }}>{sub.substring(0, 4)}</span>
                                      <span style={{ fontSize: 11, fontWeight: 700 }}>{count}/{target}</span>
                                    </div>
@@ -566,6 +602,21 @@ const TestInitiation = () => {
                             <span className="ti-btn-label">Batches</span>
                           </button>
                         )}
+                        <button
+                          className="ti-action-btn ti-action-pdf"
+                          onClick={() => handleExportPdf(t)}
+                          title="Export question paper as PDF (subject-wise)"
+                          disabled={exportingPdfId === t.id}
+                        >
+                          {exportingPdfId === t.id ? (
+                            <Clock size={17} className="ti-btn-icon" />
+                          ) : (
+                            <FileDown size={17} className="ti-btn-icon" />
+                          )}
+                          <span className="ti-btn-label">
+                            {exportingPdfId === t.id ? 'Loading…' : 'PDF'}
+                          </span>
+                        </button>
                         <button
                           className="ti-action-btn ti-action-delete"
                           onClick={() => handleDelete(t)}
@@ -790,6 +841,16 @@ const TestInitiation = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Subject-Wise PDF Export Modal ── */}
+      {pdfModalOpen && (
+        <TestPDFExportModal
+          isOpen={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          testData={pdfTestData}
+          selectedQuestions={pdfQuestions}
+        />
       )}
     </div>
   );

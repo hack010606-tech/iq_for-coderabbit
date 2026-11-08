@@ -82,6 +82,32 @@
   color: #1d4ed8;
 }
 
+/* PDF Export Button */
+.ti-action-pdf {
+  background: #f8fafc;
+  color: #4338ca;
+  border: 1.5px solid #c7d2fe;
+}
+
+.ti-action-pdf:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #3730a3;
+}
+
+/* Results Button */
+.ti-action-results {
+  background: #fdf4ff;
+  color: #9333ea;
+  border: 1.5px solid #f0abfc;
+}
+
+.ti-action-results:hover {
+  background: #fae8ff;
+  border-color: #a855f7;
+  color: #7e22ce;
+}
+
 /* Delete Button */
 .ti-action-delete {
   background: #fef2f2;

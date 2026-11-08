@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookOpen, CheckCircle, Clock, FileDown, Trophy } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import TestPDFExportModal from '../teacher/TestPDFExportModal';
 
 const TestLibrary = () => {
+  const navigate = useNavigate();
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfTestData, setPdfTestData] = useState(null);
+  const [pdfQuestions, setPdfQuestions] = useState([]);
+  const [exportingPdfId, setExportingPdfId] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -15,6 +23,29 @@ const TestLibrary = () => {
     };
     load();
   }, []);
+
+  const handleExportPdf = async (test) => {
+    setExportingPdfId(test.id);
+    try {
+      const fullTest = await apiClient.get(`/tests/${test.id}`);
+      const qs = (fullTest.test_questions || [])
+        .map(tq => ({
+          ...(tq.questions || {}),
+          marks: tq.marks_override || tq.questions?.marks || 4,
+          question_order: tq.question_order,
+        }))
+        .sort((a, b) => (a.question_order || 0) - (b.question_order || 0));
+
+      setPdfTestData(fullTest);
+      setPdfQuestions(qs);
+      setPdfModalOpen(true);
+    } catch (e) {
+      console.error('Failed to export PDF:', e);
+      alert(e.message || 'Failed to load test questions for PDF export');
+    } finally {
+      setExportingPdfId(null);
+    }
+  };
 
   const filtered = filter === 'all' ? tests : tests.filter(t => t.status === filter);
 
@@ -68,10 +99,65 @@ const TestLibrary = () => {
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                   {t.question_count ?? (t.test_questions?.length ?? 0)} Q
                 </span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/admin/test-results/${t.id}`)}
+                  title="View candidate test results"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    borderRadius: 7,
+                    border: '1px solid #f0abfc',
+                    background: '#fdf4ff',
+                    color: '#9333ea',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Trophy size={14} />
+                  <span>Results</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExportPdf(t)}
+                  disabled={exportingPdfId === t.id}
+                  title="Export question paper as PDF (subject-wise)"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    borderRadius: 7,
+                    border: '1px solid #cbd5e1',
+                    background: '#f8fafc',
+                    color: '#4338ca',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <FileDown size={14} />
+                  <span>{exportingPdfId === t.id ? 'Loading…' : 'PDF'}</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── Subject-Wise PDF Export Modal ── */}
+      {pdfModalOpen && (
+        <TestPDFExportModal
+          isOpen={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          testData={pdfTestData}
+          selectedQuestions={pdfQuestions}
+        />
       )}
     </div>
   );

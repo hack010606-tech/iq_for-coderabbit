@@ -3,12 +3,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Check, ChevronRight, ChevronLeft, Search, Plus, Trash2, FileText,
   Settings, ListChecks, CheckCircle2, Clock, Sparkles, AlertCircle,
-  Layers, ChevronDown, ChevronUp,
+  Layers, ChevronDown, ChevronUp, FileDown,
   Calendar, Users, Award, Info, ShieldAlert
 } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { apiClient } from '../../api/client';
 import MathText from '../../components/MathText';
+import TestPDFExportModal from './TestPDFExportModal';
 import './TestConstructor.css';
 
 const MCQ_TYPES = ['mcq', 'single_correct', 'single', 'scq', 'multi_correct', 'multiple_correct', 'multi', 'multiple', 'assertion'];
@@ -286,6 +287,7 @@ const TestConstructor = () => {
   }, [step, setSidebarCollapsed]);
 
   const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const [isPdfExportOpen, setIsPdfExportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [lightboxUrl, setLightboxUrl] = useState(null);
   const [expandedSolutions, setExpandedSolutions] = useState({});
@@ -1387,6 +1389,17 @@ const TestConstructor = () => {
                     Verify your test parameters and inspect all {selectedQuestions.length} selected questions before finalizing.
                   </p>
                 </div>
+                <div className="tc-review-header-actions">
+                  <button
+                    type="button"
+                    className="tc-btn-export-pdf"
+                    onClick={() => setIsPdfExportOpen(true)}
+                    title="Export questions and test paper as PDF (subject-wise)"
+                  >
+                    <FileDown size={18} />
+                    <span>Export as PDF</span>
+                  </button>
+                </div>
               </div>
 
               {/* Summary Parameters Card */}
@@ -1594,6 +1607,14 @@ const TestConstructor = () => {
         </div>
       </div>
     </div>
+
+    {/* PDF Export Modal */}
+    <TestPDFExportModal
+      isOpen={isPdfExportOpen}
+      onClose={() => setIsPdfExportOpen(false)}
+      testData={testData}
+      selectedQuestions={selectedQuestions}
+    />
 
     {/* Image Lightbox */}
     {lightboxUrl && (

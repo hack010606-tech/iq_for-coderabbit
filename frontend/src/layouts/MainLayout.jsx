@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Book, FlaskConical, Calculator, Settings, LogOut,
   Award, Layers, Users, MessageSquare, Database, FileText, Upload,
-  UsersRound, Video, ClipboardCheck, ChevronLeft, ChevronRight
+  UsersRound, Video, ClipboardCheck, ChevronLeft, ChevronRight, Trophy
 } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { useAppData } from '../context/AppDataContext';
@@ -64,6 +64,7 @@ const MainLayout = () => {
       ? [{ name: 'Test Constructor', path: '/teacher/test-constructor', icon: Layers }]
       : []),
     { name: 'Test Library', path: '/teacher/test-library', icon: FileText },
+    { name: 'Test Results', path: '/teacher/test-results', icon: Trophy },
     { name: 'Question Bank', path: '/teacher/question-bank', icon: Database },
     { name: 'Review Queue', path: '/teacher/review-queue', icon: ClipboardCheck },
     { name: 'Lectures', path: '/teacher/lectures', icon: Video },
@@ -111,7 +112,7 @@ const MainLayout = () => {
             if (item.path === '/teacher/doubt-queue' && location.pathname.startsWith('/teacher/doubt-chat/')) {
               isActive = true;
             }
-            if (item.path === '/teacher/test-library' && location.pathname.startsWith('/teacher/test-results/')) {
+            if (item.path === '/teacher/test-results' && location.pathname.startsWith('/teacher/test-results')) {
               isActive = true;
             }
 

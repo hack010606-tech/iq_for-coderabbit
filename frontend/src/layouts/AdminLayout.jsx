@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UsersRound, Database,
-  ClipboardList, BookOpen, Settings, LogOut, Shield
+  ClipboardList, BookOpen, Settings, LogOut, Shield, Trophy
 } from 'lucide-react';
 import './AdminLayout.css';
 
@@ -26,6 +26,7 @@ const AdminLayout = () => {
     { name: 'Question Bank',    path: '/admin/question-bank',   icon: Database },
     { name: 'Test Initiation',  path: '/admin/test-initiation', icon: ClipboardList },
     { name: 'Test Library',     path: '/admin/test-library',    icon: BookOpen },
+    { name: 'Test Results',     path: '/admin/test-results',    icon: Trophy },
   ];
 
   return (

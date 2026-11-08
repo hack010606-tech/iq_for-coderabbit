@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../../context/AppDataContext';
+import { apiClient } from '../../api/client';
+import TestPDFExportModal from './TestPDFExportModal';
 import {
   FileText,
   Plus,
@@ -13,11 +15,9 @@ import {
   Trophy,
   Stethoscope,
   Settings,
-  Users,
-  CheckCircle2,
   Award,
-  Filter,
-  Check
+  Check,
+  FileDown
 } from 'lucide-react';
 import './TestLibrary.css';
 
@@ -29,6 +29,35 @@ const TestLibrary = () => {
 
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'published' | 'draft' | 'my'
+
+  /* PDF Export */
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfTestData, setPdfTestData] = useState(null);
+  const [pdfQuestions, setPdfQuestions] = useState([]);
+  const [exportingPdfId, setExportingPdfId] = useState(null);
+
+  const handleExportPdf = async (test) => {
+    setExportingPdfId(test.id);
+    try {
+      const fullTest = await apiClient.get(`/tests/${test.id}`);
+      const qs = (fullTest.test_questions || [])
+        .map(tq => ({
+          ...(tq.questions || {}),
+          marks: tq.marks_override || tq.questions?.marks || 4,
+          question_order: tq.question_order,
+        }))
+        .sort((a, b) => (a.question_order || 0) - (b.question_order || 0));
+
+      setPdfTestData(fullTest);
+      setPdfQuestions(qs);
+      setPdfModalOpen(true);
+    } catch (e) {
+      console.error('Failed to export test as PDF:', e);
+      alert(e.message || 'Failed to load test questions for PDF export');
+    } finally {
+      setExportingPdfId(null);
+    }
+  };
 
   // Format date helper
   const formatDate = (dateStr) => {
@@ -305,6 +334,16 @@ const TestLibrary = () => {
                   )}
 
                   <button
+                    className="tc-btn-secondary"
+                    onClick={() => handleExportPdf(test)}
+                    title="Export question paper as PDF (subject-wise)"
+                    disabled={exportingPdfId === test.id}
+                  >
+                    {exportingPdfId === test.id ? <Clock size={15} /> : <FileDown size={15} />}
+                    <span>{exportingPdfId === test.id ? 'Loading…' : 'PDF'}</span>
+                  </button>
+
+                  <button
                     className="tc-btn-primary"
                     onClick={() =>
                       navigate(
@@ -324,6 +363,16 @@ const TestLibrary = () => {
           })
         )}
       </div>
+
+      {/* ── Subject-Wise PDF Export Modal ── */}
+      {pdfModalOpen && (
+        <TestPDFExportModal
+          isOpen={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          testData={pdfTestData}
+          selectedQuestions={pdfQuestions}
+        />
+      )}
     </div>
   );
 };

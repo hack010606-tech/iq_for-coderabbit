@@ -1,0 +1,44 @@
+name: Deploy Backend to AWS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'docker-compose.yml'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and Deploy to AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            APP_DIR="${{ secrets.EC2_APP_DIR }}"
+            if [ -z "$APP_DIR" ]; then
+              APP_DIR="$HOME/IQ"
+            fi
+
+            echo "🚀 Deploying in directory: $APP_DIR"
+            cd "$APP_DIR" || cd "$HOME"/*IQ* || exit 1
+
+            echo "📥 Pulling latest changes from main..."
+            git pull origin main
+
+            echo "🔨 Building backend service..."
+            docker compose build backend
+
+            echo "🔄 Restarting backend service..."
+            docker compose up -d backend
+
+            echo "🧹 Cleaning up dangling images..."
+            docker image prune -f
+
+            echo "✅ Deployment completed successfully!"

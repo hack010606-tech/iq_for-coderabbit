@@ -119,6 +119,7 @@ function App() {
               {/* test-library was linked from three places but never routed */}
               <Route path="test-library" element={<TeacherTestLibrary />} />
               <Route path="test-constructor/:testId" element={<TestConstructor />} />
+              <Route path="test-results" element={<TestResults />} />
               <Route path="test-results/:testId" element={<TestResults />} />
               <Route path="review-queue" element={<ReviewQueue />} />
               <Route path="lectures" element={<Lectures />} />
@@ -147,6 +148,8 @@ function App() {
               <Route path="question-bank" element={<AdminQuestionBank />} />
               <Route path="test-initiation" element={<TestInitiation />} />
               <Route path="test-library" element={<TestLibrary />} />
+              <Route path="test-results" element={<TestResults />} />
+              <Route path="test-results/:testId" element={<TestResults />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Routes>
