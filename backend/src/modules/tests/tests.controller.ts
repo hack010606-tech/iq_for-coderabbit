@@ -21,6 +21,7 @@ import {
   AssignTestDto,
   CreateTestDto,
   SaveFullTestDto,
+  PublishResultsDto,
   TestListQueryDto,
   TestQuestionsDto,
   UpdateTestDto,
@@ -89,7 +90,7 @@ export class TestsController {
   @Patch(':id/publish-results')
   publishResults(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { published?: boolean },
+    @Body() body: PublishResultsDto,
     @CurrentUser() user: any,
   ) {
     return this.testsService.setResultsPublished(id, body?.published !== false, user);

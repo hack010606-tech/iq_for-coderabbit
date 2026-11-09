@@ -1,11 +1,13 @@
-name: Deploy Backend to AWS
+name: Deploy to AWS EC2
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'backend/**'
+      - 'frontend/**'
       - 'docker-compose.yml'
+      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
@@ -32,11 +34,11 @@ jobs:
             echo "📥 Pulling latest changes from main..."
             git pull origin main
 
-            echo "🔨 Building backend service..."
-            docker compose build backend
+            echo "🔨 Building backend and frontend services..."
+            docker compose build backend frontend
 
-            echo "🔄 Restarting backend service..."
-            docker compose up -d backend
+            echo "🔄 Restarting services..."
+            docker compose up -d backend frontend
 
             echo "🧹 Cleaning up dangling images..."
             docker image prune -f

@@ -217,3 +217,10 @@ export class TestListQueryDto {
   @Max(200)
   limit?: number;
 }
+
+export class PublishResultsDto {
+  @ApiPropertyOptional({ default: true, description: 'Whether results are visible to students' })
+  @IsOptional()
+  @IsBoolean()
+  published?: boolean;
+}

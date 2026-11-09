@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiClient, captureTokenFromUrl, getToken } from '../api/client';
+import { apiClient, captureTokenFromUrl, getToken, getPortalUrl } from '../api/client';
 import ViolationMonitor from '../components/ViolationMonitor';
 import ExamHeader from '../components/ExamHeader';
 import QuestionPanel from '../components/QuestionPanel';
@@ -46,7 +46,7 @@ const ExamShell = () => {
   const [saveError, setSaveError] = useState('');
   const [redirectCount, setRedirectCount] = useState(4);
 
-  const PORTAL_URL = import.meta.env.VITE_PORTAL_URL || 'http://localhost:5173/student';
+  const PORTAL_URL = getPortalUrl();
 
   const handleReturnToDashboard = () => {
     try {

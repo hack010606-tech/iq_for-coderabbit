@@ -2,6 +2,7 @@ const BASE_URL = import.meta.env.VITE_EXAM_API_URL || 'http://localhost:3000/api
 
 const TOKEN_KEY = 'exam_access_token';
 const REFRESH_KEY = 'exam_refresh_token';
+const PORTAL_KEY = 'exam_portal_url';
 
 /**
  * Session handling for the standalone exam app.
@@ -19,17 +20,32 @@ const REFRESH_KEY = 'exam_refresh_token';
  */
 export function captureTokenFromUrl() {
   const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+  const hashParams = new URLSearchParams(hash);
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const portal = hashParams.get('portal') || searchParams.get('portal');
+  if (portal) sessionStorage.setItem(PORTAL_KEY, portal);
+
   if (!hash) return getToken();
 
-  const params = new URLSearchParams(hash);
-  const token = params.get('token');
-  const refresh = params.get('refresh');
+  const token = hashParams.get('token');
+  const refresh = hashParams.get('refresh');
   if (!token) return getToken();
 
   sessionStorage.setItem(TOKEN_KEY, token);
   if (refresh) sessionStorage.setItem(REFRESH_KEY, refresh);
   window.history.replaceState(null, '', window.location.pathname + window.location.search);
   return token;
+}
+
+export function getPortalUrl() {
+  const stored = sessionStorage.getItem(PORTAL_KEY);
+  if (stored) return stored;
+  if (import.meta.env.VITE_PORTAL_URL) return import.meta.env.VITE_PORTAL_URL;
+  if (typeof window !== 'undefined' && window.location.port === '5175') {
+    return 'http://localhost:5173/student';
+  }
+  return '/student';
 }
 
 export function getToken() {

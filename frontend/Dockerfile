@@ -11,8 +11,10 @@ COPY . .
 # Vite inlines env vars at build time, so the API URL must be known here.
 ARG VITE_API_URL=http://localhost:3000/api
 ARG VITE_SOCKET_URL=http://localhost:3000
+ARG VITE_EXAM_APP_URL=
 ENV VITE_API_URL=$VITE_API_URL \
-    VITE_SOCKET_URL=$VITE_SOCKET_URL
+    VITE_SOCKET_URL=$VITE_SOCKET_URL \
+    VITE_EXAM_APP_URL=$VITE_EXAM_APP_URL
 
 RUN npm run build
 

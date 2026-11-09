@@ -299,6 +299,7 @@ const TestConstructor = () => {
   };
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
   const userSubject = user.subject && user.subject !== 'All' ? user.subject : null;
 
   const [reviewSubjectTab, setReviewSubjectTab] = useState(userSubject || 'Physics');
@@ -522,6 +523,9 @@ const TestConstructor = () => {
       }
 
       if (testId) {
+        // 1. Save questions first so that the paper has questions and marks are recalculated
+        await apiClient.post(`/tests/${testId}/questions`, { question_ids: payload.question_ids });
+
         if (isInitiator) {
           await apiClient.patch(`/tests/${testId}`, {
             title: payload.title,
@@ -543,7 +547,6 @@ const TestConstructor = () => {
             });
           }
         }
-        await apiClient.post(`/tests/${testId}/questions`, { question_ids: payload.question_ids });
       } else {
         await apiClient.post('/tests/constructor', payload);
       }
@@ -551,7 +554,8 @@ const TestConstructor = () => {
       await refreshTests();
 
       showToast(`Test ${status === 'draft' ? 'saved as draft' : 'published'} successfully!`);
-      setTimeout(() => navigate('/teacher/test-library'), 1500);
+      const returnPath = isAdmin ? '/admin/test-initiation' : '/teacher/test-library';
+      setTimeout(() => navigate(returnPath), 1500);
     } catch (err) {
       console.error(err);
       showToast(`Failed to ${status === 'draft' ? 'save draft' : 'publish'}: ` + err.message);

@@ -95,7 +95,7 @@ const StudentTestLibrary = () => {
     return {
       total:   submitted.length,
       avgPct:  pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0,
-      bestPct: Math.max(...pcts),
+      bestPct: pcts.length ? Math.max(...pcts) : 0,
       totalTime: totalSeconds,
     };
   }, [submitted]);

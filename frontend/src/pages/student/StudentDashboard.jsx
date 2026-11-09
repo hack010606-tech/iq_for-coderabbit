@@ -58,6 +58,7 @@ const launchExam = async (testId, onError) => {
   const fragment = new URLSearchParams();
   if (token) fragment.set('token', token);
   if (refresh) fragment.set('refresh', refresh);
+  fragment.set('portal', window.location.origin + '/student');
 
   const url = `${EXAM_APP_URL}/exam/instructions/${testId}#${fragment.toString()}`;
 
@@ -70,15 +71,13 @@ const launchExam = async (testId, onError) => {
     return;
   }
 
-  if (!(await examAppReachable())) {
-    win.close();
-    onError(
-      `The secure exam app is not responding at ${EXAM_APP_URL}. It runs separately from the portal — start it and try again.`,
-    );
+  if (await examAppReachable()) {
+    win.location.replace(url);
     return;
   }
 
-  win.location.replace(url);
+  // Seamless fallback in production: open the built-in Assessment Arena
+  win.location.replace(`/student/locked/test/${testId}`);
 };
 
 const SUBJECTS = [

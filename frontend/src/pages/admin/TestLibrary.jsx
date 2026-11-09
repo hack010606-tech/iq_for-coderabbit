@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, CheckCircle, Clock, FileDown, Trophy, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, FileDown, Trophy, ShieldCheck, Eye, EyeOff, Layers } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import TestPDFExportModal from '../teacher/TestPDFExportModal';
 
@@ -167,6 +167,29 @@ const TestLibrary = () => {
                         ? 'Withhold'
                         : 'Approve Results'}
                     </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/teacher/test-constructor/${t.id}`)}
+                    title="Build or edit questions for this test"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '6px 12px',
+                      borderRadius: 7,
+                      border: '1px solid #bfdbfe',
+                      background: '#eff6ff',
+                      color: '#2563eb',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Layers size={14} />
+                    <span>Questions</span>
                   </button>
 
                   <button

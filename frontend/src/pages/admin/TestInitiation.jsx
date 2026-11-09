@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, ClipboardList, Trash2, X, CheckCircle, Clock, ChevronRight,
-         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar, Stethoscope, FileDown } from 'lucide-react';
+         Settings, Zap, Trophy, UserCheck, Users, Search, Check, Send, Calendar, Stethoscope, FileDown, Layers } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import TestPDFExportModal from '../teacher/TestPDFExportModal';
 import './TestInitiation.css';
@@ -269,6 +270,7 @@ const CustomRow = ({ row, idx, onChange, onRemove }) => (
 
 /* ═══════════════════════════════════════════════════════════════════════ */
 const TestInitiation = () => {
+  const navigate = useNavigate();
   const [tests,   setTests]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal,  setShowModal]  = useState(false);
@@ -568,6 +570,14 @@ const TestInitiation = () => {
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.created_at ? new Date(t.created_at).toLocaleDateString() : '—'}</td>
                     <td>
                       <div className="ti-actions-group">
+                        <button
+                          className="ti-action-btn ti-action-build"
+                          onClick={() => navigate(`/teacher/test-constructor/${t.id}`)}
+                          title="Build or edit questions for this test"
+                        >
+                          <Layers size={17} className="ti-btn-icon" />
+                          <span className="ti-btn-label">Questions</span>
+                        </button>
                         <button
                           id={`assign-btn-${t.id}`}
                           className="ti-action-btn ti-action-assign"

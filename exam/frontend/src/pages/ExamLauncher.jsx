@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiClient, captureTokenFromUrl, getRefreshToken, getToken } from '../api/client';
+import { apiClient, captureTokenFromUrl, getRefreshToken, getToken, getPortalUrl } from '../api/client';
 import { normalisePaper, subjectsInPaper } from '../lib/questionFormat';
 import '../index.css';
 
-const PORTAL_URL = import.meta.env.VITE_PORTAL_URL || 'http://localhost:5173/student';
+const PORTAL_URL = getPortalUrl();
 
 /**
  * Offline demo papers. These two ids are not real tests — they exist so the

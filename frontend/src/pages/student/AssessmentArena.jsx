@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Flag, ChevronLeft, ChevronRight, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { Flag, ChevronLeft, ChevronRight, AlertTriangle, Clock, CheckCircle, RotateCcw } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import MathText from '../../components/MathText';
 import './AssessmentArena.css';
@@ -142,6 +142,83 @@ const AssessmentArena = () => {
     [attemptId, timeSpent],
   );
 
+  const hasAnswer = useCallback((qid) => {
+    const ans = answers[qid];
+    if (ans === undefined || ans === null) return false;
+    if (ans.index !== undefined && ans.index !== null) return true;
+    if (Array.isArray(ans.indices) && ans.indices.length > 0) return true;
+    if (ans.value !== undefined && ans.value !== null && String(ans.value).trim() !== '') return true;
+    return false;
+  }, [answers]);
+
+  const handleClearResponse = async () => {
+    if (!currentQuestionId) return;
+    const elapsed = consumeElapsed();
+    if (elapsed > 0) {
+      setTimeSpent((prev) => ({
+        ...prev,
+        [currentQuestionId]: (prev[currentQuestionId] || 0) + elapsed,
+      }));
+    }
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[currentQuestionId];
+      return next;
+    });
+    await persistAnswer(currentQuestionId, null, elapsed);
+  };
+
+  const updateNumericAnswer = async (val) => {
+    if (!currentQuestionId) return;
+    const trimmed = String(val).trim();
+    const elapsed = consumeElapsed();
+    if (elapsed > 0) {
+      setTimeSpent((prev) => ({
+        ...prev,
+        [currentQuestionId]: (prev[currentQuestionId] || 0) + elapsed,
+      }));
+    }
+
+    if (trimmed === '') {
+      setAnswers((prev) => {
+        const next = { ...prev };
+        delete next[currentQuestionId];
+        return next;
+      });
+      await persistAnswer(currentQuestionId, null, elapsed);
+    } else {
+      const selected = { value: trimmed };
+      setAnswers((prev) => ({ ...prev, [currentQuestionId]: selected }));
+      await persistAnswer(currentQuestionId, selected, elapsed);
+    }
+  };
+
+  const handleNumericInput = (val) => {
+    if (val !== '' && !/^-?\d*\.?\d*$/.test(val)) return;
+    updateNumericAnswer(val);
+  };
+
+  const handleKeypadPress = (key) => {
+    const cur = String(answers[currentQuestionId]?.value ?? '');
+    if (key === 'Clear') {
+      return handleClearResponse();
+    }
+    if (key === '⌫' || key === 'Backspace') {
+      const next = cur.slice(0, -1);
+      return updateNumericAnswer(next);
+    }
+    if (key === '-') {
+      const next = cur.startsWith('-') ? cur.slice(1) : '-' + cur;
+      return updateNumericAnswer(next);
+    }
+    if (key === '.') {
+      if (cur.includes('.')) return;
+      return updateNumericAnswer(cur ? cur + '.' : '0.');
+    }
+    if (cur.length >= 15) return;
+    updateNumericAnswer(cur + key);
+  };
+
   // Bank the time spent whenever the student moves to a different question.
   const goToQuestion = useCallback(
     (index) => {
@@ -153,7 +230,7 @@ const AssessmentArena = () => {
       if (leavingId && elapsed > 0) {
         setTimeSpent((prev) => ({ ...prev, [leavingId]: (prev[leavingId] || 0) + elapsed }));
         // Only re-save if the question actually has an answer to attach it to.
-        if (answers[leavingId] !== undefined) {
+        if (hasAnswer(leavingId)) {
           persistAnswer(leavingId, answers[leavingId], elapsed);
         }
       }
@@ -245,7 +322,9 @@ const AssessmentArena = () => {
     return <div style={{ padding: 40, color: 'white' }}>Loading test…</div>;
   }
 
+  const isNumerical = !currentQuestion?.options || currentQuestion.options.length === 0 || ['numerical', 'integer', 'nat', 'numeric'].includes(String(currentQuestion?.q_type || '').toLowerCase());
   const selectedIndex = answers[currentQuestionId]?.index;
+  const numericValue = answers[currentQuestionId]?.value ?? '';
 
   return (
     <div className="arena-wrapper">
@@ -296,19 +375,58 @@ const AssessmentArena = () => {
             )}
           </div>
 
-          <div className="options-list">
-            {(currentQuestion?.options || []).map((opt, idx) => (
-              <button
-                key={idx}
-                className={`option-btn ${selectedIndex === idx ? 'selected' : ''}`}
-                onClick={() => handleAnswer(idx)}
-              >
-                <span className="opt-letter">{['A', 'B', 'C', 'D'][idx]}</span>
-                <span className="opt-text"><MathText text={String(opt)} /></span>
-                {selectedIndex === idx && <CheckCircle size={18} className="opt-check" />}
-              </button>
-            ))}
-          </div>
+          {isNumerical ? (
+            <div className="arena-numerical-panel">
+              <div className="arena-nat-header">
+                <span className="arena-nat-badge">Section B · Numerical</span>
+                <span className="arena-nat-hint">Enter your numeric answer using the on-screen keypad or keyboard:</span>
+              </div>
+              <div className="arena-nat-input-row">
+                <input
+                  type="text"
+                  className="arena-nat-input"
+                  value={numericValue}
+                  onChange={(e) => handleNumericInput(e.target.value)}
+                  placeholder="Enter value"
+                />
+                {hasAnswer(currentQuestionId) && (
+                  <button
+                    type="button"
+                    className="arena-clear-btn"
+                    onClick={handleClearResponse}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="arena-keypad">
+                {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', '-', '⌫', 'Clear'].map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    className={`arena-keypad-btn ${k === 'Clear' ? 'clear' : ''} ${k === '⌫' ? 'backspace' : ''}`}
+                    onClick={() => handleKeypadPress(k)}
+                  >
+                    {k}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="options-list">
+              {(currentQuestion?.options || []).map((opt, idx) => (
+                <button
+                  key={idx}
+                  className={`option-btn ${selectedIndex === idx ? 'selected' : ''}`}
+                  onClick={() => handleAnswer(idx)}
+                >
+                  <span className="opt-letter">{['A', 'B', 'C', 'D'][idx]}</span>
+                  <span className="opt-text"><MathText text={String(opt)} /></span>
+                  {selectedIndex === idx && <CheckCircle size={18} className="opt-check" />}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="q-navigation">
             <button
@@ -318,6 +436,15 @@ const AssessmentArena = () => {
             >
               <ChevronLeft size={20} /> Previous
             </button>
+            {hasAnswer(currentQuestionId) && (
+              <button
+                type="button"
+                className="nav-btn btn-clear-resp"
+                onClick={handleClearResponse}
+              >
+                <RotateCcw size={16} /> Clear Response
+              </button>
+            )}
             <button
               className="nav-btn primary"
               onClick={() => goToQuestion(Math.min(currentQ + 1, testQuestions.length - 1))}

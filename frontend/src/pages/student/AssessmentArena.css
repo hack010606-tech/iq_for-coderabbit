@@ -417,3 +417,140 @@
   background: #fff;
   border-radius: 8px;
 }
+
+
+/* ── Numerical (NAT) Input & Keypad ── */
+.arena-numerical-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 440px;
+  margin-bottom: 20px;
+}
+
+.arena-nat-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.arena-nat-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.arena-nat-hint {
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.arena-nat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.arena-nat-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: monospace;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.arena-nat-input:focus {
+  border-color: #6366f1;
+}
+
+.arena-clear-btn {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #ef4444;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.arena-clear-btn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.arena-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.arena-keypad-btn {
+  padding: 12px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.arena-keypad-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.arena-keypad-btn:active {
+  background: #cbd5e1;
+  transform: scale(0.97);
+}
+
+.arena-keypad-btn.backspace {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fcd34d;
+}
+
+.arena-keypad-btn.backspace:hover {
+  background: #fde68a;
+}
+
+.arena-keypad-btn.clear {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.arena-keypad-btn.clear:hover {
+  background: #fecaca;
+}
+
+.btn-clear-resp {
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+.btn-clear-resp:hover {
+  background: #fef2f2 !important;
+}
