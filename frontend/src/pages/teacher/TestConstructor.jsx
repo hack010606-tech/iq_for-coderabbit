@@ -379,14 +379,15 @@ const TestConstructor = () => {
   const [testData, setTestData] = useState({
     title: '',
     subject: userSubject || 'Physics',
-    duration: 60,
-    totalMarks: 0,
+    duration: 180,
+    totalMarks: 300,
     negativeMarking: true,
     negativeMarks: 1,
     date: '',
     time: '',
     targetBatches: [],
-    t_type: 'quiz'
+    paper_pattern: 'jee_main',
+    t_type: 'jee_main'
   });
 
   const [existingTest, setExistingTest] = useState(null);
@@ -397,12 +398,14 @@ const TestConstructor = () => {
       apiClient.get(`/tests/${testId}`).then(data => {
         const text = `${data.title || ''} ${data.description || ''} ${data.instructions || ''} ${data.paper_pattern || ''} ${data.t_type || ''}`.toLowerCase();
         let inferredPattern = data.paper_pattern || data.t_type;
-        if (text.includes('jee main') || text.includes('jee_main')) {
-          inferredPattern = 'jee_main';
-        } else if (text.includes('jee advanced') || text.includes('jee_advanced') || text.includes('jee adv')) {
+        if (text.includes('jee advanced') || text.includes('jee_advanced') || text.includes('jee adv')) {
           inferredPattern = 'jee_advanced';
+        } else if (text.includes('jee main') || text.includes('jee_main') || text.includes('jee mains') || text.includes('jee')) {
+          inferredPattern = 'jee_main';
         } else if (text.includes('neet')) {
           inferredPattern = 'neet';
+        } else if (!inferredPattern || inferredPattern === 'quiz') {
+          inferredPattern = 'jee_main';
         }
 
         setExistingTest(data);
@@ -413,8 +416,8 @@ const TestConstructor = () => {
           paper_pattern: inferredPattern,
           t_type: inferredPattern,
           instructions: data.instructions || prev.instructions,
-          duration: data.duration_minutes,
-          totalMarks: data.total_marks,
+          duration: data.duration_minutes || (inferredPattern === 'neet' ? 200 : 180),
+          totalMarks: data.total_marks || (inferredPattern === 'neet' ? 720 : 300),
           // Read from the real columns, falling back to the old description
           // convention for tests created before the migration.
           negativeMarking: data.negative_marking ?? !!data.description?.includes('Negative Marking'),
@@ -465,14 +468,16 @@ const TestConstructor = () => {
       }
 
       const payload = {
-        title: testData.title || 'Untitled Test',
-        description: `Subject: ${testData.subject}`,
+        title: testData.title || (isJeeAdv ? 'JEE Advanced Test' : isNeet ? 'NEET Test' : 'JEE Main Test'),
+        description: testData.description || `Subject: ${testData.subject}`,
+        instructions: testData.instructions,
         subject: testData.subject,
         // May be a plain kind ('quiz') or a pattern ('jee_main'); the API accepts
         // either here and splits them server-side.
-        t_type: testData.t_type,
-        duration_minutes: parseInt(testData.duration, 10),
-        total_marks: testData.totalMarks,
+        t_type: testData.t_type || 'jee_main',
+        paper_pattern: testData.paper_pattern || testData.t_type || 'jee_main',
+        duration_minutes: parseInt(testData.duration, 10) || 180,
+        total_marks: testData.totalMarks || 300,
         status: status,
         // Real columns now — grading applies the penalty server-side.
         negative_marking: !!testData.negativeMarking,
@@ -486,27 +491,19 @@ const TestConstructor = () => {
       if (status === 'published') {
         const effPattern = String(testData.paper_pattern || testData.t_type || existingTest?.paper_pattern || existingTest?.t_type || '').toLowerCase();
         const effTitle = String(testData.title || existingTest?.title || '').toLowerCase();
-        const checkJeeMain = effPattern.includes('jee_main') || effTitle.includes('jee main') || effTitle.includes('jee mains');
-        const checkJeeAdv  = effPattern.includes('jee_advanced') || effTitle.includes('jee adv');
+        const checkJeeAdv  = effPattern.includes('jee_advanced') || effPattern.includes('jee adv') || effTitle.includes('jee adv') || effTitle.includes('jee advanced');
+        const checkJeeMain = !checkJeeAdv && (effPattern.includes('jee_main') || effPattern.includes('jee main') || effTitle.includes('jee main') || effTitle.includes('jee mains') || effTitle.includes('jee'));
         const checkNeet    = effPattern.includes('neet') || effTitle.includes('neet');
 
         const subjects = [...new Set(selectedQuestions.map(q => q.subject))];
-        if (checkJeeMain) {
+        if (checkJeeMain || checkJeeAdv) {
+          const examLabel = checkJeeAdv ? 'JEE Advanced' : 'JEE Main';
           for (const sub of subjects) {
             const subQs = selectedQuestions.filter(q => q.subject === sub);
             const mcqCount = subQs.filter(q => getQuestionType(q) === 'mcq').length;
             const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
             if (mcqCount !== 20 || natCount !== 5) {
-              showToast(`Cannot publish: ${sub} must have exactly 20 MCQs and 5 Numericals under JEE Main NTA norms (currently ${mcqCount}/20 MCQs and ${natCount}/5 Numericals).`);
-              return;
-            }
-          }
-        } else if (checkJeeAdv) {
-          for (const sub of subjects) {
-            const subQs = selectedQuestions.filter(q => q.subject === sub);
-            const natCount = subQs.filter(q => getQuestionType(q) === 'nat').length;
-            if (subQs.length !== 18 || natCount !== 6) {
-              showToast(`Cannot publish: ${sub} must have exactly 18 questions (12 MCQs and 6 Numericals) for JEE Advanced. Currently ${subQs.length}/18.`);
+              showToast(`Cannot publish: ${sub} must have exactly 20 MCQs and 5 Numericals under ${examLabel} norms (currently ${mcqCount}/20 MCQs and ${natCount}/5 Numericals).`);
               return;
             }
           }
@@ -530,7 +527,10 @@ const TestConstructor = () => {
           await apiClient.patch(`/tests/${testId}`, {
             title: payload.title,
             description: payload.description,
+            instructions: payload.instructions,
             subject: payload.subject,
+            t_type: payload.t_type,
+            paper_pattern: payload.paper_pattern,
             duration_minutes: payload.duration_minutes,
             total_marks: payload.total_marks,
             negative_marking: payload.negative_marking,
@@ -568,9 +568,25 @@ const TestConstructor = () => {
   // Quota & Target calculations for assigned test / step 2
   const combinedContext = `${testData.paper_pattern || ''} ${testData.t_type || ''} ${existingTest?.paper_pattern || ''} ${existingTest?.t_type || ''} ${testData.title || ''} ${existingTest?.title || ''} ${testData.instructions || ''} ${existingTest?.instructions || ''} ${testData.description || ''} ${existingTest?.description || ''}`.toLowerCase();
 
-  const isJeeMain = combinedContext.includes('jee_main') || combinedContext.includes('jee main') || combinedContext.includes('jee mains');
-  const isJeeAdv  = combinedContext.includes('jee_advanced') || combinedContext.includes('jee adv');
-  const isNeet    = combinedContext.includes('neet');
+  const isCustom  = testData.paper_pattern === 'custom' || (testData.t_type === 'quiz' && !testData.paper_pattern);
+  const isJeeAdv  = !isCustom && (combinedContext.includes('jee_advanced') || combinedContext.includes('jee adv') || combinedContext.includes('jee advanced') || testData.t_type === 'jee_advanced' || testData.paper_pattern === 'jee_advanced');
+  const isNeet    = !isCustom && (combinedContext.includes('neet') || testData.t_type === 'neet' || testData.paper_pattern === 'neet');
+  const isJeeMain = !isCustom && !isJeeAdv && !isNeet && (
+    combinedContext.includes('jee_main') ||
+    combinedContext.includes('jee main') ||
+    combinedContext.includes('jee mains') ||
+    combinedContext.includes('jee') ||
+    testData.t_type === 'jee_main' ||
+    testData.paper_pattern === 'jee_main' ||
+    !testData.paper_pattern ||
+    testData.paper_pattern === 'jee_main'
+  );
+
+  const isSingleSubject = Boolean(
+    (userSubject && userSubject !== 'All' && userSubject !== 'Mixed') ||
+    (testData.subject && testData.subject !== 'Mixed' && testData.subject !== 'All') ||
+    (existingTest?.subject && existingTest?.subject !== 'Mixed' && existingTest?.subject !== 'All')
+  );
 
   let targetTotal = 25;
   let targetMcq   = 20;
@@ -579,7 +595,7 @@ const TestConstructor = () => {
 
   if (isJeeMain) {
     quotaPatternName = 'JEE Main Pattern';
-    if (userSubject) {
+    if (isSingleSubject) {
       targetTotal = 25;
       targetMcq   = 20;
       targetNat   = 5;
@@ -590,22 +606,22 @@ const TestConstructor = () => {
     }
   } else if (isJeeAdv) {
     quotaPatternName = 'JEE Advanced Pattern';
-    if (userSubject) {
-      targetTotal = 18;
-      targetMcq   = 12;
-      targetNat   = 6;
+    if (isSingleSubject) {
+      targetTotal = 25;
+      targetMcq   = 20;
+      targetNat   = 5;
     } else {
-      targetTotal = 54;
-      targetMcq   = 36;
-      targetNat   = 18;
+      targetTotal = 75;
+      targetMcq   = 60;
+      targetNat   = 15;
     }
   } else if (isNeet) {
     quotaPatternName = 'NEET Pattern';
-    if (userSubject === 'Biology') {
+    if (activeSubject === 'Biology' || userSubject === 'Biology') {
       targetTotal = 90;
       targetMcq   = 90;
       targetNat   = 0;
-    } else if (userSubject) {
+    } else if (isSingleSubject) {
       targetTotal = 45;
       targetMcq   = 45;
       targetNat   = 0;
@@ -616,15 +632,21 @@ const TestConstructor = () => {
     }
   } else {
     // Custom test: check if description holds a total count
+    quotaPatternName = 'Custom Paper';
     const descMatch = existingTest?.description?.match(/Total Questions:\s*(\d+)/i);
     if (descMatch) {
       targetTotal = parseInt(descMatch[1], 10);
+      targetMcq   = Math.round(targetTotal * 0.8);
+      targetNat   = targetTotal - targetMcq;
+    } else if (isSingleSubject) {
+      targetTotal = 25;
+      targetMcq   = 20;
+      targetNat   = 5;
     } else {
-      targetTotal = 30;
+      targetTotal = 75;
+      targetMcq   = 60;
+      targetNat   = 15;
     }
-    targetMcq = Math.round(targetTotal * 0.7);
-    targetNat = targetTotal - targetMcq;
-    quotaPatternName = 'Custom Paper';
   }
 
   const toggleQuestion = (q) => {
@@ -643,39 +665,23 @@ const TestConstructor = () => {
       const currentMcqs = subjectQuestions.filter(sq => getQuestionType(sq) === 'mcq').length;
       const currentNats = subjectQuestions.filter(sq => getQuestionType(sq) === 'nat').length;
 
-      if (isJeeMain) {
+      if (isJeeMain || isJeeAdv) {
+        const examName = isJeeAdv ? 'JEE Advanced' : 'JEE Main';
         if (qType === 'subjective') {
-          showToast('JEE Main paper only accepts MCQ and Numerical (integer answer) questions.');
+          showToast(`${examName} paper only accepts MCQ and Numerical (integer answer) questions.`);
           return;
         }
         // Strict ceiling: Cannot exceed 5 numericals or 20 MCQs per subject
         if (qType === 'nat' && currentNats >= 5) {
-          showToast(`Cannot add more than 5 Numerical questions for ${q.subject}. JEE Main strictly caps Section B at 5 numerical questions.`);
+          showToast(`Cannot add more than 5 Numerical questions for ${q.subject}. ${examName} strictly caps Section B at 5 numerical questions.`);
           return;
         }
         if (qType === 'mcq' && currentMcqs >= 20) {
-          showToast(`Cannot add more than 20 MCQ questions for ${q.subject}. JEE Main strictly caps Section A at 20 MCQs.`);
+          showToast(`Cannot add more than 20 MCQ questions for ${q.subject}. ${examName} strictly caps Section A at 20 MCQs.`);
           return;
         }
         if (subjectQuestions.length >= 25) {
-          showToast(`Cannot add more than 25 questions total for ${q.subject} in JEE Main.`);
-          return;
-        }
-      } else if (isJeeAdv) {
-        if (qType === 'subjective') {
-          showToast('JEE Advanced paper accepts Single/Multiple Choice MCQs and Numerical questions.');
-          return;
-        }
-        if (qType === 'nat' && currentNats >= 6) {
-          showToast(`Cannot add more than 6 Numerical questions for ${q.subject} in JEE Advanced.`);
-          return;
-        }
-        if (qType === 'mcq' && currentMcqs >= 12) {
-          showToast(`Cannot add more than 12 MCQ questions for ${q.subject} in JEE Advanced.`);
-          return;
-        }
-        if (subjectQuestions.length >= 18) {
-          showToast(`Cannot add more than 18 questions total for ${q.subject} in JEE Advanced.`);
+          showToast(`Cannot add more than 25 questions total for ${q.subject} in ${examName}.`);
           return;
         }
       } else if (isNeet) {
@@ -800,10 +806,10 @@ const TestConstructor = () => {
                     Review paper details, scoring rules, and assigned cohorts before building your question paper.
                   </p>
                 </div>
-                {testData.t_type === 'jee_main' && (
+                {(isJeeMain || isJeeAdv || isNeet) && (
                   <div className="tc-meta-pattern-badge">
                     <Sparkles size={14} />
-                    <span>JEE Main Pattern</span>
+                    <span>{isJeeAdv ? 'JEE Advanced Pattern' : isNeet ? 'NEET Pattern' : 'JEE Main Pattern'}</span>
                   </div>
                 )}
               </div>
@@ -901,8 +907,8 @@ const TestConstructor = () => {
                     <div className="tc-pattern-tabs">
                       <button
                         type="button"
-                        className={`tc-pattern-tab ${testData.t_type === 'jee_main' ? 'active' : ''}`}
-                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_main', duration: 180, totalMarks: 300 })}
+                        className={`tc-pattern-tab ${isJeeMain ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_main', paper_pattern: 'jee_main', duration: 180, totalMarks: 300 })}
                         disabled={!isInitiator}
                       >
                         <span className="tc-pt-title">JEE Main</span>
@@ -910,17 +916,17 @@ const TestConstructor = () => {
                       </button>
                       <button
                         type="button"
-                        className={`tc-pattern-tab ${testData.t_type === 'jee_advanced' ? 'active' : ''}`}
-                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_advanced', duration: 180, totalMarks: 186 })}
+                        className={`tc-pattern-tab ${isJeeAdv ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'jee_advanced', paper_pattern: 'jee_advanced', duration: 180, totalMarks: 300 })}
                         disabled={!isInitiator}
                       >
                         <span className="tc-pt-title">JEE Advanced</span>
-                        <span className="tc-pt-desc">18 Q/sub · 12 MCQs + 6 Numericals (186 marks)</span>
+                        <span className="tc-pt-desc">25 Q/sub · 20 MCQs + 5 Numericals (300 marks)</span>
                       </button>
                       <button
                         type="button"
-                        className={`tc-pattern-tab ${testData.t_type === 'neet' ? 'active' : ''}`}
-                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'neet', duration: 200, totalMarks: 720 })}
+                        className={`tc-pattern-tab ${isNeet ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'neet', paper_pattern: 'neet', duration: 200, totalMarks: 720 })}
                         disabled={!isInitiator}
                       >
                         <span className="tc-pt-title">NEET</span>
@@ -928,11 +934,11 @@ const TestConstructor = () => {
                       </button>
                       <button
                         type="button"
-                        className={`tc-pattern-tab ${testData.t_type === 'quiz' || (!['jee_main', 'jee_advanced', 'neet'].includes(testData.t_type)) ? 'active' : ''}`}
-                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'quiz' })}
+                        className={`tc-pattern-tab ${isCustom ? 'active' : ''}`}
+                        onClick={() => isInitiator && setTestData({ ...testData, t_type: 'quiz', paper_pattern: 'custom', duration: 60, totalMarks: 100 })}
                         disabled={!isInitiator}
                       >
-                        <span className="tc-pt-title">Standard Quiz</span>
+                        <span className="tc-pt-title">Custom / Quiz</span>
                         <span className="tc-pt-desc">Flexible question mix & custom quotas</span>
                       </button>
                     </div>
@@ -1048,7 +1054,7 @@ const TestConstructor = () => {
                   <div className="tc-tracker-title-group">
                     <h2 className="tc-tracker-title">Select Questions</h2>
                     <div className="tc-tracker-paper-badge">
-                      <span className="tc-t-name">{testData.title || existingTest?.title || 'JEE Mains 1'}</span>
+                      <span className="tc-t-name">{testData.title || existingTest?.title || (userSubject ? `${userSubject} Test` : 'JEE Main Mock Test')}</span>
                       <span className="tc-t-pattern">{quotaPatternName}</span>
                       {userSubject && <span className="tc-t-subject">{userSubject}</span>}
                     </div>

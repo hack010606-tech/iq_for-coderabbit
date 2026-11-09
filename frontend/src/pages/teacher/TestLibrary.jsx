@@ -87,9 +87,9 @@ const TestLibrary = () => {
         label: 'JEE Advanced',
         icon: Trophy,
         className: 'pattern-tag-adv',
-        defaultDesc: 'Multi-concept exam with single & multi-correct MCQs and numerical problem solving.',
-        defaultTotalQ: 54,
-        defaultMarks: 186,
+        defaultDesc: 'Advanced mock exam with 25 questions per subject (20 MCQs and 5 Numericals).',
+        defaultTotalQ: 75,
+        defaultMarks: 300,
       };
     }
     if (raw.includes('jee_main') || raw.includes('jee main')) {
@@ -107,8 +107,8 @@ const TestLibrary = () => {
       icon: Settings,
       className: 'pattern-tag-custom',
       defaultDesc: 'Custom institutional exam shell with tailored subject sections and quotas.',
-      defaultTotalQ: test.total_questions || 30,
-      defaultMarks: test.total_marks || 120,
+      defaultTotalQ: test.total_questions || 25,
+      defaultMarks: test.total_marks || 100,
     };
   };
 
@@ -118,13 +118,13 @@ const TestLibrary = () => {
 
     const pattern = String(test.paper_pattern || test.t_type || '').toLowerCase();
     const isNeet = pattern.includes('neet');
-    const isAdv  = pattern.includes('jee_advanced');
+    const isAdv  = pattern.includes('jee_advanced') || pattern.includes('jee adv');
 
     let target = 25;
     if (isNeet) {
       target = userSubject === 'Biology' ? 90 : 45;
     } else if (isAdv) {
-      target = userSubject === 'Biology' ? 0 : 18;
+      target = userSubject === 'Biology' ? 0 : 25;
     } else {
       target = userSubject === 'Biology' ? 0 : 25;
     }
