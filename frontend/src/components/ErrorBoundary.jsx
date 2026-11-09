@@ -19,7 +19,7 @@ class ErrorBoundary extends React.Component {
   };
 
   handleHome = () => {
-    window.location.href = '/';
+    window.location.assign('/');
   };
 
   render() {

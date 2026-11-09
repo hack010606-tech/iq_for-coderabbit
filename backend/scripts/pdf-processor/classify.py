@@ -455,8 +455,8 @@ def parse_classification(raw: str | None) -> dict | None:
         data = json.loads(raw.strip())
         if isinstance(data, dict) and "subject" in data and "topic" in data:
             return data
-    except Exception:
-        pass
+    except (json.JSONDecodeError, ValueError) as err:
+        logger.debug("Classification JSON parse skipped: %s", err)
     return None
 
 

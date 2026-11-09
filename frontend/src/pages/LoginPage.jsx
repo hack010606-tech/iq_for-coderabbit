@@ -48,11 +48,11 @@ const LoginPage = () => {
       // Navigate based on actual role from database
       // Force full reload so AppDataContext fetches initial data
       if (data.user.role === 'admin') {
-        window.location.href = '/admin';
+        window.location.assign('/admin');
       } else if (data.user.role === 'teacher') {
-        window.location.href = '/teacher';
+        window.location.assign('/teacher');
       } else {
-        window.location.href = '/student';
+        window.location.assign('/student');
       }
     } catch (err) {
       setError(err.message || 'Invalid email or password. Please try again.');

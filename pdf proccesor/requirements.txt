@@ -1,9 +1,4 @@
 # Runtime dependencies of extract.py / classify.py.
-#
-# `requests` is what classify.py actually calls Groq with — it talks to the REST
-# endpoint directly rather than through an SDK. It was missing here, and the
-# import is wrapped in a try/except, so in the container every classification
-# silently fell back to keyword matching instead of the AI.
-PyMuPDF>=1.23.0
-Pillow>=10.0.0
-requests>=2.31.0
+PyMuPDF>=1.24.0
+Pillow>=11.1.0
+requests>=2.32.3

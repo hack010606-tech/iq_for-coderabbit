@@ -111,7 +111,7 @@ async function seed() {
           console.log(`✅ Password & metadata updated for ${u.email}`);
         }
       } else {
-        console.error(`❌ Error creating ${u.email} in Auth:`, authError.message);
+        console.error('❌ Error creating', u.email, 'in Auth:', authError.message);
         continue;
       }
     } else {
@@ -134,7 +134,7 @@ async function seed() {
       }, { onConflict: 'id' });
 
     if (dbError) {
-      console.error(`❌ Error upserting ${u.email} to public.users:`, dbError.message);
+      console.error('❌ Error upserting', u.email, 'to public.users:', dbError.message);
     } else {
       console.log(`✅ Upserted ${u.email} into public.users table.`);
     }

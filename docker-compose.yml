@@ -22,6 +22,11 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
     # Cache data is disposable; persistence keeps it warm across restarts.
     command: redis-server --save 60 1 --loglevel warning --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
@@ -39,6 +44,8 @@ services:
     build:
       context: ./backend
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       redis:
         condition: service_healthy
@@ -75,6 +82,8 @@ services:
           memory: 1g
 
   frontend:
+    security_opt:
+      - no-new-privileges:true
     build:
       context: ./frontend
       args:

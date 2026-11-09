@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
@@ -207,7 +208,13 @@ export class CacheService implements OnModuleDestroy {
 
   private async release(lockKey: string, token: string): Promise<void> {
     const held = this.memoryLocks.get(lockKey);
-    if (held?.token === token) this.memoryLocks.delete(lockKey);
+    if (held?.token && typeof token === 'string') {
+      const a = Buffer.from(held.token);
+      const b = Buffer.from(token);
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+        this.memoryLocks.delete(lockKey);
+      }
+    }
 
     if (this.isDistributed) {
       try {

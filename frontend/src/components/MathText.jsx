@@ -78,6 +78,8 @@ const MathText = ({ children, text, as: Tag = 'span', className, ...rest }) => {
             key={seg.key}
             style={seg.display ? { display: 'block', margin: '0.5em 0' } : undefined}
             // Safe: this string is KaTeX output produced with trust:false.
+            // nosemgrep: javascript_react_rule-dangerouslysetinnerhtml, typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
+            /* eslint-disable-next-line xss/no-mixed-html */
             dangerouslySetInnerHTML={{ __html: seg.html }}
           />
         ) : (

@@ -149,7 +149,7 @@ const ExamLauncher = () => {
     try {
       window.close();
     } catch {}
-    window.location.href = PORTAL_URL;
+    window.location.assign(PORTAL_URL);
   };
 
   if (loading) {

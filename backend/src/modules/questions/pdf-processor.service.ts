@@ -332,7 +332,8 @@ export class PdfProcessorService implements OnModuleInit {
    * arguments can be interpreted as a command — under a timeout.
    */
   private async runScript(script: string, args: string[], timeoutMs: number): Promise<void> {
-    const scriptPath = path.join(this.scriptsDir, script);
+    const safeScript = path.basename(script);
+    const scriptPath = path.join(this.scriptsDir, safeScript);
     this.logger.log(`Executing: ${script} ${args.join(' ')}`);
 
     try {
@@ -376,6 +377,12 @@ export class PdfProcessorService implements OnModuleInit {
 
   /** Resolves `relative` under `root`, or null if it would escape the directory. */
   private resolveInside(root: string, relative: string): string | null {
+    if (!relative || typeof relative !== 'string') return null;
+    if (path.isAbsolute(relative)) return null;
+    const parts = relative.split(/[\/\\]/);
+    if (parts.includes('..')) return null;
+
+    // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     const resolved = path.resolve(root, relative);
     const prefix = path.resolve(root) + path.sep;
     return resolved.startsWith(prefix) ? resolved : null;

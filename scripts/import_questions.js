@@ -1,9 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 
-const rootDir = 'C:/Users/vaibh/OneDrive/Pictures/Documents/code/IQ';
-const { createClient } = require(path.join(rootDir, 'backend/node_modules/@supabase/supabase-js'));
-require(path.join(rootDir, 'backend/node_modules/dotenv')).config({ path: path.join(rootDir, 'backend/.env') });
+const { createClient } = require('../backend/node_modules/@supabase/supabase-js');
+require('../backend/node_modules/dotenv').config({ path: path.resolve(__dirname, '../backend/.env') });
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -119,7 +118,7 @@ async function run() {
     const batch = allRecords.slice(i, i + BATCH_SIZE);
     const { data, error } = await supabase.from('questions').insert(batch).select('id');
     if (error) {
-      console.error(`Error inserting batch at offset ${i}:`, error.message);
+      console.error('Error inserting batch at offset', i, ':', error.message);
       process.exit(1);
     }
     totalInserted += (data ? data.length : 0);

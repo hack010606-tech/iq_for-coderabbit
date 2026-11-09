@@ -5,8 +5,8 @@ import sys
 if sys.stdout.encoding != "utf-8":
     try:
         sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+    except Exception as exc:
+        sys.stderr.write(f"Notice: stdout reconfigure failed: {exc}\n")
 
 def decompile_questions(json_file_path):
     """

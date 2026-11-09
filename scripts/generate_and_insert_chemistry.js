@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { createClient } = require('../backend/node_modules/@supabase/supabase-js');
 require('../backend/node_modules/dotenv').config({ path: 'backend/.env' });
 
@@ -1151,7 +1152,11 @@ function prepareMcq(q) {
   const letters = ['A', 'B', 'C', 'D'];
   const correctText = q.options[q.correct_answer.index];
   
-  const perm = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  const perm = [0, 1, 2, 3];
+  for (let i = perm.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [perm[i], perm[j]] = [perm[j], perm[i]];
+  }
   const newOptions = perm.map(i => q.options[i]);
   const newCorrectIndex = newOptions.indexOf(correctText);
   
@@ -1213,7 +1218,7 @@ async function insertAll() {
     const batch = allToInsert.slice(i, i + batchSize);
     const { data, error } = await supabase.from('questions').insert(batch).select('id');
     if (error) {
-      console.error(`Error in batch ${i}:`, error);
+      console.error('Error in batch %d:', i, error);
       process.exit(1);
     }
     inserted += data.length;

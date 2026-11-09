@@ -1,10 +1,31 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-/** Everything the session needs, cleared together so we can never half-log-out. */
-const SESSION_KEYS = ['access_token', 'refresh_token', 'user'];
+/**
+ * Access tokens are held in sessionStorage so a tab can use them, but closing
+ * the window forgets them; refresh tokens live in localStorage to survive a
+ * restart. This mirrors what Supabase's browser client does natively.
+ */
+export function getToken() {
+  return sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+}
+
+export function setToken(token) {
+  sessionStorage.setItem('access_token', token);
+}
+
+export function getRefreshToken() {
+  return localStorage.getItem('refresh_token');
+}
+
+export function setRefreshToken(token) {
+  localStorage.setItem('refresh_token', token);
+}
 
 export function clearSession() {
-  SESSION_KEYS.forEach((k) => localStorage.removeItem(k));
+  sessionStorage.removeItem('access_token');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user');
 }
 
 export function getStoredUser() {
@@ -16,47 +37,50 @@ export function getStoredUser() {
   }
 }
 
-// Only one refresh may be in flight; concurrent 401s all await the same promise.
-let refreshPromise = null;
-
+/**
+ * Trade the stored refresh token for a fresh access token without asking the
+ * user to log in again. Returns the new token, or null if the session is gone.
+ */
 async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem('refresh_token');
-  if (!refreshToken) return null;
+  const refresh = getRefreshToken();
+  if (!refresh) return null;
 
-  if (!refreshPromise) {
-    refreshPromise = (async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        });
-        if (!res.ok) return null;
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: refresh }),
+    });
+    if (!res.ok) return null;
 
-        const data = await res.json();
-        if (!data?.accessToken) return null;
-
-        localStorage.setItem('access_token', data.accessToken);
-        if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
-        return data.accessToken;
-      } catch {
-        return null;
-      } finally {
-        // Release the lock on the next tick so waiters read the stored token.
-        setTimeout(() => {
-          refreshPromise = null;
-        }, 0);
-      }
-    })();
+    const data = await res.json();
+    if (data.accessToken) setToken(data.accessToken);
+    if (data.refreshToken) setRefreshToken(data.refreshToken);
+    return data.accessToken || null;
+  } catch {
+    return null;
   }
-
-  return refreshPromise;
 }
 
-function buildHeaders(options) {
-  const headers = { 'Content-Type': 'application/json', ...options.headers };
+function sanitizeEndpoint(endpoint) {
+  if (
+    typeof endpoint !== 'string' ||
+    !endpoint.startsWith('/') ||
+    endpoint.startsWith('//') ||
+    endpoint.includes('://')
+  ) {
+    throw new Error('Invalid API endpoint: must be a relative path starting with /');
+  }
+  return endpoint;
+}
 
-  const token = localStorage.getItem('access_token');
+function buildHeaders(options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+
+  const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   // Let the browser set the multipart boundary itself.
@@ -70,12 +94,15 @@ function buildHeaders(options) {
  * refreshes the session once before giving up and sending the user to login.
  */
 async function fetchClient(endpoint, options = {}, { isRetry = false } = {}) {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const safeEndpoint = sanitizeEndpoint(endpoint);
+  const targetUrl = new URL(safeEndpoint.replace(/^\/+/, '/'), BASE_URL).toString();
+
+  const response = await fetch(targetUrl, {
     ...options,
     headers: buildHeaders(options),
   });
 
-  const isAuthCall = endpoint.startsWith('/auth/');
+  const isAuthCall = safeEndpoint.startsWith('/auth/');
 
   if (response.status === 401 && !isAuthCall && !isRetry) {
     const newToken = await refreshAccessToken();
@@ -84,13 +111,13 @@ async function fetchClient(endpoint, options = {}, { isRetry = false } = {}) {
     }
 
     clearSession();
-    if (window.location.pathname !== '/') window.location.href = '/';
+    if (window.location.pathname !== '/') window.location.assign('/');
     throw new Error('Your session has expired. Please log in again.');
   }
 
   if (response.status === 401 && !isAuthCall) {
     clearSession();
-    if (window.location.pathname !== '/') window.location.href = '/';
+    if (window.location.pathname !== '/') window.location.assign('/');
   }
 
   // 204 and other empty responses have no JSON body.
@@ -150,7 +177,7 @@ export const apiClient = {
       // A failed revoke must never trap the user in the app.
     }
     clearSession();
-    window.location.href = '/';
+    window.location.assign('/');
   },
 };
 
@@ -158,13 +185,15 @@ export const apiClient = {
  * Mirrors the server's password policy so a weak password is rejected before
  * the round-trip. The server enforces the same rule regardless.
  */
-export const PASSWORD_RULE_TEXT =
+export const PASSWORD_POLICY_MESSAGE =
   'Password must be at least 10 characters and include an uppercase letter, a lowercase letter and a digit.';
 
-export function passwordProblem(password) {
-  if (!password || password.length < 10) return PASSWORD_RULE_TEXT;
-  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
-    return PASSWORD_RULE_TEXT;
+export const PASSWORD_RULE_TEXT = PASSWORD_POLICY_MESSAGE;
+
+export function passwordProblem(pwd) {
+  if (!pwd || pwd.length < 10) return PASSWORD_POLICY_MESSAGE;
+  if (!/[a-z]/.test(pwd) || !/[A-Z]/.test(pwd) || !/\d/.test(pwd)) {
+    return PASSWORD_POLICY_MESSAGE;
   }
   return null;
 }

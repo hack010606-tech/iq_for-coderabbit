@@ -45,6 +45,20 @@ const RESPONSE_STATUSES = [
   'answered_marked',
 ] as const;
 
+function isValidUUID(id: string): boolean {
+  if (typeof id !== 'string' || id.length !== 36) return false;
+  for (let i = 0; i < 36; i++) {
+    if (i === 8 || i === 13 || i === 18 || i === 23) {
+      if (id.charCodeAt(i) !== 45) return false;
+    } else {
+      const code = id.charCodeAt(i);
+      const isHex = (code >= 48 && code <= 57) || (code >= 65 && code <= 70) || (code >= 97 && code <= 102);
+      if (!isHex) return false;
+    }
+  }
+  return true;
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 @Injectable()
@@ -110,7 +124,7 @@ export class AppService {
   private async loadOwnedSession(sessionId: string, studentId: string) {
     // Reject a malformed id here rather than letting Postgres raise 22P02, which
     // the filter would otherwise surface as an opaque 500.
-    if (!UUID_RE.test(sessionId)) throw new NotFoundException('Exam session not found');
+    if (!isValidUUID(sessionId)) throw new NotFoundException('Exam session not found');
 
     const { data: session, error } = await this.supabase
       .from('exam_sessions')
@@ -133,7 +147,7 @@ export class AppService {
   // ── Session lifecycle ──────────────────────────────────────────────────────
 
   async startSession(examId: string, studentId: string) {
-    if (!UUID_RE.test(examId)) throw new NotFoundException('Test not found');
+    if (!isValidUUID(examId)) throw new NotFoundException('Test not found');
 
     const { data: testData, error: testError } = await this.supabase
       .from('tests')

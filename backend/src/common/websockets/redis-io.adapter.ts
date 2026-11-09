@@ -66,8 +66,13 @@ export class RedisIoAdapter extends IoAdapter {
         origin: (origin: string | undefined, callback: (err: Error | null, ok?: boolean) => void) => {
           if (!origin) return callback(null, true);
           if (this.allowList.includes('*') || this.allowList.includes(origin) || origin.endsWith('.vercel.app')) return callback(null, true);
-          if (!this.isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-            return callback(null, true);
+          if (!this.isProd) {
+            try {
+              const u = new URL(origin);
+              if ((u.protocol === 'http:' || u.protocol === 'https:') && (u.hostname === 'localhost' || u.hostname === '127.0.0.1')) {
+                return callback(null, true);
+              }
+            } catch {}
           }
           return callback(new Error(`Origin ${origin} is not allowed by CORS`));
         },

@@ -1,72 +1,95 @@
-const BASE_URL = import.meta.env.VITE_EXAM_API_URL || 'http://localhost:3000/api';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
-const TOKEN_KEY = 'exam_access_token';
-const REFRESH_KEY = 'exam_refresh_token';
-const PORTAL_KEY = 'exam_portal_url';
+function sanitizeEndpoint(endpoint) {
+  if (
+    typeof endpoint !== 'string' ||
+    !endpoint.startsWith('/') ||
+    endpoint.startsWith('//') ||
+    endpoint.includes('://')
+  ) {
+    throw new Error('Invalid API endpoint: must be a relative path starting with /');
+  }
+  return endpoint;
+}
 
 /**
- * Session handling for the standalone exam app.
- *
- * This app is served from a different origin to the main portal, so it cannot
- * read the portal's localStorage. The portal launches it with the session in the
- * URL *fragment* (`#token=…&refresh=…`), which browsers never send to a server
- * and never write to server logs. We lift it into sessionStorage — scoped to
- * this tab, cleared when the tab closes — and strip it from the address bar so
- * it does not linger in history.
- *
- * The refresh token travels too: a Supabase access token lasts about an hour and
- * a JEE paper runs for three, so without it every answer saved past the first
- * hour — and the final submit — failed with a 401.
+ * Access and refresh tokens are stashed in sessionStorage on first entry from
+ * the dashboard's URL fragment. That keeps them out of browser history, and
+ * clearing the fragment once read means a casual shoulder-surf reveals nothing.
  */
-export function captureTokenFromUrl() {
-  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
-  const hashParams = new URLSearchParams(hash);
-  const searchParams = new URLSearchParams(window.location.search);
-
-  const portal = hashParams.get('portal') || searchParams.get('portal');
-  if (portal) sessionStorage.setItem(PORTAL_KEY, portal);
-
-  if (!hash) return getToken();
-
-  const token = hashParams.get('token');
-  const refresh = hashParams.get('refresh');
-  if (!token) return getToken();
-
-  sessionStorage.setItem(TOKEN_KEY, token);
-  if (refresh) sessionStorage.setItem(REFRESH_KEY, refresh);
-  window.history.replaceState(null, '', window.location.pathname + window.location.search);
-  return token;
-}
-
-export function getPortalUrl() {
-  const stored = sessionStorage.getItem(PORTAL_KEY);
-  if (stored) return stored;
-  if (import.meta.env.VITE_PORTAL_URL) return import.meta.env.VITE_PORTAL_URL;
-  if (typeof window !== 'undefined' && window.location.port === '5175') {
-    return 'http://localhost:5173/student';
-  }
-  return '/student';
-}
-
 export function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY);
+  return sessionStorage.getItem('exam_token');
+}
+
+export function setToken(token) {
+  sessionStorage.setItem('exam_token', token);
 }
 
 export function getRefreshToken() {
-  return sessionStorage.getItem(REFRESH_KEY);
+  return sessionStorage.getItem('exam_refresh_token');
+}
+
+export function setRefreshToken(token) {
+  sessionStorage.setItem('exam_refresh_token', token);
 }
 
 export function clearToken() {
-  sessionStorage.removeItem(TOKEN_KEY);
-  sessionStorage.removeItem(REFRESH_KEY);
+  sessionStorage.removeItem('exam_token');
+  sessionStorage.removeItem('exam_refresh_token');
 }
 
-// Only one refresh may be in flight; concurrent 401s all await the same promise.
+/**
+ * Returns the configured portal base URL to redirect students back to.
+ * Checks for a URL passed via launch param/hash, then sessionStorage, then env var, falling back to window origin.
+ */
+export function getPortalUrl() {
+  const fromStorage = sessionStorage.getItem('exam_portal_url');
+  if (fromStorage && typeof fromStorage === 'string' && fromStorage.startsWith('http')) {
+    return fromStorage;
+  }
+  const fromEnv = import.meta.env.VITE_PORTAL_URL;
+  if (fromEnv && typeof fromEnv === 'string' && fromEnv.startsWith('http')) {
+    return fromEnv;
+  }
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return window.location.origin + '/student';
+  }
+  return 'http://localhost:5173/student';
+}
+
+/**
+ * Pull tokens from `#token=...&refresh=...` on the current location, store
+ * them, and scrub the fragment from the address bar so it does not persist.
+ */
+export function captureTokenFromUrl() {
+  const hash = window.location.hash.replace(/^#/, '');
+  if (!hash) return null;
+
+  const params = new URLSearchParams(hash);
+  const token = params.get('token');
+  const refresh = params.get('refresh');
+  const portal = params.get('portal');
+
+  if (portal) {
+    sessionStorage.setItem('exam_portal_url', portal);
+  }
+
+  if (token) {
+    setToken(token);
+    if (refresh) setRefreshToken(refresh);
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    return token;
+  }
+
+  return null;
+}
+
 let refreshPromise = null;
 
-async function refreshAccessToken() {
-  const refreshToken = sessionStorage.getItem(REFRESH_KEY);
-  if (!refreshToken) return null;
+/** Single in-flight refresh so concurrent requests do not stampede the auth endpoint. */
+export async function refreshAccessToken() {
+  const refresh = getRefreshToken();
+  if (!refresh) return null;
 
   if (!refreshPromise) {
     refreshPromise = (async () => {
@@ -74,16 +97,17 @@ async function refreshAccessToken() {
         const res = await fetch(`${BASE_URL}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
+          body: JSON.stringify({ refreshToken: refresh }),
         });
-        if (!res.ok) return null;
+        if (!res.ok) {
+          clearToken();
+          return null;
+        }
 
         const data = await res.json();
-        if (!data?.accessToken) return null;
-
-        sessionStorage.setItem(TOKEN_KEY, data.accessToken);
-        if (data.refreshToken) sessionStorage.setItem(REFRESH_KEY, data.refreshToken);
-        return data.accessToken;
+        if (data.accessToken) setToken(data.accessToken);
+        if (data.refreshToken) setRefreshToken(data.refreshToken);
+        return data.accessToken || null;
       } catch {
         return null;
       } finally {
@@ -116,7 +140,10 @@ export const apiClient = {
     if (token) options.headers.Authorization = `Bearer ${token}`;
     if (body) options.body = JSON.stringify(body);
 
-    const res = await fetch(`${this.baseURL}${endpoint}`, options);
+    const safeEndpoint = sanitizeEndpoint(endpoint);
+    const targetUrl = new URL(safeEndpoint.replace(/^\/+/, '/'), this.baseURL).toString();
+
+    const res = await fetch(targetUrl, options);
 
     if (res.status === 401) {
       // Mid-exam expiry is expected on a long paper — refresh once and retry

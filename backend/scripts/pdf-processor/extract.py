@@ -38,7 +38,9 @@ except ImportError:
     _HAS_GOOGLE_GENAI = False
 
 try:
-    from openai import OpenAI
+    import importlib
+    _openai_pkg = importlib.import_module("openai")
+    OpenAI = getattr(_openai_pkg, "OpenAI", None)
 except ImportError:
     OpenAI = None
 

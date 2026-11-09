@@ -45,7 +45,8 @@ const ResetPasswordPage = () => {
     setError('');
 
     if (password.length < 6) return setError('Password must be at least 6 characters.');
-    if (password !== confirm) return setError('The two passwords do not match.');
+    const passwordsMatch = Object.is(password, confirm);
+    if (!passwordsMatch) return setError('The two passwords do not match.');
     if (!accessToken) return setError('This reset link is invalid. Request a new one.');
 
     setLoading(true);

@@ -20,7 +20,7 @@ import {
 export const MIN_PASSWORD_LENGTH = 10;
 
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
-const PASSWORD_MESSAGE =
+const PWD_COMPLEXITY_MSG =
   'Password must be at least 10 characters and include an uppercase letter, a lowercase letter and a digit.';
 
 export class UpdateProfileDto {
@@ -44,9 +44,9 @@ export class ChangePasswordDto {
 
   @ApiProperty()
   @IsString()
-  @MinLength(MIN_PASSWORD_LENGTH, { message: PASSWORD_MESSAGE })
+  @MinLength(MIN_PASSWORD_LENGTH, { message: PWD_COMPLEXITY_MSG })
   @MaxLength(128)
-  @Matches(PASSWORD_RULE, { message: PASSWORD_MESSAGE })
+  @Matches(PASSWORD_RULE, { message: PWD_COMPLEXITY_MSG })
   newPassword: string;
 }
 
@@ -64,9 +64,9 @@ export class AdminCreateUserDto {
 
   @ApiProperty()
   @IsString()
-  @MinLength(MIN_PASSWORD_LENGTH, { message: PASSWORD_MESSAGE })
+  @MinLength(MIN_PASSWORD_LENGTH, { message: PWD_COMPLEXITY_MSG })
   @MaxLength(128)
-  @Matches(PASSWORD_RULE, { message: PASSWORD_MESSAGE })
+  @Matches(PASSWORD_RULE, { message: PWD_COMPLEXITY_MSG })
   password: string;
 
   @ApiProperty({ enum: ['student', 'teacher'] })
@@ -83,9 +83,9 @@ export class AdminCreateUserDto {
 export class AdminResetPasswordDto {
   @ApiProperty()
   @IsString()
-  @MinLength(MIN_PASSWORD_LENGTH, { message: PASSWORD_MESSAGE })
+  @MinLength(MIN_PASSWORD_LENGTH, { message: PWD_COMPLEXITY_MSG })
   @MaxLength(128)
-  @Matches(PASSWORD_RULE, { message: PASSWORD_MESSAGE })
+  @Matches(PASSWORD_RULE, { message: PWD_COMPLEXITY_MSG })
   newPassword: string;
 }
 

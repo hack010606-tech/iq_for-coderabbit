@@ -4,8 +4,12 @@ const fs = require('fs');
 const envText = fs.readFileSync('backend/.env', 'utf8');
 const env = {};
 envText.split('\n').forEach(line => {
-  const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-  if (match) env[match[1]] = match[2].trim();
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return;
+  const idx = trimmed.indexOf('=');
+  if (idx > 0) {
+    env[trimmed.slice(0, idx).trim()] = trimmed.slice(idx + 1).trim();
+  }
 });
 
 const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
@@ -89,7 +93,7 @@ async function main() {
     const batch = newRows.slice(i, i + BATCH_SIZE);
     const { data, error } = await supabase.from('questions').insert(batch).select('id');
     if (error) {
-      console.error(`Error inserting batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
+      console.error('Error inserting batch', Math.floor(i / BATCH_SIZE) + 1, ':', error);
       throw error;
     }
     insertedTotal += data.length;
