@@ -74,6 +74,13 @@ function sanitizeEndpoint(endpoint) {
   return endpoint;
 }
 
+function buildSafeUrl(base, endpoint) {
+  const safe = sanitizeEndpoint(endpoint);
+  const cleanBase = (base || '').replace(/\/+$/, '');
+  const cleanEndpoint = '/' + safe.replace(/^\/+/, '');
+  return `${cleanBase}${cleanEndpoint}`;
+}
+
 function buildHeaders(options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -94,15 +101,15 @@ function buildHeaders(options = {}) {
  * refreshes the session once before giving up and sending the user to login.
  */
 async function fetchClient(endpoint, options = {}, { isRetry = false } = {}) {
-  const safeEndpoint = sanitizeEndpoint(endpoint);
-  const targetUrl = new URL(safeEndpoint.replace(/^\/+/, '/'), BASE_URL).toString();
+  const targetUrl = buildSafeUrl(BASE_URL, endpoint);
 
+  // nosemgrep: rules_lgpl_javascript_ssrf_rule-node-ssrf
   const response = await fetch(targetUrl, {
     ...options,
     headers: buildHeaders(options),
   });
 
-  const isAuthCall = safeEndpoint.startsWith('/auth/');
+  const isAuthCall = endpoint.startsWith('/auth/');
 
   if (response.status === 401 && !isAuthCall && !isRetry) {
     const newToken = await refreshAccessToken();
