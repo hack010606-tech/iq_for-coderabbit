@@ -195,6 +195,27 @@ describe('TestsService', () => {
       ).resolves.toMatchObject({ message: 'Questions updated' });
     });
 
+    it('preserves other subjects questions when a subject teacher contributes to a mixed test', async () => {
+      assignedCollaborator();
+      supabaseMock.queueResult('test_questions', {
+        data: [{ question_id: 'q_phys', question_order: 1, questions: { id: 'q_phys', subject: 'Physics' } }],
+      });
+      supabaseMock.queueResult('questions', {
+        data: [
+          { id: 'q_phys', subject: 'Physics', review_status: 'approved', is_active: true },
+          { id: 'q_chem', subject: 'Chemistry', review_status: 'approved', is_active: true },
+        ],
+      });
+      supabaseMock.queueResult('test_questions', { data: null });
+      supabaseMock.queueResult('test_questions', { data: null });
+      supabaseMock.queueResult('test_questions', { data: [] });
+      supabaseMock.queueResult('tests', { data: null });
+
+      await expect(
+        service.addQuestions(TEST_ID, ['q_chem'], { ...OTHER_TEACHER, subject: 'Chemistry' }),
+      ).resolves.toMatchObject({ message: 'Questions updated' });
+    });
+
     it('lets an assigned teacher read the paper', async () => {
       assignedCollaborator();
       supabaseMock.queueResult('tests', { data: [] }); // paper_pattern probe

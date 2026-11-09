@@ -426,9 +426,13 @@ const TestConstructor = () => {
         if (data.test_questions) {
           const qs = data.test_questions
             .filter(tq => tq.questions)
-            .map(tq => ({ ...tq.questions, marks: tq.marks_override || tq.questions.marks || 4 }));
+            .map(tq => {
+              const qObj = Array.isArray(tq.questions) ? tq.questions[0] : tq.questions;
+              return { ...qObj, marks: tq.marks_override || qObj?.marks || 4 };
+            })
+            .filter(q => q && q.id);
           if (userSubject) {
-            setSelectedQuestions(qs.filter(q => q.subject?.toLowerCase() === userSubject.toLowerCase()));
+            setSelectedQuestions(qs.filter(q => String(q.subject || '').trim().toLowerCase() === userSubject.trim().toLowerCase()));
           } else {
             setSelectedQuestions(qs);
           }

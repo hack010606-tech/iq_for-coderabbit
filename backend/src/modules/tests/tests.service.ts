@@ -574,19 +574,51 @@ export class TestsService {
     let touched: string[] = [];
 
     if (scoped) {
-      // Questions on the test that belong to other subjects (e.g. Chemistry when user is Physics)
-      const otherSubjectRows = existingRows.filter(
-        (tq) => tq.questions?.subject && String(tq.questions.subject).toLowerCase() !== scoped.toLowerCase(),
-      );
-      const otherSubjectIds = otherSubjectRows.map((tq) => tq.question_id);
+      const extractSubject = (tq: any): string | null => {
+        const q = tq?.questions;
+        if (!q) return null;
+        if (Array.isArray(q)) {
+          return q[0]?.subject ? String(q[0].subject).trim().toLowerCase() : null;
+        }
+        return q.subject ? String(q.subject).trim().toLowerCase() : null;
+      };
+
+      const scopedLower = scoped.toLowerCase();
+      // If any existing row does not have its subject populated, fetch it directly
+      const unknownIds = existingRows
+        .filter((tq) => !extractSubject(tq))
+        .map((tq) => tq.question_id)
+        .filter(Boolean);
+
+      const dbSubjectMap = new Map<string, string>();
+      if (unknownIds.length > 0) {
+        const fetched = await fetchAllIn<{ id: string; subject: string }>(
+          unknownIds,
+          (chunk) => supabase.from('questions').select('id, subject').in('id', chunk),
+        );
+        fetched.forEach((q) => {
+          if (q.subject) dbSubjectMap.set(q.id, String(q.subject).trim().toLowerCase());
+        });
+      }
+
+      const getResolvedSubject = (tq: any): string | null => {
+        return extractSubject(tq) || dbSubjectMap.get(tq.question_id) || null;
+      };
+
+      // Questions on the test that belong to other subjects (e.g. Physics / Math when user is Chemistry)
+      const otherSubjectIds = existingRows
+        .filter((tq) => {
+          const sub = getResolvedSubject(tq);
+          return sub && sub !== scopedLower;
+        })
+        .map((tq) => tq.question_id);
 
       // Questions on the test that belong to this teacher's subject
       const existingScopedIds = existingRows
-        .filter(
-          (tq) =>
-            !tq.questions?.subject ||
-            String(tq.questions.subject).toLowerCase() === scoped.toLowerCase(),
-        )
+        .filter((tq) => {
+          const sub = getResolvedSubject(tq);
+          return sub === scopedLower;
+        })
         .map((tq) => tq.question_id);
 
       // Incoming questions for this teacher's subject (strip other subjects if sent)
@@ -683,9 +715,10 @@ export class TestsService {
     }
 
     if (scoped) {
+      const scopedNorm = scoped.trim().toLowerCase();
       for (const id of scopeCheckIds) {
         const q = byId.get(id);
-        if (q && String(q.subject).toLowerCase() !== scoped.toLowerCase()) {
+        if (q && String(q.subject || '').trim().toLowerCase() !== scopedNorm) {
           throw new ForbiddenException(`You can only add or remove ${scoped} questions.`);
         }
       }
@@ -728,7 +761,9 @@ export class TestsService {
 
     // Ensure all questions are approved and active before making the test live
     if (questionIds.length) {
-      await this.assertQuestionsUsable(questionIds, questionIds, user, false);
+      const test = await supabase.from('tests').select('subject').eq('id', id).single();
+      const isMixed = !test?.data?.subject || test.data.subject === 'Mixed' || test.data.subject === 'All';
+      await this.assertQuestionsUsable(questionIds, isMixed ? [] : questionIds, user, false);
     }
 
     const { data, error } = await supabase
