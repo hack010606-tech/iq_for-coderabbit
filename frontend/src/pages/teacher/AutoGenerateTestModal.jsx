@@ -168,16 +168,17 @@ export default function AutoGenerateTestModal({
 
     setIsGenerating(true);
     try {
-      // 1. Fetch available questions strictly for this teacher's subject (exclude subjective questions)
+      // 1. Fetch available questions strictly for this teacher's subject (exclude subjective questions client-side)
       const subjectParam = targetSub && targetSub !== 'All' ? `subject=${encodeURIComponent(targetSub)}&` : '';
       const [res1, res2] = await Promise.all([
-        apiClient.get(`/questions?${subjectParam}exclude_subjective=true&limit=150&page=1&review_status=all`),
-        apiClient.get(`/questions?${subjectParam}exclude_subjective=true&limit=150&page=2&review_status=all`).catch(() => ({ data: [] }))
+        apiClient.get(`/questions?${subjectParam}limit=150&page=1&review_status=all`),
+        apiClient.get(`/questions?${subjectParam}limit=150&page=2&review_status=all`).catch(() => ({ data: [] }))
       ]);
       const list1 = Array.isArray(res1) ? res1 : (res1?.data ?? []);
       const list2 = Array.isArray(res2) ? res2 : (res2?.data ?? []);
-      // Filter strictly by targetSub so non-subject questions are never included in chosen
+      // Filter strictly by targetSub and exclude subjective questions
       const bank = [...list1, ...list2].filter(q => {
+        if (q.q_type === 'subjective') return false;
         if (!targetSub || targetSub === 'All') return true;
         return String(q.subject || '').toLowerCase() === targetSub.toLowerCase();
       });
