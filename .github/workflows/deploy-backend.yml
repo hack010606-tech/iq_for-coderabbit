@@ -16,20 +16,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH and Deploy to AWS EC2
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            APP_DIR="${{ secrets.EC2_APP_DIR }}"
-            if [ -z "$APP_DIR" ]; then
-              APP_DIR="$HOME/IQ"
-            fi
+      - name: Deploy to AWS EC2 via SSH
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_KEY: ${{ secrets.EC2_SSH_KEY }}
+          APP_DIR: ${{ secrets.EC2_APP_DIR }}
+        run: |
+          if [ -z "$EC2_HOST" ]; then
+            echo "::error::EC2_HOST secret is not configured in repository secrets!"
+            exit 1
+          fi
+          if [ -z "$EC2_KEY" ]; then
+            echo "::error::EC2_SSH_KEY secret is not configured in repository secrets!"
+            exit 1
+          fi
 
-            echo "🚀 Deploying in directory: $APP_DIR"
-            cd "$APP_DIR" || cd "$HOME"/*IQ* || exit 1
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Expand literal \n if pasted with escaped newlines and strip Windows CRLF \r
+          printf '%b\n' "$EC2_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Check if the key is valid OpenSSH / RSA key
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
+            echo "Key validation warning; checking if key was base64 encoded..."
+            printf '%b\n' "$EC2_KEY" | base64 -d 2>/dev/null > ~/.ssh/deploy_key_b64 || true
+            chmod 600 ~/.ssh/deploy_key_b64
+            if ssh-keygen -y -f ~/.ssh/deploy_key_b64 > /dev/null 2>&1; then
+              cp ~/.ssh/deploy_key_b64 ~/.ssh/deploy_key
+              chmod 600 ~/.ssh/deploy_key
+              echo "✅ Restored base64-encoded SSH key"
+            else
+              echo "::warning::deploy_key failed ssh-keygen validation. Attempting connection anyway..."
+            fi
+          fi
+
+          TARGET_USER="${EC2_USER:-ubuntu}"
+          TARGET_DIR="${APP_DIR:-$HOME/IQ}"
+
+          ssh-keyscan -H -T 10 "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          echo "🚀 Connecting to $TARGET_USER@$EC2_HOST..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 "$TARGET_USER@$EC2_HOST" "bash -s" << EOF
+            APP_DIR="$TARGET_DIR"
+            echo "🚀 Deploying in directory: \$APP_DIR"
+            cd "\$APP_DIR" || cd "\$HOME"/*IQ* || exit 1
 
             echo "📥 Pulling latest changes from main..."
             git pull origin main
@@ -44,3 +77,4 @@ jobs:
             docker image prune -f
 
             echo "✅ Deployment completed successfully!"
+          EOF
